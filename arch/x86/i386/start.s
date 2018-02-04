@@ -1,4 +1,4 @@
-// file : kmain.zig
+// file : start.s
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,17 +15,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-const vbuff = @intToPtr(&volatile u16, 0xB8000)[0..0x4000];
-var cursor: u16 = 0;
+.extern kmain
+.global _start.boot
 
-fn print(txt: []const u8) void {
-	for (txt) |c| {
-		vbuff[cursor] = (0x0F << 8) | u16(c);
-		cursor += 1;
-	}
-}
+.section .bss.boot
+	.align 16
+	_stack_start.boot:
+		.skip 4096 // 4K stack
+	_stack_end.boot:
 
-export fn kmain() void {
-	print("Hello, World!");
-	asm volatile ("hlt");
-}
+.section .text.boot
+	.type _start.boot, @function
+	_start.boot:
+		mov $_stack_end.boot, %esp // Set stack
+
+		call kmain // Call kernel main
+
+		_hang.boot: // Hang the kernel
+			cli
+			hlt
+			jmp _hang.boot

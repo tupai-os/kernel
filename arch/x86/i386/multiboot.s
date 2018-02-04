@@ -1,4 +1,4 @@
-// file : kmain.zig
+// file : multiboot.s
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,17 +15,32 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-const vbuff = @intToPtr(&volatile u16, 0xB8000)[0..0x4000];
-var cursor: u16 = 0;
+.extern _start.boot
 
-fn print(txt: []const u8) void {
-	for (txt) |c| {
-		vbuff[cursor] = (0x0F << 8) | u16(c);
-		cursor += 1;
-	}
-}
+.set MB_MAGIC, 0xE85250D6
+.set MB_ARCH,  0
+.set MB_SIZE,  (mb_end - mb_start)
+.set MB_CHECKSUM, (0 - (MB_MAGIC + MB_ARCH + MB_SIZE))
 
-export fn kmain() void {
-	print("Hello, World!");
-	asm volatile ("hlt");
-}
+.section .rodata.multiboot
+	.align 4
+	mb_start:
+			.align 4
+		.long MB_MAGIC
+		.long MB_ARCH
+		.long MB_SIZE
+		.long MB_CHECKSUM
+
+		// Entry tag
+		.align 8
+		.word 3            // Type
+		.word 0            // Flags
+		.long 12           // Size
+		.long _start.boot // Entry address
+
+		// End tag
+		.align 8
+		.word 0 // Type
+		.word 0 // Flags
+		.long 8 // Size
+	mb_end:
