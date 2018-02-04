@@ -60,7 +60,7 @@ $(BUILD_DIRS):
 
 .PHONY: exe
 exe: $(BUILD_DIRS)
-	$(TOOL_ZIG) build-exe \
+	@$(TOOL_ZIG) build-exe \
 		--cache-dir $(BUILD_ROOT)/_zig-cache \
 		--output $(KERNEL_EXE) \
 		--target-arch $(TARGET_ARCH) \
@@ -70,4 +70,3 @@ exe: $(BUILD_DIRS)
 		--release-fast \
 		$(ASM_FLAGS) \
 		$(KERNEL_MAIN)
-	#strip --strip-debug --discard-all $(KERNEL_EXE)
