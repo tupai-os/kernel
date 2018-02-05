@@ -26,7 +26,7 @@ const vmem = @intToPtr(&volatile u16, 0xB8000)[0..0x4000];
 var cursor: u16 = 0;
 
 pub fn print(str: []const u8) void {
-	vga.write_str(str);
+	vga.writeStr(str);
 }
 
 pub fn printf(format: []const u8, args: ...) void {
@@ -34,5 +34,5 @@ pub fn printf(format: []const u8, args: ...) void {
 }
 
 fn fmtCallback(ctx: void, str: []const u8) %void {
-	vga.write_str(str);
+	vga.writeStr(str);
 }

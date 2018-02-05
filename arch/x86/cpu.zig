@@ -22,3 +22,19 @@ pub fn halt() void {
 pub fn hang() void {
 	asm volatile ("_hang: cli; hlt; jmp _hang");
 }
+
+pub fn in8(port: u16) u8 {
+	return asm volatile (
+		"inb %[port], %[ret]"
+		: [ret] "={al}" (-> u8)
+		: [port] "N{dx}" (port)
+	);
+}
+
+pub fn out8(port: u16, val: u8) void {
+	return asm volatile (
+		"outb %[val], %[port]"
+		:
+		: [val] "{al}" (val), [port] "N{dx}" (port)
+	);
+}

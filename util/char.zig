@@ -18,14 +18,14 @@
 const vmem = @intToPtr(&volatile u16, 0xB8000)[0..0x4000];
 var cursor: u16 = 0;
 
-pub fn is_whitespace(c: u8) bool {
+pub fn isWhitespace(c: u8) bool {
 	return switch (c) {
 		' ', '\t', '\n, '\r', '\v' => true,
 		else => false,
 	};
 }
 
-pub fn is_printable(c: u8) bool {
+pub fn isPrintable(c: u8) bool {
 	return switch (c) {
 		' ' => true,
 		'!' ... '/' => true,

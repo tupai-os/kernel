@@ -19,6 +19,7 @@ const tty = @import("dev/tty.zig");
 const cpu = @import("cpu.zig");
 
 export fn kmain() void {
-	tty.print("Entered kernel main");
+	tty.print("Entered kernel main\n");
+	tty.print("Hanging CPU...\n");
 	cpu.hang();
 }
