@@ -31,12 +31,21 @@
 		.long MB_SIZE
 		.long MB_CHECKSUM
 
-		// Entry tag
+		// Entry address tag
 		.align 8
 		.word 3            // Type
 		.word 0            // Flags
 		.long 12           // Size
 		.long _start.boot // Entry address
+
+		// Framebuffer tag
+		//.align 8
+		//.word 5   // Type
+		//.word 0   // Flags
+		//.long 20  // Size
+		//.long 640 // Width
+		//.long 480 // Height
+		//.long 32  // BPP
 
 		// End tag
 		.align 8

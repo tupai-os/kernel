@@ -1,4 +1,4 @@
-// file : kmain.zig
+// file : char.zig
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,10 +15,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-const tty = @import("dev/tty.zig");
-const cpu = @import("cpu.zig");
+const vmem = @intToPtr(&volatile u16, 0xB8000)[0..0x4000];
+var cursor: u16 = 0;
 
-export fn kmain() void {
-	tty.print("Entered kernel main");
-	cpu.hang();
+pub fn is_whitespace(c: u8) bool {
+	return switch (c) {
+		' ', '\t', '\n, '\r', '\v' => true,
+		else => false,
+	};
+}
+
+pub fn is_printable(c: u8) bool {
+	return switch (c) {
+		' ' => true,
+		'!' ... '/' => true,
+		'0' ... '9' => true,
+		':' ... '@' => true,
+		'A' ... 'Z' => true,
+		'[' ... '`' => true,
+		'a' ... 'z' => true,
+		'{' ... '~' => true,
+		else => false,
+	};
 }

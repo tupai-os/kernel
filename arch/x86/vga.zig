@@ -1,4 +1,4 @@
-// file : kmain.zig
+// file : vga.zig
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,10 +15,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-const tty = @import("dev/tty.zig");
-const cpu = @import("cpu.zig");
+const char = @import("../../util/char.zig");
 
-export fn kmain() void {
-	tty.print("Entered kernel main");
-	cpu.hang();
+const COLS = 80;
+const ROWS = 25;
+
+const vmem = @intToPtr(&volatile u16, 0xB8000)[0..0x4000];
+var cursor: u16 = 0;
+
+pub fn write_char(c: u8) void {
+	switch (c) {
+		'\n' => {
+				while (cursor % COLS > 0)
+					write_char(' ');
+			},
+		else => {
+				vmem[cursor] = (0x0F << 8) | u16(c);
+				cursor += 1;
+			},
+	}
+}
+
+pub fn write_str(str: []const u8) void {
+	for (str) |c| {
+		write_char(c);
+	}
 }

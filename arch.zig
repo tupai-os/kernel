@@ -1,4 +1,4 @@
-// file : kmain.zig
+// file : cpu.zig
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,10 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-const tty = @import("dev/tty.zig");
-const cpu = @import("cpu.zig");
+const builtin = @import("builtin");
 
-export fn kmain() void {
-	tty.print("Entered kernel main");
-	cpu.hang();
+pub fn is_x86_family() bool {
+	return
+		builtin.arch == builtin.Arch.i386 or
+		builtin.arch == builtin.Arch.x86_64;
+}
+
+pub fn is_i386_arch() bool {
+	return builtin.arch == builtin.Arch.i386;
 }

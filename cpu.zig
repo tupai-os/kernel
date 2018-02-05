@@ -1,4 +1,4 @@
-// file : kmain.zig
+// file : cpu.zig
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,10 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-const tty = @import("dev/tty.zig");
-const cpu = @import("cpu.zig");
+const arch = @import("arch.zig");
+const cpu = if (arch.is_x86_family()) @import("arch/x86/cpu.zig");
 
-export fn kmain() void {
-	tty.print("Entered kernel main");
+pub fn wait() void {
+	cpu.halt();
+}
+
+pub fn hang() void {
 	cpu.hang();
 }
