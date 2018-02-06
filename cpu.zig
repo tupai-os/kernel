@@ -22,6 +22,6 @@ pub fn wait() void {
 	cpu.halt();
 }
 
-pub fn hang() void {
+pub fn hang() noreturn {
 	cpu.hang();
 }

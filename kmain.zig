@@ -21,5 +21,5 @@ const cpu = @import("cpu.zig");
 
 export fn kmain() void {
 	tty.printf("Entered kernel main\n");
-	panic.panicf("Kernel panic!");
+	panic.panicf("Nothing to do yet");
 }

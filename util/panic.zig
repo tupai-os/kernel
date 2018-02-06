@@ -19,22 +19,39 @@ const fmt = @import("std").fmt;
 const tty = @import("../dev/tty.zig");
 const cpu = @import("../cpu.zig");
 
-pub fn panicf(comptime format: []const u8, args: ...) void {
+pub fn panicf(comptime format: []const u8, args: ...) noreturn {
+	// Set output color to white on red
+	tty.setFgColor(tty.Color.WHITE);
+	tty.setBgColor(tty.Color.RED);
+
+	// Display the prefix
+	fmtCallback({}, "KERNEL PANIC: ")
+	catch {
+		allIsLost("Displaying panic prefix failed");
+	};
+
+	// Display the error message
 	fmt.format({}, fmtCallback, format, args)
 	catch {
-		fmtCallback({}, "Panic failed")
-		catch {
-			// At this point, something has gone majorly wrong
-			// Just hang the CPU because clearly nothing else works
-			cpu.hang();
-		};
+		allIsLost("Displaying panic message failed");
+	};
+
+	// Reset output color to defaults
+	tty.setFgColor(tty.getFgColorDefault());
+	tty.setBgColor(tty.getBgColorDefault());
+
+	cpu.hang();
+}
+
+fn allIsLost(msg: []const u8) void {
+	fmtCallback({}, msg)
+	catch {
+		// At this point, something has gone majorly wrong
+		// Just hang the CPU because clearly nothing else works
+		cpu.hang();
 	};
 }
 
 fn fmtCallback(ctx: void, str: []const u8) %void {
-	tty.setFgColor(tty.Color.WHITE);
-	tty.setBgColor(tty.Color.RED);
 	tty.print(str);
-	tty.setFgColor(tty.getFgColorDefault());
-	tty.setBgColor(tty.getBgColorDefault());
 }

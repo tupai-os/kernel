@@ -19,8 +19,10 @@ pub fn halt() void {
 	asm volatile ("hlt");
 }
 
-pub fn hang() void {
-	asm volatile ("_hang: cli; hlt; jmp _hang");
+pub fn hang() noreturn {
+	while (true) {
+		asm volatile ("cli; hlt");
+	}
 }
 
 pub fn in8(port: u16) u8 {
