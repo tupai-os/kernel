@@ -44,7 +44,7 @@ const Entry = packed struct {
 	bg: Color,
 
 	pub fn new(c: u8, fg: Color, bg: Color) Entry {
-		return Entry{ .c = c, .fg = fg_color, .bg = bg_color };
+		return Entry{ .c = c, .fg = fg, .bg = bg };
 	}
 };
 
@@ -55,19 +55,19 @@ const COLS = 80;
 const ROWS = 25;
 const TAB_WIDTH = 4;
 
-const fg_default = Color.WHITE;
-const bg_default = Color.BLACK;
+const default_text_color = Color.WHITE;
+const default_back_color = Color.BLACK;
 
 const vmem = @intToPtr(&volatile Entry, mmap.MEM_CGA_TEXTMODE)[0..COLS * ROWS];
 
 var cursor_pos: u16 = 0;
-var fg_color: Color = Color.WHITE;
-var bg_color: Color = Color.BLACK;
+var text_color: Color = Color.WHITE;
+var back_color: Color = Color.BLACK;
 
 pub fn init() void {
 	cursor_pos = 0;
-	fg_color = Color.WHITE;
-	bg_color = Color.BLACK;
+	text_color = Color.WHITE;
+	back_color = Color.BLACK;
 
 	// Clean the video memory
 	for (vmem) |*entry| {
@@ -87,7 +87,7 @@ pub fn writeChar(c: u8) void {
 		'\t' => cursor_pos = alignLower(cursor_pos + 1, TAB_WIDTH),
 			// Printable, display character
 		else => if (char.isPrintable(c)) {
-				vmem[cursor_pos] = Entry.new(c, fg_color, bg_color);
+				vmem[cursor_pos] = Entry.new(c, text_color, back_color);
 				cursor_pos += 1;
 			},
 	}
@@ -109,20 +109,20 @@ pub fn placeCursor(col: u8, row: u8) void {
 	setCursorPosition(cursor_pos);
 }
 
-pub fn getFgColorDefault() Color {
-	return fg_default;
+pub fn getDefaultTextColor() Color {
+	return default_text_color;
 }
 
-pub fn getBgColorDefault() Color {
-	return bg_default;
+pub fn getDefaultBackColor() Color {
+	return default_back_color;
 }
 
-pub fn setFgColor(col: Color) void {
-	fg_color = col;
+pub fn setTextColor(color: Color) void {
+	text_color = color;
 }
 
-pub fn setBgColor(col: Color) void {
-	bg_color = col;
+pub fn setBackColor(color: Color) void {
+	back_color = color;
 }
 
 pub fn setCursorEnabled(comptime enabled: bool) void {

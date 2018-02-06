@@ -21,8 +21,8 @@ const cpu = @import("../cpu.zig");
 
 pub fn panicf(comptime format: []const u8, args: ...) noreturn {
 	// Set output color to white on red
-	tty.setFgColor(tty.Color.WHITE);
-	tty.setBgColor(tty.Color.RED);
+	tty.setTextColor(tty.Color.WHITE);
+	tty.setBackColor(tty.Color.RED);
 
 	// Display the prefix
 	fmtCallback({}, "KERNEL PANIC: ")
@@ -37,8 +37,8 @@ pub fn panicf(comptime format: []const u8, args: ...) noreturn {
 	};
 
 	// Reset output color to defaults
-	tty.setFgColor(tty.getFgColorDefault());
-	tty.setBgColor(tty.getBgColorDefault());
+	tty.setTextColor(tty.getDefaultTextColor());
+	tty.setBackColor(tty.getDefaultBackColor());
 
 	cpu.hang();
 }
