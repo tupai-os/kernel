@@ -20,6 +20,8 @@ const arch = @import("../arch.zig");
 const panic = @import("../util/panic.zig");
 const cga = if (arch.is_x86_family()) @import("../arch/x86/cga.zig");
 
+pub const Color = if (arch.is_x86_family()) @import("../arch/x86/cga.zig").Color;
+
 pub fn print(str: []const u8) void {
 	cga.writeStr(str);
 }
@@ -32,5 +34,35 @@ pub fn printf(comptime format: []const u8, args: ...) void {
 }
 
 fn fmtCallback(ctx: void, str: []const u8) %void {
-	cga.writeStr(str);
+	if (arch.is_x86_family()) {
+		cga.writeStr(str);
+	}
+}
+
+pub fn getFgColorDefault() Color {
+	if (arch.is_x86_family()) {
+		return cga.getFgColorDefault();
+	} else {
+		return Color.WHITE;
+	}
+}
+
+pub fn getBgColorDefault() Color {
+	if (arch.is_x86_family()) {
+		return cga.getBgColorDefault();
+	} else {
+		return Color.BLACK;
+	}
+}
+
+pub fn setFgColor(col: Color) void {
+	if (arch.is_x86_family()) {
+		cga.setFgColor(col);
+	}
+}
+
+pub fn setBgColor(col: Color) void {
+	if (arch.is_x86_family()) {
+		cga.setBgColor(col);
+	}
 }

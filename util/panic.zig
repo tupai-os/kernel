@@ -32,5 +32,9 @@ pub fn panicf(comptime format: []const u8, args: ...) void {
 }
 
 fn fmtCallback(ctx: void, str: []const u8) %void {
+	tty.setFgColor(tty.Color.WHITE);
+	tty.setBgColor(tty.Color.RED);
 	tty.print(str);
+	tty.setFgColor(tty.getFgColorDefault());
+	tty.setBgColor(tty.getBgColorDefault());
 }

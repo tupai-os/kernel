@@ -19,7 +19,7 @@ const char = @import("../../util/char.zig");
 const mmap= @import("mmap.zig");
 const cpu = @import("cpu.zig");
 
-const Color = enum(u4) {
+pub const Color = enum(u4) {
 	BLACK = 0x0,
 	BLUE = 0x1,
 	GREEN = 0x2,
@@ -55,7 +55,11 @@ const COLS = 80;
 const ROWS = 25;
 const TAB_WIDTH = 4;
 
+const fg_default = Color.WHITE;
+const bg_default = Color.BLACK;
+
 const vmem = @intToPtr(&volatile Entry, mmap.MEM_CGA_TEXTMODE)[0..COLS * ROWS];
+
 var cursor_pos: u16 = 0;
 var fg_color: Color = Color.WHITE;
 var bg_color: Color = Color.BLACK;
@@ -105,11 +109,19 @@ pub fn placeCursor(col: u8, row: u8) void {
 	setCursorPosition(cursor_pos);
 }
 
-pub fn setForeground(col: Color) void {
+pub fn getFgColorDefault() Color {
+	return fg_default;
+}
+
+pub fn getBgColorDefault() Color {
+	return bg_default;
+}
+
+pub fn setFgColor(col: Color) void {
 	fg_color = col;
 }
 
-pub fn setBackground(col: Color) void {
+pub fn setBgColor(col: Color) void {
 	bg_color = col;
 }
 
@@ -117,8 +129,7 @@ pub fn setCursorEnabled(comptime enabled: bool) void {
 	if (enabled) {
 		cpu.out8(PORT_CMD, 0x0A);
 		cpu.out8(PORT_DATA, 0x00);
-	}
-	else {
+	} else {
 		cpu.out8(PORT_CMD, 0x0A);
 		cpu.out8(PORT_DATA, 0x3F);
 	}
