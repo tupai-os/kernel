@@ -20,7 +20,7 @@ var cursor: u16 = 0;
 
 pub fn isWhitespace(c: u8) bool {
 	return switch (c) {
-		' ', '\t', '\n, '\r', '\v' => true,
+		' ', '\t', '\n', '\r', 0x0C, 0x0B => true,
 		else => false,
 	};
 }

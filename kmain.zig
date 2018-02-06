@@ -16,10 +16,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 const tty = @import("dev/tty.zig");
+const panic = @import("util/panic.zig");
 const cpu = @import("cpu.zig");
 
 export fn kmain() void {
-	tty.print("Entered kernel main\n");
-	tty.print("Hanging CPU...\n");
-	cpu.hang();
+	tty.printf("Entered kernel main\n");
+	panic.panicf("Kernel panic!");
 }

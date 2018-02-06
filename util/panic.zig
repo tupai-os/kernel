@@ -1,4 +1,4 @@
-// file : tty.zig
+// file : panic.zig
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -16,21 +16,21 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 const fmt = @import("std").fmt;
-const arch = @import("../arch.zig");
-const panic = @import("../util/panic.zig");
-const cga = if (arch.is_x86_family()) @import("../arch/x86/cga.zig");
+const tty = @import("../dev/tty.zig");
+const cpu = @import("../cpu.zig");
 
-pub fn print(str: []const u8) void {
-	cga.writeStr(str);
-}
-
-pub fn printf(comptime format: []const u8, args: ...) void {
+pub fn panicf(comptime format: []const u8, args: ...) void {
 	fmt.format({}, fmtCallback, format, args)
 	catch {
-		panic.panicf("Printf failed");
+		fmtCallback({}, "Panic failed")
+		catch {
+			// At this point, something has gone majorly wrong
+			// Just hang the CPU because clearly nothing else works
+			cpu.hang();
+		};
 	};
 }
 
 fn fmtCallback(ctx: void, str: []const u8) %void {
-	cga.writeStr(str);
+	tty.print(str);
 }
