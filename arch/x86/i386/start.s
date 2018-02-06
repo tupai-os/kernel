@@ -21,13 +21,23 @@
 .section .bss.boot
 	.align 16
 	_stack_start.boot:
-		.skip 4096 // 4K stack
+		.skip 1024 // 1K stack
 	_stack_end.boot:
+
+	_tmp_mb_magic.boot:
+		.long
+	_tmp_mb_header.boot:
+		.long
 
 .section .text.boot
 	.type _start.boot, @function
 	_start.boot:
-		mov $_stack_end.boot, %esp // Set stack
+		// Set the initial boot stack
+		mov $_stack_end.boot, %esp
+
+		// Preserve Multiboot attributes
+		mov %eax, (_tmp_mb_magic.boot)
+		mov %ebx, (_tmp_mb_header.boot)
 
 		call kmain // Call kernel main
 
