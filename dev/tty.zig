@@ -28,11 +28,15 @@ pub const getDefaultTextColor = if (arch.is_x86_family()) vga.getDefaultTextColo
 pub const getDefaultBackColor = if (arch.is_x86_family()) vga.getDefaultBackColor;
 
 pub fn init() %void {
-	return vga.init();
+	if (arch.is_x86_family()) {
+		return vga.init();
+	}
 }
 
 pub fn print(str: []const u8) void {
-	vga.writeStr(str);
+	if (arch.is_x86_family()) {
+		vga.writeStr(str);
+	}
 }
 
 pub fn printf(comptime format: []const u8, args: ...) void {

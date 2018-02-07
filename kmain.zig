@@ -15,16 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// Force kearly to be imported
+comptime { _ = @import("kearly.zig"); }
+
 const tty = @import("dev/tty.zig");
 const panic = @import("util/panic.zig");
-const cpu = @import("cpu.zig");
-
-export fn kearly() void {
-	tty.init()
-	catch {
-		panic.panicf("Failed to initiate TTY");
-	};
-}
 
 export fn kmain() void {
 	tty.printf("Entered kernel main...\n");
