@@ -18,17 +18,21 @@
 const fmt = @import("std").fmt;
 const arch = @import("../arch.zig");
 const panic = @import("../util/panic.zig");
-const cga = if (arch.is_x86_family()) @import("../arch/x86/cga.zig");
+const vga = if (arch.is_x86_family()) @import("../arch/x86/vga.zig");
 
-pub const Color = if (arch.is_x86_family()) cga.Color;
+pub const Color = if (arch.is_x86_family()) vga.Color;
 
-pub const setTextColor = if (arch.is_x86_family()) cga.setTextColor;
-pub const setBackColor = if (arch.is_x86_family()) cga.setBackColor;
-pub const getDefaultTextColor = if (arch.is_x86_family()) cga.getDefaultTextColor;
-pub const getDefaultBackColor = if (arch.is_x86_family()) cga.getDefaultBackColor;
+pub const setTextColor = if (arch.is_x86_family()) vga.setTextColor;
+pub const setBackColor = if (arch.is_x86_family()) vga.setBackColor;
+pub const getDefaultTextColor = if (arch.is_x86_family()) vga.getDefaultTextColor;
+pub const getDefaultBackColor = if (arch.is_x86_family()) vga.getDefaultBackColor;
+
+pub fn init() %void {
+	return vga.init();
+}
 
 pub fn print(str: []const u8) void {
-	cga.writeStr(str);
+	vga.writeStr(str);
 }
 
 pub fn printf(comptime format: []const u8, args: ...) void {
@@ -40,6 +44,6 @@ pub fn printf(comptime format: []const u8, args: ...) void {
 
 fn fmtCallback(ctx: void, str: []const u8) %void {
 	if (arch.is_x86_family()) {
-		cga.writeStr(str);
+		vga.writeStr(str);
 	}
 }

@@ -39,6 +39,7 @@
 		mov %eax, (_tmp_mb_magic.boot)
 		mov %ebx, (_tmp_mb_header.boot)
 
+		call kearly // Call kernel early setup
 		call kmain // Call kernel main
 
 		_hang.boot: // Hang the kernel

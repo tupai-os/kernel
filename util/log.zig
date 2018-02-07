@@ -1,4 +1,4 @@
-// file : kmain.zig
+// file : log.zig
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,18 +15,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-const tty = @import("dev/tty.zig");
-const panic = @import("util/panic.zig");
-const cpu = @import("cpu.zig");
+const tty = @import("../dev/tty.zig");
 
-export fn kearly() void {
-	tty.init()
-	catch {
-		panic.panicf("Failed to initiate TTY");
-	};
+pub fn bootf(ok: bool, comptime format: []const u8, args: ...) void {
+	printStatus(ok);
+	tty.printf(format, args);
+	tty.print("\n");
 }
 
-export fn kmain() void {
-	tty.printf("Entered kernel main...\n");
-	panic.panicf("Nothing to do yet");
+fn printStatus(ok: bool) void {
+	tty.print("[");
+	tty.setTextColor(if (ok) tty.Color.GREEN else tty.Color.RED);
+	tty.print(if (ok) " OK " else "FAIL");
+	tty.setTextColor(tty.getDefaultTextColor());
+	tty.print("] ");
 }

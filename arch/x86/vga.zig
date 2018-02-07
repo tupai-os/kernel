@@ -1,4 +1,4 @@
-// file : cga.zig
+// file : vga.zig
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 const char = @import("../../util/char.zig");
+const log = @import("../../util/log.zig");
 const mmap= @import("mmap.zig");
 const cpu = @import("cpu.zig");
 
@@ -51,28 +52,31 @@ const Entry = packed struct {
 const PORT_CMD: u16 = 0x03D4;
 const PORT_DATA: u16 = 0x03D5;
 
-const COLS = 80;
-const ROWS = 25;
+const COLS: u16 = 80;
+const ROWS: u16 = 25;
 const TAB_WIDTH = 4;
 
 const default_text_color = Color.WHITE;
 const default_back_color = Color.BLACK;
 
-const vmem = @intToPtr(&volatile Entry, mmap.MEM_CGA_TEXTMODE)[0..COLS * ROWS];
+const vmem = @intToPtr(&volatile Entry, mmap.MEM_VGA_TEXTMODE)[0..COLS * ROWS];
 
 var cursor_pos: u16 = 0;
 var text_color: Color = Color.WHITE;
 var back_color: Color = Color.BLACK;
 
-pub fn init() void {
+pub fn init() %void {
+	// Reset textmode parameters
 	cursor_pos = 0;
 	text_color = Color.WHITE;
 	back_color = Color.BLACK;
 
 	// Clean the video memory
 	for (vmem) |*entry| {
-		*entry = Entry.new(' ', fg_color, bg_color);
+		*entry = Entry.new(' ', default_text_color, default_back_color);
 	}
+
+	log.bootf(true, "VGA {}x{} mode initiated", COLS, ROWS);
 }
 
 fn alignLower(index: u16, mod: u16) u16 {
