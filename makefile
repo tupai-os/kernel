@@ -95,5 +95,6 @@ asm: $(BUILD_DIRS)
 
 .PHONY: rust
 rust: $(BUILD_DIRS)
-	@$(TOOL_CARGO) build --release --target=$(CARGO_TARGET)
+	@# Why does the following change to RUST_TARGET_PATH work?!
+	@RUST_TARGET_PATH=$(shell pwd) $(TOOL_CARGO) build --release --target=$(CARGO_TARGET)
 	@cp target/$(CARGO_TARGET)/release/libtupai.a $(RUST_LIB)

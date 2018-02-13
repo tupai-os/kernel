@@ -5,3 +5,6 @@ authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
 
 [lib]
 crate-type = ["staticlib"]
+
+[dependencies]
+volatile = "0.1.0"
