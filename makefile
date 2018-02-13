@@ -83,7 +83,7 @@ $(BUILD_DIRS):
 
 .PHONY: exe
 exe: $(BUILD_DIRS) asm rust
-	$(TOOL_LD_EXEC) \
+	@$(TOOL_LD_EXEC) \
 		-n --gc-sections \
 		-T $(LINK_SCRIPT) \
 		-o $(KERNEL_EXE) \
@@ -91,9 +91,9 @@ exe: $(BUILD_DIRS) asm rust
 
 .PHONY: asm
 asm: $(BUILD_DIRS)
-	$(TOOL_ASM_EXEC) -o $(ASM_OBJ) $(ASM_FILES)
+	@$(TOOL_ASM_EXEC) -o $(ASM_OBJ) $(ASM_FILES)
 
 .PHONY: rust
 rust: $(BUILD_DIRS)
-	$(TOOL_CARGO) build --release --target=$(CARGO_TARGET)
-	cp target/$(CARGO_TARGET)/release/libtupai.a $(RUST_LIB)
+	@$(TOOL_CARGO) build --release --target=$(CARGO_TARGET)
+	@cp target/$(CARGO_TARGET)/release/libtupai.a $(RUST_LIB)

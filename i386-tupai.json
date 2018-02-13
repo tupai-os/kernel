@@ -7,5 +7,6 @@
 	"target-c-int-width": "32",
 	"arch": "x86",
 	"os": "none",
-	"features": "-mmx,-sse,+soft-float"
+	"features": "-mmx,-sse,+soft-float",
+	"panic-strategy": "abort"
 }
