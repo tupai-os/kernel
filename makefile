@@ -28,21 +28,44 @@ KERNEL_MAIN = $(SRC_ROOT)/kmain.zig
 TARGET_FAMILY ?= x86
 TARGET_ARCH ?= i386
 
-TOOL_ZIG ?= zig
+TOOL_ASM ?= as
+ASM_OBJ = $(BUILD_ROOT)/tupai-asm.o
+
+TOOL_CARGO ?= xargo
+CARGO_TARGET = "$(TARGET_ARCH)-tupai"
+RUST_LIB = $(BUILD_ROOT)/tupai.a
+
+TOOL_LD ?= ld
 
 # Non-configurable
 
 BUILD_DIRS = $(BUILD_ROOT)
 
-DIR_FAMILY = $(SRC_ROOT)/arch/$(TARGET_FAMILY)
+DIR_FAMILY = $(SRC_ROOT)/src/arch/$(TARGET_FAMILY)
 DIR_ARCH = $(DIR_FAMILY)/$(TARGET_ARCH)
 ifeq ($(TARGET_FAMILY), x86)
 	ASM_FILES += $(shell ls $(DIR_FAMILY)/*.{s,S} 2> /dev/null)
 	ifeq ($(TARGET_ARCH), i386)
-		LINK_SCRIPT = $(DIR_ARCH)/link.ld
+		ASM_FILES += $(shell ls $(DIR_ARCH)/*.{s,S} 2> /dev/null)
+	endif
+	ifeq ($(TARGET_ARCH), x86_64)
 		ASM_FILES += $(shell ls $(DIR_ARCH)/*.{s,S} 2> /dev/null)
 	endif
 endif
+
+ifeq ($(TARGET_FAMILY), x86)
+	ifeq ($(TARGET_ARCH), i386)
+		GCC_PREFIX = i686-elf-
+	endif
+	ifeq ($(TARGET_ARCH), x86_64)
+		GCC_PREFIX = x86_64-elf-
+	endif
+endif
+
+TOOL_ASM_EXEC ?= $(GCC_PREFIX)$(TOOL_ASM)
+
+TOOL_LD_EXEC ?= $(GCC_PREFIX)$(TOOL_LD)
+LINK_SCRIPT = $(SRC_ROOT)/arch/$(TARGET_ARCH)/link.ld
 
 ASM_FLAGS = $(addprefix --assembly , $(abspath $(ASM_FILES)))
 
@@ -59,14 +82,18 @@ $(BUILD_DIRS):
 	@mkdir -p $@
 
 .PHONY: exe
-exe: $(BUILD_DIRS)
-	@$(TOOL_ZIG) build-exe \
-		--cache-dir $(BUILD_ROOT)/_zig-cache \
-		--output $(KERNEL_EXE) \
-		--target-arch $(TARGET_ARCH) \
-		--target-environ gnu \
-		--target-os freestanding \
-		--linker-script $(LINK_SCRIPT) \
-		--release-fast \
-		$(ASM_FLAGS) \
-		$(KERNEL_MAIN)
+exe: $(BUILD_DIRS) asm rust
+	$(TOOL_LD_EXEC) \
+		-n --gc-sections \
+		-T $(LINK_SCRIPT) \
+		-o $(KERNEL_EXE) \
+		$(ASM_OBJ) $(RUST_LIB)
+
+.PHONY: asm
+asm: $(BUILD_DIRS)
+	$(TOOL_ASM_EXEC) -o $(ASM_OBJ) $(ASM_FILES)
+
+.PHONY: rust
+rust: $(BUILD_DIRS)
+	$(TOOL_CARGO) build --release --target=$(CARGO_TARGET)
+	cp target/$(CARGO_TARGET)/release/libtupai.a $(RUST_LIB)
