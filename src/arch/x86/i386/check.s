@@ -1,4 +1,4 @@
-// file : start.s
+// file : check.s
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,52 +15,38 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-.extern kmain
-.extern _check.boot
 .extern _vga_print.boot
+.extern _mb_magic.boot
+.extern _mb_header.boot
+.extern _hang.boot
 
-.global _start.boot
-.global _hang.boot
+.global _check.boot
+
+.set MB_VALID_MAGIC, 0x36D76289
 
 .section .rodata.boot
-	_boot_msg:
-		.ascii "[INFO] Now booting Tupai kernel...\n\0"
-
-.section .bss.boot
-	.align 16
-	_stack_start.boot:
-		.skip 1024 // 1K stack
-	_stack_end.boot:
-
-	_mb_magic.boot:
-		.long
-	_mb_header.boot:
-		.long
+	_mb_msg_good:
+		.ascii "[ OK ] Multiboot magic is valid\n\0"
+	_mb_msg_bad:
+		.ascii "[FAIL] Multiboot magic is invalid\n\0"
 
 .section .text.boot
-	.type _start.boot, @function
-	_start.boot:
-		// Set the initial boot stack
-		mov $_stack_end.boot, %esp
+	_check.boot:
+		push %ebp
+		mov %esp, %ebp
 
-		// Preserve Multiboot attributes
-		mov %ebx, (_mb_magic.boot)
-		mov %eax, (_mb_header.boot)
+		cmpl $MB_VALID_MAGIC, (_mb_magic.boot)
+		je 2f
+		1:
+			// Multiboot magic failure
+			push $_mb_msg_bad
+			call _vga_print.boot
 
-		// Initial boot text
-		push $_boot_msg
-		call _vga_print.boot
+			jmp _hang.boot
+		2:
+			// Multiboot magic success
+			push $_mb_msg_good
+			call _vga_print.boot
 
-		// Ensure we're running on a supported system
-		call _check.boot
-
-		jmp _hang.boot
-
-		// Enter the kernel main
-		call kmain
-
-	// Hang the kernel if we ever get this far
-	_hang.boot:
-		cli
-		hlt
-		jmp _hang.boot
+		pop %ebp
+		ret
