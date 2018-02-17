@@ -24,7 +24,9 @@
 
 .section .rodata.boot
 	_boot_msg:
-		.ascii "[INFO] Now booting Tupai kernel...\n\0"
+		.ascii "[INFO] Starting early kernel...\n\0"
+	_kmain_msg:
+		.ascii "[ OK ] Setup finished\n[INFO] Starting kernel environment...\n\0"
 
 .section .bss.boot
 	.align 16
@@ -50,9 +52,15 @@
 		// Initial boot text
 		push $_boot_msg
 		call _vga_print.boot
+		add $4, %esp
 
 		// Ensure we're running on a supported system
 		call _check.boot
+
+		// Kmain boot text
+		push $_kmain_msg
+		call _vga_print.boot
+		add $4, %esp
 
 		jmp _hang.boot
 

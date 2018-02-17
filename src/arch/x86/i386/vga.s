@@ -27,11 +27,12 @@
 
 .section .text.boot
 	_vga_print.boot:
+		push %edi // We need edit and the System-V ABI specifies that we preserve it
 		push %ebp
 		mov %esp, %ebp
 
 		// Set up string and cursor pointers
-		mov 8(%esp), %ecx
+		mov 12(%esp), %ecx
 		mov (_cursor), %eax
 
 		1:
@@ -48,10 +49,12 @@
 			2:
 				mov %dl, VGA_BUFFER(,%eax, 2) // Set char
 				movb $0x0F, (VGA_BUFFER + 1)(,%eax, 2) // Set color
-				inc %eax
+				inc %eax // Increment cursor
 				jmp 4f
 			3:
-				divb VGA_WIDTH
+				mov $0, %edx
+				mov $VGA_WIDTH, %edi
+				divw %di
 				and $0xFF, %eax
 				inc %eax
 				imul $VGA_WIDTH, %eax
@@ -66,4 +69,5 @@
 		mov %eax, (_cursor)
 
 		pop %ebp
+		pop %edi
 		ret
