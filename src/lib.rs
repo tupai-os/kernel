@@ -2,10 +2,12 @@
 #![feature(asm)]
 #![no_std]
 
+extern crate rlibc;
 extern crate volatile;
 
-use core::mem;
+pub const VIRT_OFFSET: usize = 0xC0000000;
 
+pub const VBUFFER: usize = 0xB8000;
 pub const COLS: usize = 80;
 pub const ROWS: usize = 25;
 
@@ -19,28 +21,32 @@ struct Entry {
 }
 
 fn write_char(c: u8) {
+	use core::mem;
 	use volatile::Volatile;
 
 	//let vbuff = unsafe { slice::from_raw_parts_mut(0xB8000 as *mut Volatile<Entry>, COLS * ROWS) };
-	let vbuff = unsafe { mem::transmute::<usize, &mut [Volatile<Entry>; COLS * ROWS]>(0xB8000) };
+	let vbuff = unsafe { mem::transmute::<usize, &mut [Volatile<Entry>; COLS * ROWS]>(VIRT_OFFSET + VBUFFER) };
 
 	unsafe {
 		vbuff[CURSOR].write(
 			Entry {
 				c: c,
-				fmt: 0x0F
+				fmt: 0xF0
 			}
 		);
 		CURSOR += 1;
 	}
 }
 
-#[no_mangle]
-pub extern fn kmain() {
-	for c in b"Hello, World!" {
+fn write_str(s: &[u8]) {
+	for c in s {
 		write_char(*c);
 	}
+}
 
+#[no_mangle]
+pub extern fn kmain(mb_header: *const u32) {
+	write_str(b"Hello, World!");
 	loop {}
 }
 

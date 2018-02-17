@@ -27,7 +27,7 @@
 
 .section .text.boot
 	_vga_print.boot:
-		push %edi // We need edit and the System-V ABI specifies that we preserve it
+		push %edi // We need edi and the System-V ABI specifies that we preserve it
 		push %ebp
 		mov %esp, %ebp
 

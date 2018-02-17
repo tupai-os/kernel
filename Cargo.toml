@@ -7,4 +7,5 @@ authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
 crate-type = ["staticlib"]
 
 [dependencies]
+rlibc = "1.0.0"
 volatile = "0.1.0"
