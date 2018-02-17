@@ -19,6 +19,7 @@
 .extern _check.boot
 .extern _paging_init.boot
 .extern _paging_enable.boot
+.extern _start
 
 .global _start.boot
 .global _hang.boot
@@ -69,8 +70,10 @@
 		call _vga_print.boot
 		add $4, %esp
 
+		jmp _hang.boot
+
 		// Jump to higher memory
-		call _start
+		//call _start
 
 	// Hang the kernel if we ever get this far
 	_hang.boot:

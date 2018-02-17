@@ -34,6 +34,7 @@
 	_paging_enabled_msg:
 		.ascii "[ OK ] Paging enabled, kernel mapped\n\0"
 
+.code32
 .section .text.boot
 	_paging_init.boot:
 		push %ebp

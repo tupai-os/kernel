@@ -25,6 +25,7 @@
 	_cursor:
 		.long 0
 
+.code32
 .section .text.boot
 	_vga_print.boot:
 		push %edi // We need edi and the System-V ABI specifies that we preserve it

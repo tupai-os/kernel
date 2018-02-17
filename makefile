@@ -45,11 +45,14 @@ DIR_FAMILY = $(SRC_ROOT)/src/arch/$(TARGET_FAMILY)
 DIR_ARCH = $(DIR_FAMILY)/$(TARGET_ARCH)
 ifeq ($(TARGET_FAMILY), x86)
 	ASM_FILES += $(shell ls $(DIR_FAMILY)/*.{s,S} 2> /dev/null)
+	ASM_FILES += $(shell ls $(DIR_FAMILY)/boot/*.{s,S} 2> /dev/null)
 	ifeq ($(TARGET_ARCH), i386)
 		ASM_FILES += $(shell ls $(DIR_ARCH)/*.{s,S} 2> /dev/null)
+		ASM_FILES += $(shell ls $(DIR_ARCH)/boot/*.{s,S} 2> /dev/null)
 	endif
 	ifeq ($(TARGET_ARCH), x86_64)
 		ASM_FILES += $(shell ls $(DIR_ARCH)/*.{s,S} 2> /dev/null)
+		ASM_FILES += $(shell ls $(DIR_ARCH)/boot/*.{s,S} 2> /dev/null)
 	endif
 endif
 

@@ -40,6 +40,7 @@
 	_checks_good:
 		.ascii "[ OK ] Initial checks passes successfully\n\0"
 
+.code32
 .section .text.boot
 	_check.boot:
 		push %ebp
