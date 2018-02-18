@@ -5,7 +5,7 @@
 extern crate rlibc;
 extern crate volatile;
 
-pub const VIRT_OFFSET: usize = 0xC0000000;
+pub const VIRT_OFFSET: usize = 0xFFFFFFFF80000000;
 
 pub const VBUFFER: usize = 0xB8000;
 pub const COLS: usize = 80;

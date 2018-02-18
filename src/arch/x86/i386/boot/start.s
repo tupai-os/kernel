@@ -66,7 +66,7 @@
 		call _paging_init.boot
 		call _paging_enable.boot
 
-		// Kmain boot text
+		// High jump text
 		push $_highjump_msg
 		call _vga_print.boot
 		add $4, %esp

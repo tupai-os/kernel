@@ -15,31 +15,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-.global _vga_print.boot
-.global _vga_cursor.boot
+.extern _vga_cursor.boot
+
+.global _vga_print64.boot
 
 .set VGA_BUFFER, 0xB8000
 .set VGA_WIDTH, 80
 .set VGA_HEIGHT, 25
 
-.section .data.boot
-	_vga_cursor.boot:
-		.long 0
-
-.code32
+.code64
 .section .text.boot
-	_vga_print.boot:
-		push %edi // We need edi and the System-V ABI specifies that we preserve it
-		push %ebp
-		mov %esp, %ebp
+	_vga_print64.boot:
+		push %rbp
+		mov %rsp, %rbp
 
-		// Set up string and cursor pointers
-		mov 12(%esp), %ecx
-		mov (_vga_cursor.boot), %eax
+		// Set up cursor (rdi already contains char pointer)
+		mov (_vga_cursor.boot), %rax
 
 		1:
 			// Find the current character
-			movb (%ecx), %dl
+			movb (%rdi), %dl
 
 			// Is the character \0? End loop if so
 			cmp $0, %dl
@@ -49,27 +44,26 @@
 			cmp $10, %dl
 			je 3f
 			2:
-				mov %dl, VGA_BUFFER(,%eax, 2) // Set char
-				movb $0x0F, (VGA_BUFFER + 1)(,%eax, 2) // Set color
-				inc %eax // Increment cursor
+				mov %dl, VGA_BUFFER(,%rax, 2) // Set char
+				movb $0x0F, (VGA_BUFFER + 1)(,%rax, 2) // Set color
+				inc %rax // Increment cursor
 				jmp 4f
 			3:
-				mov $0, %edx
-				mov $VGA_WIDTH, %edi
-				divw %di
-				and $0xFF, %eax
-				inc %eax
-				imul $VGA_WIDTH, %eax
+				mov $0, %rdx
+				mov $VGA_WIDTH, %rsi
+				divw %si
+				and $0xFF, %rax
+				inc %rax
+				imul $VGA_WIDTH, %rax
 			4:
 
 			// Reset loop
-			inc %ecx
+			inc %rdi
 			jmp 1b
 		5:
 
 		// Write back cursor
-		mov %eax, (_vga_cursor.boot)
+		mov %rax, (_vga_cursor.boot)
 
-		pop %ebp
-		pop %edi
-		ret
+		pop %rbp
+		retq

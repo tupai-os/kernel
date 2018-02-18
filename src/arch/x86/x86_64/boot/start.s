@@ -16,10 +16,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 .extern _vga_print.boot
+.extern _vga_print64.boot
 .extern _check.boot
+.extern _check_long.boot
 .extern _paging_init.boot
 .extern _paging_enable.boot
-.extern _start
+.extern _paging_init64.boot
+.extern _paging_enable64.boot
+.extern _start_high64
 
 .global _start.boot
 .global _hang.boot
@@ -29,6 +33,10 @@
 .section .rodata.boot
 	_boot_msg:
 		.ascii "[INFO] Starting early kernel...\n\0"
+	_long_msg:
+		.ascii "[INFO] Switching to long mode...\n\0"
+	_long_good_msg:
+		.ascii "[ OK ] Long mode entered successfully\n\0"
 	_highjump_msg:
 		.ascii "[INFO] Jumping to high memory...\n\0"
 
@@ -69,17 +77,16 @@
 
 		// Ensure we're running on a supported system
 		call _check.boot
+		call _check_long.boot
 
 		// Setup higher-half kernel paging
 		call _paging_init.boot
 		call _paging_enable.boot
 
-		// Kmain boot text
-		push $_highjump_msg
+		// Long mode text
+		push $_long_msg
 		call _vga_print.boot
 		add $4, %esp
-
-		xchg %bx, %bx
 
 		// Load 64-bit GDT
 		lgdt (_gdt64_ptr)
@@ -88,17 +95,42 @@
 		// Reload the code seg register, switching the CPU to long mode
 		jmp $8, $_start64.boot
 
-		jmp _hang.boot
-
-		// Jump to higher memory
-		//call _start
-
 	// Hang the kernel if we ever get this far
 	_hang.boot:
 		cli
 		hlt
 		jmp _hang.boot
 
-.code32
+.code64
 .section .text.boot
-	_start64.boot
+	_start64.boot:
+
+		// Set data selectors to null segment (x86_64 doesn't need them)
+		mov $0, %ax
+		mov %ax, %ss
+		mov %ax, %ds
+		mov %ax, %es
+		mov %ax, %fs
+		mov %ax, %gs
+
+		// Long mode worked
+		mov $_long_good_msg, %rdi
+		call _vga_print64.boot
+
+		// Enable long mode paging
+		call _paging_init64.boot
+		call _paging_enable64.boot
+
+		// High jump message
+		mov $_highjump_msg, %rdi
+		call _vga_print64.boot
+
+		// Jump to high memory
+		movabs $_start_high64, %rax
+		jmp *%rax
+
+	// Hang the kernel if we ever get this far
+	_hang64.boot:
+		cli
+		hlt
+		jmp _hang64.boot

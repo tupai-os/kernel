@@ -1,4 +1,4 @@
-// file : check.s
+// file : pagin.s
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -20,13 +20,15 @@
 .global _paging_init.boot
 .global _paging_enable.boot
 
+.set PAGES, 1024 * 128 // 512M of memory
+
 .section .bss.boot
 	.align 4096
 	_p2_table:
 		.skip 4 * 1024
 	_p1_table:
-		.skip 4 * 1024 * 128 // 4K * 1024 * 128 = 512M of memory
-	_table_end:
+		.skip 4 * PAGES // 4K * 1024 * 128 = 512M of memory
+	_tables_end:
 
 .section .rodata.boot
 	_paging_init_msg:
@@ -45,7 +47,7 @@
 		1:
 			movl $0, (%ecx)
 			add $4, %ecx
-			cmp $_table_end, %ecx
+			cmp $_tables_end, %ecx
 			jne 1b
 
 		// Map P2 table entries
@@ -90,7 +92,7 @@
 
 			// Iterate the loop
 			inc %ecx
-			cmp $512 * 128, %ecx
+			cmp $PAGES, %ecx
 			jne 2b
 
 		push $_paging_init_msg
@@ -114,7 +116,7 @@
 		mov %esp, %ebp // Save the state of ESP in EBP
 
 		mov %cr0, %eax // Place the value of the CR0 register in EAX
-		or $0x80000000, %eax // Enable the paging bit
+		or (1 << 31), %eax // Enable the paging bit
 		mov %eax, %cr0 // Place the new CR0 value back into CR0
 
 		mov %ebp, %esp // Restore the state of ESP from EBP
