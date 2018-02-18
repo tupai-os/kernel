@@ -32,6 +32,14 @@
 	_highjump_msg:
 		.ascii "[INFO] Jumping to high memory...\n\0"
 
+	_gdt64_start:
+		.quad 0 // null segment
+		.quad 0x0020980000000000 // Code segment
+	_gdt64_end:
+	_gdt64_ptr:
+		.word (_gdt64_end - _gdt64_start - 1) // Limit
+		.quad _gdt64_start
+
 .section .bss.boot
 	.align 16
 	_stack_start.boot:
@@ -43,6 +51,7 @@
 	_mb_header.boot:
 		.long
 
+.code32
 .section .text.boot
 	.type _start.boot, @function
 	_start.boot:
@@ -70,6 +79,15 @@
 		call _vga_print.boot
 		add $4, %esp
 
+		xchg %bx, %bx
+
+		// Load 64-bit GDT
+		lgdt (_gdt64_ptr)
+
+		// Perform a non-local jump to the 64-bit entry
+		// Reload the code seg register, switching the CPU to long mode
+		jmp $8, $_start64.boot
+
 		jmp _hang.boot
 
 		// Jump to higher memory
@@ -80,3 +98,7 @@
 		cli
 		hlt
 		jmp _hang.boot
+
+.code32
+.section .text.boot
+	_start64.boot

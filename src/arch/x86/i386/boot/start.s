@@ -19,7 +19,7 @@
 .extern _check.boot
 .extern _paging_init.boot
 .extern _paging_enable.boot
-.extern _start
+.extern _start_high
 
 .global _start.boot
 .global _hang.boot
@@ -43,6 +43,7 @@
 	_mb_header.boot:
 		.long
 
+.code32
 .section .text.boot
 	.type _start.boot, @function
 	_start.boot:
@@ -71,7 +72,7 @@
 		add $4, %esp
 
 		// Jump to higher memory
-		call _start
+		call _start_high
 
 	// Hang the kernel if we ever get this far
 	_hang.boot:

@@ -18,7 +18,7 @@
 .extern _vga_print.boot
 .extern kmain
 
-.global _start
+.global _start_high
 .global _hang
 
 .set VIRTUAL_OFFSET, 0xC0000000
@@ -35,9 +35,10 @@
 		.skip 4096 // 4K stack
 	_stack_end:
 
+.code32
 .section .text
 	.type _start, @function
-	_start:
+	_start_high:
 		// Set the higher boot stack
 		mov $_stack_end, %esp
 
