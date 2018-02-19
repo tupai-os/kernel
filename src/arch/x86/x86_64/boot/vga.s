@@ -18,6 +18,7 @@
 .extern _vga_cursor.boot
 
 .global _vga_print64.boot
+.global _vga_boot_cursor
 
 .set VGA_BUFFER, 0xB8000
 .set VGA_WIDTH, 80
@@ -30,7 +31,7 @@
 		mov %rsp, %rbp
 
 		// Set up cursor (rdi already contains char pointer)
-		mov (_vga_cursor.boot), %rax
+		movl (_vga_cursor.boot), %eax
 
 		1:
 			// Find the current character
@@ -63,7 +64,16 @@
 		5:
 
 		// Write back cursor
-		mov %rax, (_vga_cursor.boot)
+		movl %eax, (_vga_cursor.boot)
+
+		pop %rbp
+		retq
+
+	_vga_boot_cursor:
+		push %rbp
+		mov %rsp, %rbp
+
+		movl (_vga_cursor.boot), %eax
 
 		pop %rbp
 		retq

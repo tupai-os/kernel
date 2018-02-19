@@ -139,4 +139,4 @@
 		// We've enabled 64-bit paging
 
 		pop %rbp
-		ret
+		retq

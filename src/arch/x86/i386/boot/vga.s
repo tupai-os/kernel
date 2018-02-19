@@ -1,4 +1,4 @@
-// file : lib.rs
+// file : vga.s
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,35 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#![feature(lang_items)]
-#![feature(asm)]
-#![feature(ptr_internals)]
-#![no_std]
+.extern _vga_cursor.boot
 
-extern crate rlibc;
-extern crate volatile;
-extern crate spin;
+.global _vga_boot_cursor
 
-mod driver;
-mod util;
+.code32
+.section .text.boot
+	_vga_boot_cursor:
+		push %ebp
+		mov %esp, %ebp
 
-use driver::vga;
-use util::logging::log;
+		movl (_vga_cursor.boot), %eax
 
-#[no_mangle]
-pub extern fn kmain(_mb_header: *const u32) {
-	// Initiate the VGA device
-	vga::init();
-
-	log("Hello, World!\n");
-}
-
-#[lang = "eh_personality"]
-#[no_mangle]
-pub extern fn eh_personality() {}
-
-#[lang = "panic_fmt"]
-#[no_mangle]
-pub extern fn panic_fmt() -> ! {
-	loop {}
-}
+		pop %ebp
+		ret

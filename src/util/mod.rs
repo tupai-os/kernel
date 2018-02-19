@@ -1,4 +1,4 @@
-// file : lib.rs
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,35 +15,4 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#![feature(lang_items)]
-#![feature(asm)]
-#![feature(ptr_internals)]
-#![no_std]
-
-extern crate rlibc;
-extern crate volatile;
-extern crate spin;
-
-mod driver;
-mod util;
-
-use driver::vga;
-use util::logging::log;
-
-#[no_mangle]
-pub extern fn kmain(_mb_header: *const u32) {
-	// Initiate the VGA device
-	vga::init();
-
-	log("Hello, World!\n");
-}
-
-#[lang = "eh_personality"]
-#[no_mangle]
-pub extern fn eh_personality() {}
-
-#[lang = "panic_fmt"]
-#[no_mangle]
-pub extern fn panic_fmt() -> ! {
-	loop {}
-}
+pub mod logging;
