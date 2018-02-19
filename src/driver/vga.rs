@@ -27,6 +27,28 @@ pub const COLS: usize = 80;
 pub const ROWS: usize = 25;
 pub const TAB_WIDTH: usize = 4;
 
+#[allow(dead_code)]
+#[derive(Debug, Copy, Clone)]
+#[repr(u8)]
+pub enum Color {
+	Black      = 0,
+	Blue       = 1,
+	Green      = 2,
+	Cyan       = 3,
+	Red        = 4,
+	Magenta    = 5,
+	Brown      = 6,
+	LightGray  = 7,
+	DarkGray   = 8,
+	LightBlue  = 9,
+	LightGreen = 10,
+	LightCyan  = 11,
+	LightRed   = 12,
+	Pink       = 13,
+	Yellow     = 14,
+	White      = 15,
+}
+
 #[derive(Debug, Copy, Clone)]
 #[repr(packed)]
 struct Entry {
@@ -36,12 +58,16 @@ struct Entry {
 
 pub struct Writer {
 	cursor: usize,
+	fg_color: Color,
+	bg_color: Color,
 	buffer: Unique<[Volatile<Entry>; COLS * ROWS]>,
 }
 
 // TODO: Work out why static initialization doesn't work
 static WRITER: Mutex<Writer> = Mutex::new(Writer {
 	cursor: 0,
+	fg_color: Color::White,
+	bg_color: Color::Black,
 	buffer: unsafe { Unique::new_unchecked(0 as *mut _) },
 });
 
@@ -49,9 +75,15 @@ extern {
 	fn _vga_boot_cursor() -> usize;
 }
 
+fn colors_to_fmt(fg: Color, bg: Color) -> u8 {
+	((bg as u8) << 4) | fg as u8
+}
+
 impl Writer {
 	fn init(&mut self) {
 		self.cursor = unsafe { _vga_boot_cursor() };
+		self.fg_color = Color::White;
+		self.bg_color = Color::Black;
 		self.buffer = unsafe { Unique::new_unchecked((VIRT_OFFSET + VBUFFER) as *mut _) };
 	}
 
@@ -61,9 +93,10 @@ impl Writer {
 			'\t' => self.cursor += TAB_WIDTH - (self.cursor % TAB_WIDTH),
 			c => {
 				let cursor = self.cursor;
+				let fmt = colors_to_fmt(self.fg_color, self.bg_color);
 				self.buffer()[cursor].write(Entry {
 					c: c as u8,
-					fmt: 0xF0,
+					fmt: fmt,
 				});
 				self.cursor += 1;
 			}
@@ -90,10 +123,6 @@ impl fmt::Write for Writer {
 
 pub fn init() {
 	WRITER.lock().init();
-}
-
-pub fn write(c: char) {
-	WRITER.lock().write(c)
 }
 
 pub fn writer() -> &'static Mutex<Writer> {

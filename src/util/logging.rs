@@ -15,17 +15,44 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#![allow(unused_macros)]
+
+use core::fmt;
+use driver::vga;
+
+pub fn log_args(args: fmt::Arguments) {
+	use core::fmt::Write;
+	vga::writer()
+		.lock()
+		.write_fmt(args)
+		.unwrap();
+}
+
 macro_rules! log {
 	($($arg:tt)*) => ({
-		use core::fmt::Write;
-		$crate::driver::vga::writer()
-			.lock()
-			.write_fmt(format_args!($($arg)*))
-			.unwrap();
+		$crate::util::logging::log_args(format_args!($($arg)*))
 	});
 }
 
 macro_rules! logln {
     ($fmt:expr) => (log!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => (log!(concat!($fmt, "\n"), $($arg)*));
+}
+
+macro_rules! loginfo {
+	($fmt:expr) => ({
+		log!(concat!("[INFO] ", $fmt, "\n"))
+	});
+}
+
+macro_rules! logok {
+	($fmt:expr) => ({
+		log!(concat!("[ OK ] ", $fmt, "\n"))
+	});
+}
+
+macro_rules! logfail {
+	($fmt:expr) => ({
+		log!(concat!("[FAIL] ", $fmt, "\n"))
+	});
 }

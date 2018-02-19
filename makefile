@@ -32,7 +32,8 @@ TOOL_ASM ?= as
 ASM_OBJ = $(BUILD_ROOT)/tupai-asm.o
 
 TOOL_CARGO ?= xargo
-CARGO_TARGET = "$(TARGET_ARCH)-tupai"
+CARGO_TARGET = $(TARGET_ARCH)-tupai
+CARGO_BYPRODUCT = target
 RUST_LIB = $(BUILD_ROOT)/tupai.a
 
 TOOL_LD ?= ld
@@ -79,7 +80,7 @@ all: exe
 
 .PHONY: clean
 clean:
-	@rm -r -f $(KERNEL_EXE)
+	@rm -r -f $(KERNEL_EXE) $(CARGO_BYPRODUCT)
 
 $(BUILD_DIRS):
 	@mkdir -p $@

@@ -35,8 +35,9 @@ pub extern fn kmain(_mb_header: *const u32) {
 	// Initiate the VGA device
 	vga::init();
 
-	// Display a simple message
-	logln!("Hello, World!");
+	loginfo!("Entered kernel main");
+
+	loop {}
 }
 
 #[lang = "eh_personality"]
