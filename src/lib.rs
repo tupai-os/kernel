@@ -25,17 +25,18 @@ extern crate volatile;
 extern crate spin;
 
 mod driver;
+#[macro_use]
 mod util;
 
 use driver::vga;
-use util::logging::log;
 
 #[no_mangle]
 pub extern fn kmain(_mb_header: *const u32) {
 	// Initiate the VGA device
 	vga::init();
 
-	log("Hello, World!\n");
+	// Display a simple message
+	logln!("Hello, World!");
 }
 
 #[lang = "eh_personality"]

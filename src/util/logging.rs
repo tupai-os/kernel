@@ -15,10 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use driver::vga;
+macro_rules! log {
+	($($arg:tt)*) => ({
+		use core::fmt::Write;
+		$crate::driver::vga::writer()
+			.lock()
+			.write_fmt(format_args!($($arg)*))
+			.unwrap();
+	});
+}
 
-pub fn log(s: &str) {
-	for c in s.chars() {
-		vga::write(c);
-	}
+macro_rules! logln {
+    ($fmt:expr) => (log!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (log!(concat!($fmt, "\n"), $($arg)*));
 }

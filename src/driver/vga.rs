@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use core::ptr::Unique;
+use core::fmt;
 use volatile::Volatile;
 use spin::Mutex;
 
@@ -33,7 +34,7 @@ struct Entry {
 	fmt: u8,
 }
 
-struct Writer {
+pub struct Writer {
 	cursor: usize,
 	buffer: Unique<[Volatile<Entry>; COLS * ROWS]>,
 }
@@ -49,12 +50,12 @@ extern {
 }
 
 impl Writer {
-	pub fn init(&mut self) {
+	fn init(&mut self) {
 		self.cursor = unsafe { _vga_boot_cursor() };
 		self.buffer = unsafe { Unique::new_unchecked((VIRT_OFFSET + VBUFFER) as *mut _) };
 	}
 
-	pub fn write(&mut self, c: char) {
+	fn write(&mut self, c: char) {
 		match c {
 			'\n' => self.cursor += COLS - (self.cursor % COLS),
 			'\t' => self.cursor += TAB_WIDTH - (self.cursor % TAB_WIDTH),
@@ -73,8 +74,17 @@ impl Writer {
 		}
 	}
 
-	pub fn buffer(&mut self) -> &mut [Volatile<Entry>; COLS * ROWS] {
+	fn buffer(&mut self) -> &mut [Volatile<Entry>; COLS * ROWS] {
 		unsafe { self.buffer.as_mut() }
+	}
+}
+
+impl fmt::Write for Writer {
+	fn write_str(&mut self, s: &str) -> fmt::Result {
+		for c in s.chars() {
+			self.write(c)
+		}
+		Ok(())
 	}
 }
 
@@ -84,4 +94,8 @@ pub fn init() {
 
 pub fn write(c: char) {
 	WRITER.lock().write(c)
+}
+
+pub fn writer() -> &'static Mutex<Writer> {
+	&WRITER
 }
