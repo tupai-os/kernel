@@ -1,4 +1,4 @@
-// file : pagin.s
+// file : paging.s
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -118,9 +118,6 @@
 		mov %cr0, %eax // Place the value of the CR0 register in EAX
 		or (1 << 31), %eax // Enable the paging bit
 		mov %eax, %cr0 // Place the new CR0 value back into CR0
-
-		1:
-		jmp 1b
 
 		mov %ebp, %esp // Restore the state of ESP from EBP
 		pop %ebp // Restore the state of EBP

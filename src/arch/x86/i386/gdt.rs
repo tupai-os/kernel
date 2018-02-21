@@ -33,7 +33,7 @@ enum Access {
 #[repr(u8)]
 enum Granularity {
 	PAGE = 0b00001000,
-	PM32 = 0b00000100,
+	PROTECTED32 = 0b00000100,
 }
 
 #[derive(Copy, Clone)]
@@ -102,7 +102,9 @@ impl Table {
 		let user_code_access = code_access | Access::USER as u8;
 		let user_data_access = data_access | Access::USER as u8;
 
-		let granularity = Granularity::PAGE as u8 | Granularity::PM32 as u8;
+		let granularity =
+			Granularity::PAGE as u8 |
+			Granularity::PROTECTED32 as u8;
 
 		Table {
 			entries: [
@@ -119,7 +121,6 @@ impl Table {
 		let ptr = Ptr::from(self);
 
 		unsafe {
-			asm!("xchg %bx, %bx");
 			asm!(
 				"lgdt ($0);
 				mov $$0x10, %ax;
