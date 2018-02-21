@@ -3,6 +3,17 @@ name = "tupai"
 version = "0.1.0"
 authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
 
+[features]
+# Target family features
+arch_family_x86 = ["driver_vga"]
+
+# Target arch features
+arch_target_i386 = []
+arch_target_x86_64 = []
+
+# Driver features
+driver_vga = []
+
 [lib]
 crate-type = ["staticlib"]
 

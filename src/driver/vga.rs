@@ -20,8 +20,8 @@ use core::fmt;
 use volatile::Volatile;
 use spin::Mutex;
 
-pub const VIRT_OFFSET: usize = 0xFFFFFFFF80000000;
-pub const VBUFFER: usize = 0xB8000;
+use arch::family::target::VIRTUAL_OFFSET;
+use arch::family::target::VIDEO_MEMORY;
 
 pub const COLS: usize = 80;
 pub const ROWS: usize = 25;
@@ -50,7 +50,7 @@ pub enum Color {
 }
 
 #[derive(Debug, Copy, Clone)]
-#[repr(packed)]
+#[repr(C, packed)]
 struct Entry {
 	c: u8,
 	fmt: u8,
@@ -84,7 +84,7 @@ impl Writer {
 		self.cursor = unsafe { _vga_boot_cursor() };
 		self.fg_color = Color::White;
 		self.bg_color = Color::Black;
-		self.buffer = unsafe { Unique::new_unchecked((VIRT_OFFSET + VBUFFER) as *mut _) };
+		self.buffer = unsafe { Unique::new_unchecked((VIRTUAL_OFFSET + VIDEO_MEMORY) as *mut _) };
 	}
 
 	fn write(&mut self, c: char) {

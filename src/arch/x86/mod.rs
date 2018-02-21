@@ -1,4 +1,4 @@
-// file : lib.rs
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,37 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#![feature(lang_items)]
-#![feature(asm)]
-#![feature(ptr_internals)]
-#![no_std]
+#[cfg(feature = "arch_target_i386")] pub mod i386;
+#[cfg(feature = "arch_target_i386")] pub use arch::x86::i386 as target;
 
-extern crate rlibc;
-extern crate volatile;
-extern crate spin;
+#[cfg(feature = "arch_target_x86_64")] pub mod x86_64;
+#[cfg(feature = "arch_target_x86_64")] pub use arch::x86::x86_64 as target;
 
-mod arch;
-mod driver;
-#[macro_use] mod util;
+#[cfg(feature = "driver_vga")]
+use driver::vga;
 
-#[no_mangle]
-pub extern fn kmain(_mb_header: *const u32) {
-	// Setup arch-specific things
-	arch::family::env_setup();
+pub fn env_setup() {
+	target::env_setup();
 
-	loginfo!("Entered kernel main");
-
-	logln!("Welcome to the kernel!");
-
-	loop {}
-}
-
-#[lang = "eh_personality"]
-#[no_mangle]
-pub extern fn eh_personality() {}
-
-#[lang = "panic_fmt"]
-#[no_mangle]
-pub extern fn panic_fmt() -> ! {
-	loop {}
+	// Setup the VGA driver
+	if cfg!(feature = "driver_vga") {
+		vga::init();
+	}
 }

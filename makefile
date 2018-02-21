@@ -25,14 +25,14 @@ BUILD_ROOT ?= $(SRC_ROOT)/build
 KERNEL_EXE ?= $(BUILD_ROOT)/tupai.elf
 KERNEL_MAIN = $(SRC_ROOT)/kmain.zig
 
-TARGET_FAMILY ?= x86
-TARGET_ARCH ?= i386
+ARCH_FAMILY ?= x86
+ARCH_ARCH ?= i386
 
 TOOL_ASM ?= as
 ASM_OBJ = $(BUILD_ROOT)/tupai-asm.o
 
 TOOL_CARGO ?= xargo
-CARGO_TARGET = $(TARGET_ARCH)-tupai
+CARGO_TARGET = $(ARCH_TARGET)-tupai
 CARGO_BYPRODUCT = target
 RUST_LIB = $(BUILD_ROOT)/tupai.a
 
@@ -42,26 +42,26 @@ TOOL_LD ?= ld
 
 BUILD_DIRS = $(BUILD_ROOT)
 
-DIR_FAMILY = $(SRC_ROOT)/src/arch/$(TARGET_FAMILY)
-DIR_ARCH = $(DIR_FAMILY)/$(TARGET_ARCH)
-ifeq ($(TARGET_FAMILY), x86)
+DIR_FAMILY = $(SRC_ROOT)/src/arch/$(ARCH_FAMILY)
+DIR_ARCH = $(DIR_FAMILY)/$(ARCH_TARGET)
+ifeq ($(ARCH_FAMILY), x86)
 	ASM_FILES += $(shell ls $(DIR_FAMILY)/*.{s,S} 2> /dev/null)
 	ASM_FILES += $(shell ls $(DIR_FAMILY)/boot/*.{s,S} 2> /dev/null)
-	ifeq ($(TARGET_ARCH), i386)
+	ifeq ($(ARCH_TARGET), i386)
 		ASM_FILES += $(shell ls $(DIR_ARCH)/*.{s,S} 2> /dev/null)
 		ASM_FILES += $(shell ls $(DIR_ARCH)/boot/*.{s,S} 2> /dev/null)
 	endif
-	ifeq ($(TARGET_ARCH), x86_64)
+	ifeq ($(ARCH_TARGET), x86_64)
 		ASM_FILES += $(shell ls $(DIR_ARCH)/*.{s,S} 2> /dev/null)
 		ASM_FILES += $(shell ls $(DIR_ARCH)/boot/*.{s,S} 2> /dev/null)
 	endif
 endif
 
-ifeq ($(TARGET_FAMILY), x86)
-	ifeq ($(TARGET_ARCH), i386)
+ifeq ($(ARCH_FAMILY), x86)
+	ifeq ($(ARCH_TARGET), i386)
 		GCC_PREFIX = i686-elf-
 	endif
-	ifeq ($(TARGET_ARCH), x86_64)
+	ifeq ($(ARCH_TARGET), x86_64)
 		GCC_PREFIX = x86_64-elf-
 	endif
 endif
@@ -69,7 +69,7 @@ endif
 TOOL_ASM_EXEC ?= $(GCC_PREFIX)$(TOOL_ASM)
 
 TOOL_LD_EXEC ?= $(GCC_PREFIX)$(TOOL_LD)
-LINK_SCRIPT = $(SRC_ROOT)/arch/$(TARGET_ARCH)/link.ld
+LINK_SCRIPT = $(SRC_ROOT)/arch/$(ARCH_TARGET)/link.ld
 
 ASM_FLAGS = $(addprefix --assembly , $(abspath $(ASM_FILES)))
 
@@ -100,5 +100,9 @@ asm: $(BUILD_DIRS)
 .PHONY: rust
 rust: $(BUILD_DIRS)
 	@# Why does the following change to RUST_TARGET_PATH work?!
-	@RUST_TARGET_PATH=$(shell pwd) $(TOOL_CARGO) build --release --target=$(CARGO_TARGET)
+	@RUST_TARGET_PATH=$(shell pwd) $(TOOL_CARGO) \
+		build \
+		--release \
+		--target=$(CARGO_TARGET) \
+		--features "arch_family_$(ARCH_FAMILY) arch_target_$(ARCH_TARGET)"
 	@cp target/$(CARGO_TARGET)/release/libtupai.a $(RUST_LIB)
