@@ -20,7 +20,6 @@ use core::fmt;
 use volatile::Volatile;
 use spin::Mutex;
 
-use arch::family::target::VIRTUAL_OFFSET;
 use arch::family::target::VIDEO_MEMORY;
 
 pub const COLS: usize = 80;
@@ -84,7 +83,7 @@ impl Writer {
 		self.cursor = unsafe { _vga_boot_cursor() };
 		self.fg_color = Color::White;
 		self.bg_color = Color::Black;
-		self.buffer = unsafe { Unique::new_unchecked((VIRTUAL_OFFSET + VIDEO_MEMORY) as *mut _) };
+		self.buffer = unsafe { Unique::new_unchecked(VIDEO_MEMORY as *mut _) };
 	}
 
 	fn write(&mut self, c: char) {

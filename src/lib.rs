@@ -18,11 +18,13 @@
 #![feature(lang_items)]
 #![feature(asm)]
 #![feature(ptr_internals)]
+#![feature(const_fn)]
 #![no_std]
 
 extern crate rlibc;
 extern crate volatile;
 extern crate spin;
+#[macro_use] extern crate lazy_static;
 
 mod arch;
 mod driver;
