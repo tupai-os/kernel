@@ -85,6 +85,15 @@ clean:
 $(BUILD_DIRS):
 	@mkdir -p $@
 
+.PHONY: check
+check:
+	@# Why does the following change to RUST_TARGET_PATH work?!
+	@RUST_TARGET_PATH=$(shell pwd) $(TOOL_CARGO) \
+		check \
+		--release \
+		--target=$(CARGO_TARGET) \
+		--features "arch_family_$(ARCH_FAMILY) arch_target_$(ARCH_TARGET)"
+
 .PHONY: exe
 exe: $(BUILD_DIRS) asm rust
 	@$(TOOL_LD_EXEC) \
