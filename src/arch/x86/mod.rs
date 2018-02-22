@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+pub mod port;
+pub mod pic;
+
 #[cfg(feature = "arch_target_i386")] pub mod i386;
 #[cfg(feature = "arch_target_i386")] pub use arch::x86::i386 as target;
 
@@ -25,10 +28,13 @@
 use driver::vga;
 
 pub fn env_setup() {
-	// Setup the VGA driver
+	// Setup the VGA driver first - we need it to display logs!
 	#[cfg(feature = "driver_vga")] {
 		vga::init();
 	}
 
 	target::env_setup();
+
+	// Initiate core hardware
+	pic::init();
 }

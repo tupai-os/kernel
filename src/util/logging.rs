@@ -34,30 +34,45 @@ pub fn log_args(args: fmt::Arguments) {
 }
 
 macro_rules! log {
-	($($arg:tt)*) => ({
+	($($arg:tt)*) => (
 		$crate::util::logging::log_args(format_args!($($arg)*))
-	});
+	);
 }
 
 macro_rules! logln {
-    ($fmt:expr) => (log!(concat!($fmt, "\n")));
-    ($fmt:expr, $($arg:tt)*) => (log!(concat!($fmt, "\n"), $($arg)*));
+	($fmt:expr) => (log!(concat!($fmt, "\n")));
+	($fmt:expr, $($arg:tt)*) => (log!(concat!($fmt, "\n"), $($arg)*));
 }
 
 macro_rules! loginfo {
 	($fmt:expr) => ({
-		log!(concat!("[INFO] ", $fmt, "\n"))
+		log!("[INFO] ");
+		log!(concat!($fmt, "\n"))
+	});
+	($fmt:expr, $($arg:tt)*) => ({
+		log!("[INFO] ");
+		log!(concat!($fmt, "\n"), $($arg)*)
 	});
 }
 
 macro_rules! logok {
 	($fmt:expr) => ({
-		log!(concat!("[ OK ] ", $fmt, "\n"))
+		log!("[ OK ] ");
+		log!(concat!($fmt, "\n"))
+	});
+	($fmt:expr, $($arg:tt)*) => ({
+		log!("[ OK ] ");
+		log!(concat!($fmt, "\n"), $($arg)*)
 	});
 }
 
 macro_rules! logfail {
 	($fmt:expr) => ({
-		log!(concat!("[FAIL] ", $fmt, "\n"))
+		log!("[FAIL] ");
+		log!(concat!($fmt, "\n"))
+	});
+	($fmt:expr, $($arg:tt)*) => ({
+		log!("[FAIL] ");
+		log!(concat!($fmt, "\n"), $($arg)*)
 	});
 }
