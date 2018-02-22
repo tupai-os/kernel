@@ -18,22 +18,25 @@
 use core::mem::size_of;
 use spin::Mutex;
 
-const GDT_SIZE: usize = 5;
+const SIZE: usize = 5;
 
+pub const CODE_SELECTOR: usize = size_of::<Entry>() * 1;
+
+#[allow(dead_code)]
 #[repr(u8)]
 enum Access {
-	READWRITE = 0b00000010,
-	EXECUTE   = 0b00001000,
-	PRESENT   = 0b10000000,
-	ONE       = 0b00010000,
-	KERNEL    = 0b00000000,
-	USER      = 0b01100000,
+	ReadWrite = 0b00000010,
+	Execute   = 0b00001000,
+	Present   = 0b10000000,
+	One       = 0b00010000,
+	Kernel    = 0b00000000,
+	User      = 0b01100000,
 }
 
 #[repr(u8)]
 enum Granularity {
-	PAGE = 0b00001000,
-	PROTECTED32 = 0b00000100,
+	Page        = 0b00001000,
+	Protected32 = 0b00000100,
 }
 
 #[derive(Copy, Clone)]
@@ -50,7 +53,7 @@ struct Entry {
 #[repr(C)]
 #[repr(align(4096))]
 struct Table {
-	entries: [Entry; GDT_SIZE]
+	entries: [Entry; SIZE]
 }
 
 #[repr(C, packed)]
@@ -87,24 +90,24 @@ impl Entry {
 impl Table {
 	fn new_default() -> Table {
 		let code_access =
-			Access::READWRITE as u8 |
-			Access::EXECUTE as u8 |
-			Access::ONE as u8 |
-			Access::PRESENT as u8;
+			Access::ReadWrite as u8 |
+			Access::Execute as u8 |
+			Access::One as u8 |
+			Access::Present as u8;
 
 		let data_access =
-			Access::READWRITE as u8 |
-			Access::ONE as u8 |
-			Access::PRESENT as u8;
+			Access::ReadWrite as u8 |
+			Access::One as u8 |
+			Access::Present as u8;
 
-		let kernel_code_access = code_access | Access::KERNEL as u8;
-		let kernel_data_access = data_access | Access::KERNEL as u8;
-		let user_code_access = code_access | Access::USER as u8;
-		let user_data_access = data_access | Access::USER as u8;
+		let kernel_code_access = code_access | Access::Kernel as u8;
+		let kernel_data_access = data_access | Access::Kernel as u8;
+		let user_code_access = code_access | Access::User as u8;
+		let user_data_access = data_access | Access::User as u8;
 
 		let granularity =
-			Granularity::PAGE as u8 |
-			Granularity::PROTECTED32 as u8;
+			Granularity::Page as u8 |
+			Granularity::Protected32 as u8;
 
 		Table {
 			entries: [
@@ -113,7 +116,7 @@ impl Table {
 				Entry::from(0x0, 0xFFFFF, kernel_data_access, granularity),
 				Entry::from(0x0, 0xFFFFF, user_code_access, granularity),
 				Entry::from(0x0, 0xFFFFF, user_data_access, granularity),
-			]
+			],
 		}
 	}
 
@@ -129,7 +132,7 @@ impl Table {
 				mov %ax, %es;
 				mov %ax, %gs;
 				mov %ax, %ss"
-			:: "r" (&ptr) : "memory"
+				:: "r" (&ptr) : "memory"
 			)
 		}
 	}
@@ -138,7 +141,7 @@ impl Table {
 impl Ptr {
 	fn from(table: &Table) -> Ptr {
 		Ptr {
-			limit: (GDT_SIZE * size_of::<Entry>()) as u16 - 1,
+			limit: (SIZE * size_of::<Entry>()) as u16 - 1,
 			base: table as *const _ as u32,
 		}
 	}
@@ -146,5 +149,5 @@ impl Ptr {
 
 pub fn init() {
 	GDT.lock().install();
-	//logok!("Installed GDT");
+	logok!("Installed GDT");
 }

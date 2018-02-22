@@ -26,9 +26,9 @@ extern crate volatile;
 extern crate spin;
 #[macro_use] extern crate lazy_static;
 
+#[macro_use] mod util;
 mod arch;
 mod driver;
-#[macro_use] mod util;
 
 #[no_mangle]
 pub extern fn kmain(_mb_header: *const u32) {
