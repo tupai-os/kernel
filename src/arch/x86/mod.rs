@@ -26,7 +26,7 @@ use driver::vga;
 
 pub fn env_setup() {
 	// Setup the VGA driver
-	if cfg!(feature = "driver_vga") {
+	#[cfg(feature = "driver_vga")] {
 		vga::init();
 	}
 

@@ -25,7 +25,7 @@ use driver::vga;
 pub fn log_args(args: fmt::Arguments) {
 	use core::fmt::Write;
 	// Write to relevant driver
-	if cfg!(feature = "driver_vga") {
+	#[cfg(feature = "driver_vga")] {
 		vga::writer()
 			.lock()
 			.write_fmt(args)
