@@ -17,7 +17,7 @@
 
 #![allow(dead_code)]
 
-pub fn wait(cycles: usize) {
+pub fn wait(_cycles: usize) {
  	// TODO: Write this
 }
 

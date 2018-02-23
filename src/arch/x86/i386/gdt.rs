@@ -62,11 +62,9 @@ struct Ptr {
 	base: u32,
 }
 
-lazy_static! {
-	static ref GDT: Mutex<Table> = Mutex::new(
-		Table::new_default()
-	);
-}
+static GDT: Mutex<Table> = Mutex::new(
+	Table::new_null()
+);
 
 impl Entry {
 	const fn null() -> Entry {
@@ -88,7 +86,13 @@ impl Entry {
 }
 
 impl Table {
-	fn new_default() -> Table {
+	const fn new_null() -> Table {
+		Table {
+			entries: [Entry::null(); SIZE],
+		}
+	}
+
+	fn init(&mut self) {
 		let code_access =
 			Access::ReadWrite as u8 |
 			Access::Execute as u8 |
@@ -109,15 +113,13 @@ impl Table {
 			Granularity::Page as u8 |
 			Granularity::Protected32 as u8;
 
-		Table {
-			entries: [
-				Entry::null(),
-				Entry::from(0x0, 0xFFFFF, kernel_code_access, granularity),
-				Entry::from(0x0, 0xFFFFF, kernel_data_access, granularity),
-				Entry::from(0x0, 0xFFFFF, user_code_access, granularity),
-				Entry::from(0x0, 0xFFFFF, user_data_access, granularity),
-			],
-		}
+		self.entries = [
+			Entry::null(),
+			Entry::from(0x0, 0xFFFFF, kernel_code_access, granularity),
+			Entry::from(0x0, 0xFFFFF, kernel_data_access, granularity),
+			Entry::from(0x0, 0xFFFFF, user_code_access, granularity),
+			Entry::from(0x0, 0xFFFFF, user_data_access, granularity),
+		]
 	}
 
 	fn install(&mut self) {
@@ -148,6 +150,7 @@ impl Ptr {
 }
 
 pub fn init() {
+	GDT.lock().init();
 	GDT.lock().install();
 	logok!("Installed GDT");
 }

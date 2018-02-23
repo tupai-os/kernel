@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : isr.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,16 +15,51 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod gdt;
-pub mod idt;
-pub mod isr;
+#[allow(dead_code)]
+#[repr(C, packed)]
+#[derive(Copy, Clone, Debug)]
+pub struct ExceptionFrame {
+	rbp: u64,
+	r15: u64,
+	r14: u64,
+	r13: u64,
+	r12: u64,
+	r11: u64,
+	r10: u64,
+	r9: u64,
+	r8: u64,
+	rdi: u64,
+	rsi: u64,
+	rdx: u64,
+	rcx: u64,
+	rbx: u64,
+	rax: u64,
+	error: u64,
+	rip: u64,
+	cs: u64,
+	rflags: u64,
+	rsp: u64,
+	ss: u64,
+}
 
-// TODO: Put this in a better place
-pub const VIRTUAL_OFFSET: usize = 0xFFFFFFFF80000000;
-pub const VIDEO_MEMORY: usize = VIRTUAL_OFFSET + 0xB8000;
+impl ExceptionFrame {
+	pub fn get_instruction_ptr(&self) -> u64 {
+		self.rip
+	}
+}
 
-pub fn env_setup() {
-	gdt::init();
-	idt::init();
-	// TODO: Setup IDT and more here
+use core::fmt;
+impl fmt::Display for ExceptionFrame {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		unsafe {
+			writeln!(f,
+				"\
+				\trip: {:x}\n\
+				\trsp: {:x}\n\
+				\tcs:  {:x}\n\
+				\tss:  {:x}\n",
+				self.rip, self.rsp, self.cs, self.ss
+			)
+		}
+	}
 }

@@ -17,6 +17,7 @@
 
 pub mod port;
 pub mod pic;
+pub mod exception;
 
 #[cfg(feature = "arch_target_i386")] pub mod i386;
 #[cfg(feature = "arch_target_i386")] pub use arch::x86::i386 as target;
@@ -35,6 +36,7 @@ pub fn env_setup() {
 
 	target::env_setup();
 
-	// Initiate core hardware
+	// Initiate core features
 	pic::init();
+	exception::init();
 }

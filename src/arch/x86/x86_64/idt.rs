@@ -21,6 +21,8 @@ use super::gdt;
 
 const SIZE: usize = 256;
 
+pub type IsrPtr = u64;
+
 #[allow(dead_code)]
 #[repr(u8)]
 enum Attribute {
@@ -59,13 +61,23 @@ struct Ptr {
 	base: u64,
 }
 
-lazy_static! {
-	static ref IDT: Mutex<Table> = Mutex::new(
-		Table::new_default()
-	);
-}
+static IDT: Mutex<Table> = Mutex::new(
+	Table::new_null()
+);
 
 impl Entry {
+	const fn null() -> Entry {
+		Entry {
+			base_lo: 0,
+			selector: 0,
+			zero0: 0,
+			attributes: 0,
+			base_mid: 0,
+			base_hi: 0,
+			zero1: 0,
+		}
+	}
+
 	fn empty() -> Entry {
 		Entry::from(None)
 	}
@@ -98,17 +110,24 @@ impl Entry {
 }
 
 impl Table {
-	fn new_default() -> Table {
+	const fn new_null() -> Table {
 		Table {
-			entries: [Entry::empty(); SIZE],
+			entries: [Entry::null(); SIZE],
 		}
+	}
+
+	fn init(&mut self) {
+		self.entries = [Entry::empty(); SIZE]
+	}
+
+	fn set_entry(&mut self, vec: usize, func: IsrPtr) {
+		self.entries[vec] = Entry::from(Some(func));
 	}
 
 	fn install(&mut self) {
 		let ptr = Ptr::from(self);
 
 		unsafe {
-			asm!("xchg %bx, %bx");
 			asm!(
 				"lidt ($0)"
 				:: "r" (&ptr) : "memory"
@@ -126,7 +145,13 @@ impl Ptr {
 	}
 }
 
+
 pub fn init() {
+	IDT.lock().init();
 	IDT.lock().install();
 	logok!("Installed IDT");
+}
+
+pub fn set_handler(vec: usize, func: IsrPtr) {
+	IDT.lock().set_entry(vec, func);
 }

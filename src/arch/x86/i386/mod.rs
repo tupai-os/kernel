@@ -17,6 +17,7 @@
 
 pub mod gdt;
 pub mod idt;
+pub mod isr;
 
 // TODO: Put this in a better place
 pub const VIRTUAL_OFFSET: usize = 0xC0000000;

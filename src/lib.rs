@@ -19,12 +19,12 @@
 #![feature(asm)]
 #![feature(ptr_internals)]
 #![feature(const_fn)]
+#![feature(linkage)]
 #![no_std]
 
 extern crate rlibc;
 extern crate volatile;
 extern crate spin;
-#[macro_use] extern crate lazy_static;
 
 #[macro_use] mod util;
 mod arch;
@@ -38,6 +38,8 @@ pub extern fn kmain(_mb_header: *const u32) {
 	loginfo!("Entered kernel main");
 
 	logln!("Welcome to the kernel!");
+
+	unsafe { asm!("mov $$0, %ax; divw %ax") }
 
 	loop {}
 }

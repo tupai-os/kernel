@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : isr.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,16 +15,41 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod gdt;
-pub mod idt;
-pub mod isr;
+#[allow(dead_code)]
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct ExceptionFrame {
+	ebp: u32,
+	edi: u32,
+	esi: u32,
+	edx: u32,
+	ecx: u32,
+	ebx: u32,
+	eax: u32,
+	error: u32,
+	eip: u32,
+	cs: u32,
+	eflags: u32,
+	esp: u32,
+	ss: u32,
+}
 
-// TODO: Put this in a better place
-pub const VIRTUAL_OFFSET: usize = 0xFFFFFFFF80000000;
-pub const VIDEO_MEMORY: usize = VIRTUAL_OFFSET + 0xB8000;
+impl ExceptionFrame {
+	pub fn get_instruction_ptr(&self) -> u32 {
+		self.eip
+	}
+}
 
-pub fn env_setup() {
-	gdt::init();
-	idt::init();
-	// TODO: Setup IDT and more here
+use core::fmt;
+impl fmt::Display for ExceptionFrame {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		writeln!(f,
+			"\
+			\teip: 0x{:x}\n\
+			\tesp: 0x{:x}\n\
+			\tcs:  0x{:x}\n\
+			\tss:  0x{:x}\n",
+			self.eip, self.esp, self.cs, self.ss
+		)
+	}
 }
