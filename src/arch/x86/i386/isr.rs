@@ -17,7 +17,7 @@
 
 #[allow(dead_code)]
 #[repr(C)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 pub struct ExceptionFrame {
 	ebp: u32,
 	edi: u32,
@@ -45,10 +45,10 @@ impl fmt::Display for ExceptionFrame {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		writeln!(f,
 			"\
-			\teip: 0x{:x}\n\
-			\tesp: 0x{:x}\n\
-			\tcs:  0x{:x}\n\
-			\tss:  0x{:x}\n",
+			\teip: 0x{:X}\n\
+			\tesp: 0x{:X}\n\
+			\tcs:  0x{:X}\n\
+			\tss:  0x{:X}\n",
 			self.eip, self.esp, self.cs, self.ss
 		)
 	}

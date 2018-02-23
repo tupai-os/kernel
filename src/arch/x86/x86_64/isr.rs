@@ -17,7 +17,7 @@
 
 #[allow(dead_code)]
 #[repr(C, packed)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 pub struct ExceptionFrame {
 	rbp: u64,
 	r15: u64,
@@ -54,10 +54,10 @@ impl fmt::Display for ExceptionFrame {
 		unsafe {
 			write!(f,
 				"\
-				\trip: {:x}\n\
-				\trsp: {:x}\n\
-				\tcs:  {:x}\n\
-				\tss:  {:x}",
+				\trip: 0x{:X}\n\
+				\trsp: 0x{:X}\n\
+				\tcs:  0x{:X}\n\
+				\tss:  0x{:X}",
 				self.rip, self.rsp, self.cs, self.ss
 			)
 		}
