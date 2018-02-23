@@ -78,6 +78,15 @@ fn colors_to_fmt(fg: Color, bg: Color) -> u8 {
 	((bg as u8) << 4) | fg as u8
 }
 
+impl Entry {
+	fn empty(fg: Color, bg: Color) -> Entry {
+		Entry {
+			c: b' ',
+			fmt: colors_to_fmt(fg, bg),
+		}
+	}
+}
+
 impl Writer {
 	fn init(&mut self) {
 		self.cursor = unsafe { _vga_boot_cursor() };
@@ -101,8 +110,21 @@ impl Writer {
 			}
 		};
 
-		if self.cursor >= COLS * ROWS {
-			self.cursor = 0 // TODO: Add proper scrolling
+		while self.cursor >= COLS * ROWS {
+			self.scroll(1);
+			self.cursor -= COLS
+		}
+	}
+
+	fn scroll(&mut self, lines: usize) {
+		let chars = lines * COLS;
+		for i in 0..COLS * (ROWS - lines) {
+			let old = self.buffer()[COLS + i].read();
+			self.buffer()[i].write(old);
+		}
+		for i in 0..chars {
+			let blank = Entry::empty(self.fg_color, self.bg_color);
+			self.buffer()[COLS * ROWS - (i + 1)].write(blank);
 		}
 	}
 

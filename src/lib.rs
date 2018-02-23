@@ -37,7 +37,7 @@ pub extern fn kmain(_mb_header: *const u32) {
 
 	loginfo!("Entered kernel main");
 
-	logln!("Welcome to the kernel!");
+	logln!("Welcome to the kernel!\nhi\nehllo\nboo");
 
 	unsafe { asm!("mov $$0, %ax; divw %ax") }
 

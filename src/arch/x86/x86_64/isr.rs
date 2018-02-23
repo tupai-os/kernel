@@ -52,12 +52,12 @@ use core::fmt;
 impl fmt::Display for ExceptionFrame {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		unsafe {
-			writeln!(f,
+			write!(f,
 				"\
 				\trip: {:x}\n\
 				\trsp: {:x}\n\
 				\tcs:  {:x}\n\
-				\tss:  {:x}\n",
+				\tss:  {:x}",
 				self.rip, self.rsp, self.cs, self.ss
 			)
 		}
