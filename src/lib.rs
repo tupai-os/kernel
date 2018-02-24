@@ -39,8 +39,6 @@ pub extern fn kmain(_mb_header: *const u32) {
 
 	logln!("Welcome to the kernel!");
 
-	unsafe { asm!("mov $$0, %ax; divw %ax") }
-
 	loop {}
 }
 

@@ -26,5 +26,4 @@ pub const VIDEO_MEMORY: usize = VIRTUAL_OFFSET + 0xB8000;
 pub fn env_setup() {
 	gdt::init();
 	idt::init();
-	// TODO: Setup IDT and more here
 }

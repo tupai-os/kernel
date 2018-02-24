@@ -17,3 +17,6 @@
 
 #[cfg(feature = "arch_family_x86")] pub mod x86;
 #[cfg(feature = "arch_family_x86")] pub use arch::x86 as family;
+
+#[cfg(feature = "arch_family_arm")] pub mod arm;
+#[cfg(feature = "arch_family_arm")] pub use arch::arm as family;

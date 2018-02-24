@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : mmio.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,8 +15,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(feature = "driver_vga")]
-pub mod vga;
+use volatile::Volatile;
 
-#[cfg(feature = "driver_serial")]
-pub mod serial;
+// TODO: Improve this
+pub fn wait(_cycles: usize) {
+	use volatile::Volatile;
+ 	let mut i: usize = 0;
+	let iv = unsafe { &mut *(&mut i as *mut usize as *mut Volatile<usize>) };
+	while iv.read() < _cycles {
+		let old = iv.read();
+		iv.write(old + 1)
+	}
+}
+
+pub fn write32(reg: usize, value: u32) {
+	unsafe { &mut *(reg as *mut Volatile<u32>) }.write(value);
+	wait(150)
+}
+
+pub fn read32(reg: usize) -> u32 {
+	wait(150);
+	unsafe { &mut *(reg as *mut Volatile<u32>) }.read()
+}

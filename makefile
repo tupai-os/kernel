@@ -42,21 +42,17 @@ TOOL_LD ?= ld
 
 BUILD_DIRS = $(BUILD_ROOT)
 
+# Find all assembly
 DIR_FAMILY = $(SRC_ROOT)/src/arch/$(ARCH_FAMILY)
 DIR_ARCH = $(DIR_FAMILY)/$(ARCH_TARGET)
-ifeq ($(ARCH_FAMILY), x86)
-	ASM_FILES += $(shell ls $(DIR_FAMILY)/*.{s,S} 2> /dev/null)
-	ASM_FILES += $(shell ls $(DIR_FAMILY)/boot/*.{s,S} 2> /dev/null)
-	ifeq ($(ARCH_TARGET), i386)
-		ASM_FILES += $(shell ls $(DIR_ARCH)/*.{s,S} 2> /dev/null)
-		ASM_FILES += $(shell ls $(DIR_ARCH)/boot/*.{s,S} 2> /dev/null)
-	endif
-	ifeq ($(ARCH_TARGET), x86_64)
-		ASM_FILES += $(shell ls $(DIR_ARCH)/*.{s,S} 2> /dev/null)
-		ASM_FILES += $(shell ls $(DIR_ARCH)/boot/*.{s,S} 2> /dev/null)
-	endif
-endif
 
+ASM_FILES += $(shell ls $(DIR_FAMILY)/*.{s,S} 2> /dev/null)
+ASM_FILES += $(shell ls $(DIR_FAMILY)/boot/*.{s,S} 2> /dev/null)
+
+ASM_FILES += $(shell ls $(DIR_ARCH)/*.{s,S} 2> /dev/null)
+ASM_FILES += $(shell ls $(DIR_ARCH)/boot/*.{s,S} 2> /dev/null)
+
+ASM_FLAGS ?=
 ifeq ($(ARCH_FAMILY), x86)
 	ifeq ($(ARCH_TARGET), i386)
 		GCC_PREFIX = i686-elf-
@@ -65,13 +61,20 @@ ifeq ($(ARCH_FAMILY), x86)
 		GCC_PREFIX = x86_64-elf-
 	endif
 endif
+ifeq ($(ARCH_FAMILY), arm)
+	ifeq ($(ARCH_TARGET), armv7)
+		GCC_PREFIX = arm-none-eabi-
+		ASM_FLAGS += -mcpu=arm1176jzf-s
+	endif
+	ifeq ($(ARCH_TARGET), armv8)
+		GCC_PREFIX = aarch64-none-eabi-
+	endif
+endif
 
 TOOL_ASM_EXEC ?= $(GCC_PREFIX)$(TOOL_ASM)
 
 TOOL_LD_EXEC ?= $(GCC_PREFIX)$(TOOL_LD)
 LINK_SCRIPT = $(SRC_ROOT)/arch/$(ARCH_TARGET)/link.ld
-
-ASM_FLAGS = $(addprefix --assembly , $(abspath $(ASM_FILES)))
 
 # Rules
 
@@ -104,7 +107,7 @@ exe: $(BUILD_DIRS) asm rust
 
 .PHONY: asm
 asm: $(BUILD_DIRS)
-	@$(TOOL_ASM_EXEC) -o $(ASM_OBJ) $(ASM_FILES)
+	@$(TOOL_ASM_EXEC) $(ASM_FLAGS) -o $(ASM_OBJ) -c $(ASM_FILES)
 
 .PHONY: rust
 rust: $(BUILD_DIRS)

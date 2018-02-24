@@ -15,8 +15,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(feature = "driver_vga")]
-pub mod vga;
+pub mod mmio;
+
+#[cfg(feature = "arch_target_armv7")] pub mod armv7;
+#[cfg(feature = "arch_target_armv7")] pub use arch::arm::armv7 as target;
+
+#[cfg(feature = "arch_target_armv8")] pub mod armv8;
+#[cfg(feature = "arch_target_armv8")] pub use arch::arm::armv8 as target;
 
 #[cfg(feature = "driver_serial")]
-pub mod serial;
+use driver::serial;
+
+pub fn env_setup() {
+	// Setup the serial driver first - we need it to display logs!
+	#[cfg(feature = "driver_serial")] {
+		serial::init();
+	}
+
+	target::env_setup();
+}
+
+#[no_mangle]
+#[linkage = "external"]
+pub extern fn __aeabi_unwind_cpp_pr0() {}

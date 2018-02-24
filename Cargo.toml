@@ -6,13 +6,18 @@ authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
 [features]
 # Target family features
 arch_family_x86 = ["driver_vga"]
+arch_family_arm = ["driver_serial"]
 
 # Target arch features
 arch_target_i386 = []
 arch_target_x86_64 = []
 
+arch_target_armv7 = []
+arch_target_armv8 = []
+
 # Driver features
 driver_vga = []
+driver_serial = []
 
 [lib]
 crate-type = ["staticlib"]

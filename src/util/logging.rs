@@ -22,11 +22,23 @@ use core::fmt;
 #[cfg(feature = "driver_vga")]
 use driver::vga;
 
+#[cfg(feature = "driver_serial")]
+use driver::serial;
+
 pub fn log_args(args: fmt::Arguments) {
 	use core::fmt::Write;
+
 	// Write to relevant driver
+
 	#[cfg(feature = "driver_vga")] {
 		vga::writer()
+			.lock()
+			.write_fmt(args)
+			.unwrap();
+	}
+
+	#[cfg(feature = "driver_serial")] {
+		serial::writer()
 			.lock()
 			.write_fmt(args)
 			.unwrap();

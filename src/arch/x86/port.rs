@@ -17,8 +17,15 @@
 
 #![allow(dead_code)]
 
+// TODO: Improve this
 pub fn wait(_cycles: usize) {
- 	// TODO: Write this
+	use volatile::Volatile;
+ 	let mut i: usize = 0;
+	let iv = unsafe { &mut *(&mut i as *mut usize as *mut Volatile<usize>) };
+	while iv.read() < _cycles {
+		let old = iv.read();
+		iv.write(old + 1)
+	}
 }
 
 pub fn out8(port: u16, value: u8) {

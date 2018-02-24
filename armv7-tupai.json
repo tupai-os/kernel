@@ -1,0 +1,16 @@
+{
+	"llvm-target": "armv7-none-eabi",
+	"data-layout": "e-m:e-p:32:32-i64:64-v128:64:128-a:0:32-n32-S64",
+	"linker-flavor": "gcc",
+	"target-endian": "little",
+	"target-pointer-width": "32",
+	"target-c-int-width": "32",
+	"arch": "arm",
+	"os": "none",
+	"vendor": "unknown",
+
+	"env": "eabi",
+	"executables": true,
+	"relocation-model": "static",
+	"no-compiler-rt": true
+}

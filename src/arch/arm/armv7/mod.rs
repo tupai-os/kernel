@@ -15,8 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(feature = "driver_vga")]
-pub mod vga;
+pub mod uart;
 
-#[cfg(feature = "driver_serial")]
-pub mod serial;
+// TODO: Put this in a better place
+pub const VIRTUAL_OFFSET: usize = 0xC0000000;
+
+pub fn env_setup() {
+	// Nothing yet
+}
