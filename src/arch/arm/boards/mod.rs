@@ -1,4 +1,4 @@
-// file : cpu.rs
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,37 +15,5 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub fn enable_irqs() {
-	unsafe {
-		asm!(
-			"mrs r0, cpsr;
-			bic r0, r0, #0x80;
-			msr cpsr_c, r0"
-			::: "r0"
-		)
-	}
-}
-
-pub fn disable_irqs() {
-	unsafe {
-		asm!(
-			"mrs r0, cpsr;
-			or r0, r0, #0x80;
-			msr cpsr_c, r0"
-			::: "r0"
-		)
-	}
-}
-
-pub fn halt() {
-	unsafe {
-		asm!("wfi")
-	}
-}
-
-#[allow(unused_assignments)]
-pub fn get_core_number() -> u32 {
-	let mut core_num: u32 = 0;
-	unsafe { asm!("mrc p15, 0, $0, c0, c0, 5" : "=r"(core_num)) }
-	core_num & 0x3
-}
+#[cfg(feature = "arch_target_armv7")] pub mod bcm2836;
+#[cfg(feature = "arch_target_armv7")] pub use arch::arm::boards::bcm2836 as board;

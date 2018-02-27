@@ -17,6 +17,10 @@
 
 pub mod mmio;
 pub mod cpu;
+pub mod exception;
+
+pub mod boards;
+pub use arch::arm::boards::board as board;
 
 #[cfg(feature = "arch_target_armv7")] pub mod armv7;
 #[cfg(feature = "arch_target_armv7")] pub use arch::arm::armv7 as target;
@@ -39,8 +43,14 @@ pub fn env_setup() {
 	}
 
 	target::env_setup();
+
+	exception::init();
 }
 
 #[no_mangle]
 #[linkage = "external"]
-pub extern fn __aeabi_unwind_cpp_pr0() {}
+extern fn __aeabi_unwind_cpp_pr0() {}
+
+#[no_mangle]
+#[linkage = "external"]
+extern fn __aeabi_unwind_cpp_pr1() {}

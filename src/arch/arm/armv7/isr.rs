@@ -1,4 +1,4 @@
-// file : exception.rs
+// file : isr.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,41 +15,37 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[no_mangle]
 #[allow(dead_code)]
-#[linkage = "external"]
-extern fn hwi_handler() {
-	logln!("HWI occured!");
+#[repr(C, packed)]
+#[derive(Copy, Clone)]
+pub struct ExceptionFrame {
+	r0: u32,
+	r1: u32,
+	r2: u32,
+	r3: u32,
+	r12: u32,
+	lr: u32,
+	cpsr: u32,
+	sp: u32,
 }
 
-#[no_mangle]
-#[allow(dead_code)]
-#[linkage = "external"]
-extern fn swi_handler() {
-	logln!("SWI occured!");
-}
-
-extern {
-	fn _exception_table_start();
-	fn _exception_table_end();
-}
-
-#[no_mangle]
-#[linkage = "external"]
-fn relocate_exception_table() {
-	let len = _exception_table_end as usize - _exception_table_start as usize;
-	use util::mem;
-	use core::slice;
-	unsafe {
-		mem::copy(
-			slice::from_raw_parts(_exception_table_start as *const u8, len),
-			slice::from_raw_parts_mut(0 as *mut u8, len)
-		)
+impl ExceptionFrame {
+	pub fn get_instruction_ptr(&self) -> u32 {
+		self.lr
 	}
 }
 
-pub fn init() {
-	// TODO: Fix this
-	//relocate_exception_table();
-	logok!("Set exception handlers");
+use core::fmt;
+impl fmt::Display for ExceptionFrame {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		unsafe {
+			write!(f,
+				"\
+				\tlr:   0x{:X}\n\
+				\tsp:   0x{:X}\n\
+				\tcpsr: 0x{:X}",
+				self.lr, self.sp, self.cpsr
+			)
+		}
+	}
 }

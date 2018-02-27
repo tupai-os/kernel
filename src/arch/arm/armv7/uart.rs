@@ -16,25 +16,44 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use arch::arm::mmio;
+use arch::arm::mmio::{RegBlock, Reg32};
+use arch::arm::board;
 
 const GPIO_BASE: usize = 0x3F200000;
 
 const GPPUD: usize = GPIO_BASE + 0x94;
 const GPPUD_CLK0: usize = GPIO_BASE + 0x98;
 
-const UART0_BASE: usize = 0x3F201000;
-const UART0_DR: usize = UART0_BASE + 0x0;
-const UART0_FR: usize = UART0_BASE + 0x4;
-const UART0_IBRD: usize = UART0_BASE + 0x24;
-const UART0_FBRD: usize = UART0_BASE + 0x28;
-const UART0_LCRH: usize = UART0_BASE + 0x2C;
-const UART0_CR: usize = UART0_BASE + 0x30;
-const UART0_IMSC: usize = UART0_BASE + 0x38;
-const UART0_ICR: usize = UART0_BASE + 0x44;
+#[allow(dead_code)]
+#[repr(C)]
+struct UartRegs {
+	data              : Reg32, // 0
+	irq_enable        : Reg32, // 4
+	irq_identify      : Reg32, // 8
+	_unused0          : Reg32, // 12
+	modem_control     : Reg32, // 16
+	raw_line_status   : Reg32, // 20
+	masked_line_status: Reg32, // 24
+	_unused1          : Reg32, // 28
+	ilpr              : Reg32, // 32
+	int_baud_div      : Reg32, // 36
+	frac_baud_div     : Reg32, // 40
+	line_control      : Reg32, // 44
+	control           : Reg32, // 48
+	unused2           : Reg32, // 52
+	irq_mask          : Reg32, // 56
+	unused4           : Reg32, // 60
+	unused5           : Reg32, // 64
+	irq_clear         : Reg32, // 68
+}
+
+lazy_static! {
+	static ref UART: RegBlock<UartRegs> = RegBlock::new(board::UART0_BASE);
+}
 
 pub fn init() {
 	// Disable UART0
-	mmio::write32(UART0_DR, 0);
+	UART.lock().data.write(0);
 
 	// Set up pins
 	mmio::write32(GPPUD, 0);
@@ -42,17 +61,17 @@ pub fn init() {
 	mmio::write32(GPPUD_CLK0, 0);
 
 	// Clear pending interrupts
-	mmio::write32(UART0_ICR, 0x7FF);
+	UART.lock().irq_clear.write(0x7FF);
 
 	// Set baud rate
-	mmio::write32(UART0_IBRD, 1);
-	mmio::write32(UART0_FBRD, 40);
+	UART.lock().int_baud_div.write(1);
+	UART.lock().frac_baud_div.write(40);
 
 	// Enable FIFO and 8-bit transmission (inc. 1 stop bit)
-	mmio::write32(UART0_LCRH, (1 << 4) | (1 << 5) | (1 << 6));
+	UART.lock().line_control.write((1 << 4) | (1 << 5) | (1 << 6));
 
 	// Mask all interrupts
-	mmio::write32(UART0_IMSC,
+	UART.lock().irq_mask.write(
 		(1 << 1) |
 		(1 << 4) |
 		(1 << 5) |
@@ -64,15 +83,15 @@ pub fn init() {
 	);
 
 	// Reenable UART0
-	mmio::write32(UART0_CR, (1 << 0) | (1 << 8) | (1 << 9));
+	UART.lock().control.write((1 << 0) | (1 << 8) | (1 << 9));
 }
 
 pub fn write(data: u8) {
-	while (mmio::read32(UART0_FR) & (1 << 5)) > 0 {}
-	mmio::write32(UART0_DR, data as u32);
+	while UART.lock().masked_line_status.read() & (1 << 5) != 0 {}
+	UART.lock().data.write(data as u32)
 }
 
 pub fn read() -> u8 {
-	while (mmio::read32(UART0_FR) & (1 << 4)) > 0 {}
-	mmio::read32(UART0_DR) as u8
+	while UART.lock().masked_line_status.read() & (1 << 4) != 0 {}
+	UART.lock().data.read() as u8
 }

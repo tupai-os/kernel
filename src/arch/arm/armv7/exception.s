@@ -64,45 +64,48 @@
 		pop   {r4-r9} @ Restore registers
 		blx   lr
 
-	@ Software interrupt handler
-	_swi_handler:
+	.macro IRQ_PREFIX
 		srsdb sp!, #0x13       @ Store the cpsr and sp on the supervisor stack
 		cpsid if, #0x13        @ Switch to supervisor mode, IRQs disabled
 
 		push  {r0-r3, r12, lr} @ Preserve CPU context
 
+		mov   r0, sp           @ Pass stack frame argument
+
 		and   r1, sp, #7       @ Deal with stack misalignment
 		sub   sp, sp, r1
 
 		push  {r1}
-		bl    swi_handler      @ Branch to SWI handler
+	.endm
+
+	.macro IRQ_SUFFIX
 		pop   {r1}
 
 		add   sp, sp, r1       @ Restore stack misalignment
 
 		pop   {r0-r3, r12, lr} @ Restore CPU context
 		rfeia sp!
+	.endm
+
+	@ Software interrupt handler
+	_swi_handler:
+		IRQ_PREFIX
+		bl    swi_handler      @ Branch to SWI handler
+		IRQ_SUFFIX
 
 	@ Hardware interrupt handler
 	_hwi_handler:
 		sub   lr, lr, #4       @ Skip lr back to interrupted instruction
-
-		srsdb sp!, #0x13       @ Store the cpsr and sp on the supervisor stack
-		cpsid if, #0x13        @ Switch to supervisor mode, IRQs disabled
-
-		push  {r0-r3, r12, lr} @ Preserve CPU context
-
-		and   r1, sp, #7       @ Deal with stack misalignment
-		sub   sp, sp, r1
-
-		push  {r1}
+		IRQ_PREFIX
 		bl    hwi_handler      @ Branch to HWI handler
-		pop   {r1}
+		IRQ_SUFFIX
 
-		add   sp, sp, r1       @ Restore stack misalignment
-
-		pop   {r0-r3, r12, lr} @ Restore CPU context
-		rfeia sp!
+	@ Unimplemented handler
+	_unimplemented_handler:
+		sub   lr, lr, #4       @ Skip lr back to interrupted instruction
+		IRQ_PREFIX
+		bl    unimplemented_handler    @ Branch to unimplemented handler
+		IRQ_SUFFIX
 
 	@ Stubs for the rest
 	1:
@@ -111,4 +114,4 @@
 		_prefetchabort_handler:
 		_dataabort_handler:
 		_firq_handler:
-			b 1b
+			b _unimplemented_handler

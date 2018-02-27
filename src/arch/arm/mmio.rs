@@ -16,15 +16,45 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use volatile::Volatile;
+pub struct Reg<T: Copy> {
+	reg: Volatile<T>,
+}
 
-// TODO: Improve this
-pub fn wait(_cycles: usize) {
-	use volatile::Volatile;
- 	let mut i: usize = 0;
-	let iv = unsafe { &mut *(&mut i as *mut usize as *mut Volatile<usize>) };
-	while iv.read() < _cycles {
-		let old = iv.read();
-		iv.write(old + 1)
+impl <T: Copy> Reg<T> {
+	pub fn write(&mut self, val: T) {
+		self.reg.write(val);
+		wait(150)
+	}
+
+	pub fn read(&self) -> T {
+		wait(150);
+		self.reg.read()
+	}
+}
+
+pub type Reg32 = Reg<u32>;
+
+use spin::Mutex;
+pub struct RegBlock<T: 'static> {
+	block: Mutex<&'static mut T>,
+}
+
+use spin::MutexGuard;
+impl <T> RegBlock<T> {
+	pub fn new(base: usize) -> RegBlock<T> {
+		RegBlock {
+			block: Mutex::new(unsafe { &mut *(base as *mut _) }),
+		}
+	}
+
+	pub fn lock<'a>(&self) -> MutexGuard<&'static mut T> {
+		self.block.lock()
+	}
+}
+
+pub fn wait(cycles: usize) {
+	for i in 0..cycles {
+		unsafe { asm!("") }
 	}
 }
 

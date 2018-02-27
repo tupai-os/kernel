@@ -20,12 +20,15 @@
 #![feature(ptr_internals)]
 #![feature(const_fn)]
 #![feature(linkage)]
-#![feature(naked_functions)]
+#![feature(compiler_builtins_lib)]
 #![no_std]
 
 extern crate rlibc;
 extern crate volatile;
 extern crate spin;
+extern crate compiler_builtins;
+#[macro_use]
+extern crate lazy_static;
 
 #[macro_use] mod util;
 mod arch;
@@ -56,5 +59,8 @@ pub extern fn _Unwind_Resume() {}
 #[lang = "panic_fmt"]
 #[no_mangle]
 pub extern fn panic_fmt() -> ! {
-	loop {}
+	logln!("Fmt panic!");
+	loop {
+		cpu::halt()
+	}
 }

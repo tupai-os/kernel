@@ -76,10 +76,13 @@ TOOL_ASM_EXEC ?= $(GCC_PREFIX)$(TOOL_ASM)
 TOOL_LD_EXEC ?= $(GCC_PREFIX)$(TOOL_LD)
 LINK_SCRIPT = $(SRC_ROOT)/arch/$(ARCH_TARGET)/link.ld
 
+SYMBOLS = $(BUILD_ROOT)/tupai.symb
+SYMBOL_CMD = objdump --wide --syms $(KERNEL_EXE) | grep -P '^[0-9A-Fa-f]+\s.*\s[a-zA-Z_][a-zA-Z0-9_]+$$' | sed -r 's/^(\S+)\s+.*\s+(\S+)$$/\1 \2/' | sort > $(SYMBOLS)
+
 # Rules
 
 .PHONY: all
-all: exe
+all: exe symbols
 
 .PHONY: clean
 clean:
@@ -93,7 +96,7 @@ check:
 	@# Why does the following change to RUST_TARGET_PATH work?!
 	@RUST_TARGET_PATH=$(shell pwd) $(TOOL_CARGO) \
 		check \
-		--release \
+		--debug \
 		--target=$(CARGO_TARGET) \
 		--features "arch_family_$(ARCH_FAMILY) arch_target_$(ARCH_TARGET)"
 
@@ -105,6 +108,11 @@ exe: $(BUILD_DIRS) asm rust
 		-o $(KERNEL_EXE) \
 		$(ASM_OBJ) $(RUST_LIB)
 
+.PHONY: symbols
+symbols: exe
+	@echo "Generating symbols..."
+	@$(SYMBOL_CMD)
+
 .PHONY: asm
 asm: $(BUILD_DIRS)
 	@$(TOOL_ASM_EXEC) $(ASM_FLAGS) -o $(ASM_OBJ) -c $(ASM_FILES)
@@ -112,7 +120,7 @@ asm: $(BUILD_DIRS)
 .PHONY: rust
 rust: $(BUILD_DIRS)
 	@# Why does the following change to RUST_TARGET_PATH work?!
-	@RUST_TARGET_PATH=$(shell pwd) $(TOOL_CARGO) \
+	@RUST_TARGET_PATH=$(shell pwd) RUSTFLAGS=-g $(TOOL_CARGO) \
 		build \
 		--release \
 		--target=$(CARGO_TARGET) \
