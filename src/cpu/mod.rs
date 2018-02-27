@@ -15,32 +15,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod mmio;
-pub mod cpu;
+#[cfg(feature = "arch_family_x86")] use arch::x86;
+#[cfg(feature = "arch_family_arm")] use arch::arm;
 
-#[cfg(feature = "arch_target_armv7")] pub mod armv7;
-#[cfg(feature = "arch_target_armv7")] pub use arch::arm::armv7 as target;
-
-#[cfg(feature = "arch_target_armv8")] pub mod armv8;
-#[cfg(feature = "arch_target_armv8")] pub use arch::arm::armv8 as target;
-
-#[cfg(feature = "driver_serial")]
-use driver::serial;
-
-pub fn env_setup() {
-	// Only continue if we're the primary core
-	if cpu::get_core_number() != 0 {
-		loop { cpu::halt() }
+pub fn enable_irqs() {
+	#[cfg(feature = "arch_family_x86")] {
+		x86::cpu::enable_irqs();
 	}
 
-	// Setup the serial driver first - we need it to display logs!
-	#[cfg(feature = "driver_serial")] {
-		serial::init();
+	#[cfg(feature = "arch_family_arm")] {
+		arm::cpu::enable_irqs();
 	}
-
-	target::env_setup();
 }
 
-#[no_mangle]
-#[linkage = "external"]
-pub extern fn __aeabi_unwind_cpp_pr0() {}
+
+pub fn halt() {
+	#[cfg(feature = "arch_family_x86")] {
+		x86::cpu::halt();
+	}
+
+	#[cfg(feature = "arch_family_arm")] {
+		arm::cpu::halt();
+	}
+}

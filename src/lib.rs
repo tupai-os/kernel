@@ -20,6 +20,7 @@
 #![feature(ptr_internals)]
 #![feature(const_fn)]
 #![feature(linkage)]
+#![feature(naked_functions)]
 #![no_std]
 
 extern crate rlibc;
@@ -28,6 +29,7 @@ extern crate spin;
 
 #[macro_use] mod util;
 mod arch;
+mod cpu;
 mod driver;
 
 #[no_mangle]
@@ -39,12 +41,17 @@ pub extern fn kmain(_mb_header: *const u32) {
 
 	logln!("Welcome to the kernel!");
 
-	loop {}
+	// Wait for something to happen
+	cpu::enable_irqs();
+	cpu::halt();
 }
 
 #[lang = "eh_personality"]
 #[no_mangle]
 pub extern fn eh_personality() {}
+
+#[no_mangle]
+pub extern fn _Unwind_Resume() {}
 
 #[lang = "panic_fmt"]
 #[no_mangle]

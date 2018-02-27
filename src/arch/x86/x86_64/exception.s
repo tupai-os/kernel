@@ -83,7 +83,7 @@
 		pop %rax
 	.endm
 
-	.align 4
+	.align 8
 	_exception_handler0: // DivZero Exception
 		push $EXCEPTION_DUMMY_ERROR // Dummy error
 		PUSH_REGS
@@ -92,7 +92,7 @@
 		POP_REGS
 		iretq
 
-	.align 4
+	.align 8
 	_exception_handler1: // Debug Exception
 		push $EXCEPTION_DUMMY_ERROR // Dummy error
 		PUSH_REGS

@@ -16,10 +16,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pub mod uart;
+pub mod exception;
 
 // TODO: Put this in a better place
 pub const VIRTUAL_OFFSET: usize = 0xC0000000;
 
 pub fn env_setup() {
-	// Nothing yet
+	exception::init();
 }

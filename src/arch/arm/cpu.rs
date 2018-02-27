@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : cpu.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,32 +15,36 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod mmio;
-pub mod cpu;
-
-#[cfg(feature = "arch_target_armv7")] pub mod armv7;
-#[cfg(feature = "arch_target_armv7")] pub use arch::arm::armv7 as target;
-
-#[cfg(feature = "arch_target_armv8")] pub mod armv8;
-#[cfg(feature = "arch_target_armv8")] pub use arch::arm::armv8 as target;
-
-#[cfg(feature = "driver_serial")]
-use driver::serial;
-
-pub fn env_setup() {
-	// Only continue if we're the primary core
-	if cpu::get_core_number() != 0 {
-		loop { cpu::halt() }
+pub fn enable_irqs() {
+	unsafe {
+		asm!(
+			"mrs r0, cpsr;
+			bic r0, r0, #0x80;
+			msr cpsr_c, r0"
+			::: "r0"
+		)
 	}
-
-	// Setup the serial driver first - we need it to display logs!
-	#[cfg(feature = "driver_serial")] {
-		serial::init();
-	}
-
-	target::env_setup();
 }
 
-#[no_mangle]
-#[linkage = "external"]
-pub extern fn __aeabi_unwind_cpp_pr0() {}
+pub fn disable_irqs() {
+	unsafe {
+		asm!(
+			"mrs r0, cpsr;
+			or r0, r0, #0x80;
+			msr cpsr_c, r0"
+			::: "r0"
+		)
+	}
+}
+
+pub fn halt() {
+	unsafe {
+		asm!("wfi")
+	}
+}
+
+pub fn get_core_number() -> u32 {
+	let mut core_num: u32 = 0;
+	unsafe { asm!("mrc p15, 0, $0, c0, c0, 5" : "=r"(core_num)) }
+	core_num & 0x3
+}

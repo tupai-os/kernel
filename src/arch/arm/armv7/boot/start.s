@@ -17,6 +17,8 @@
 
 .global _start.boot
 
+.extern _relocate_exception_table
+
 @ Initial register values:
 @ r0  -> 0x00000000
 @ r1  -> 0x00000C42
@@ -24,10 +26,7 @@
 @ r15 -> 0x00008000 = Execution start
 .section .text.boot
 	_start.boot:
-		// Set up stack
-		mov sp, #0x8000
-
-		// Clear BSS
+		@ Clear BSS
 		ldr r4, =bss_start.boot
 		ldr r9, =bss_end.boot
 		mov r5, #0
@@ -40,6 +39,19 @@
 		2:
 			cmp r4, r9
 			blo 1b
+
+		@ Relocate the IRQ table
+		bl _relocate_exception_table
+
+		@ Place the CPU in IRQ mode, set the IRQ stack
+		mov r0, #0xD2
+		msr cpsr_c, r0
+		mov sp, #0x8000
+
+		@ Place the CPU in supervisor mode, set the supervisor stack
+		mov r0, #0xD3
+		msr cpsr_c, r0
+		mov sp, #0x7000
 
 		ldr r3, =kmain
 		blx r3

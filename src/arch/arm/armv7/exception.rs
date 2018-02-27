@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : exception.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,32 +15,41 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod mmio;
-pub mod cpu;
+#[no_mangle]
+#[allow(dead_code)]
+#[linkage = "external"]
+extern fn hwi_handler() {
+	logln!("HWI occured!");
+}
 
-#[cfg(feature = "arch_target_armv7")] pub mod armv7;
-#[cfg(feature = "arch_target_armv7")] pub use arch::arm::armv7 as target;
+#[no_mangle]
+#[allow(dead_code)]
+#[linkage = "external"]
+extern fn swi_handler() {
+	logln!("SWI occured!");
+}
 
-#[cfg(feature = "arch_target_armv8")] pub mod armv8;
-#[cfg(feature = "arch_target_armv8")] pub use arch::arm::armv8 as target;
-
-#[cfg(feature = "driver_serial")]
-use driver::serial;
-
-pub fn env_setup() {
-	// Only continue if we're the primary core
-	if cpu::get_core_number() != 0 {
-		loop { cpu::halt() }
-	}
-
-	// Setup the serial driver first - we need it to display logs!
-	#[cfg(feature = "driver_serial")] {
-		serial::init();
-	}
-
-	target::env_setup();
+extern {
+	fn _exception_table_start();
+	fn _exception_table_end();
 }
 
 #[no_mangle]
 #[linkage = "external"]
-pub extern fn __aeabi_unwind_cpp_pr0() {}
+fn relocate_exception_table() {
+	let len = _exception_table_end as usize - _exception_table_start as usize;
+	use util::mem;
+	use core::slice;
+	unsafe {
+		mem::copy(
+			slice::from_raw_parts(_exception_table_start as *const u8, len),
+			slice::from_raw_parts_mut(0 as *mut u8, len)
+		)
+	}
+}
+
+pub fn init() {
+	// TODO: Fix this
+	//relocate_exception_table();
+	logok!("Set exception handlers");
+}
