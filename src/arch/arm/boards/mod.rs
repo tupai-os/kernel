@@ -15,5 +15,5 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(feature = "arch_target_armv7")] pub mod bcm2836;
-#[cfg(feature = "arch_target_armv7")] pub use arch::arm::boards::bcm2836 as board;
+#[cfg(feature = "board_bcm2386")] pub mod bcm2836;
+#[cfg(feature = "board_bcm2386")] pub use arch::arm::boards::bcm2836 as board;
