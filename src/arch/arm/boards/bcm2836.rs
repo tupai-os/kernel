@@ -15,5 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub const GPIO_BASE: usize = 0x3F200000;
 pub const UART0_BASE: usize = 0x3F201000;
+pub const GPIO_BASE: usize = 0x3F200000;
+pub const MAILBOX_BASE: usize = 0x2000B880;

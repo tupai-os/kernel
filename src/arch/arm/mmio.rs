@@ -53,17 +53,7 @@ impl <T> RegBlock<T> {
 }
 
 pub fn wait(cycles: usize) {
-	for i in 0..cycles {
+	for _i in 0..cycles {
 		unsafe { asm!("") }
 	}
-}
-
-pub fn write32(reg: usize, value: u32) {
-	unsafe { &mut *(reg as *mut Volatile<u32>) }.write(value);
-	wait(150)
-}
-
-pub fn read32(reg: usize) -> u32 {
-	wait(150);
-	unsafe { &mut *(reg as *mut Volatile<u32>) }.read()
 }

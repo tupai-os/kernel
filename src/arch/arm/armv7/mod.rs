@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pub mod uart;
+pub mod gpio;
 pub mod isr;
 
 // TODO: Put this in a better place

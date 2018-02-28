@@ -5,8 +5,8 @@ authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
 
 [features]
 # Target family features
-arch_family_x86 = ["driver_vga"]
-arch_family_arm = ["driver_serial", "board_bcm2386"] # Raspberry Pi 2
+arch_family_x86 = ["driver_video_vga"]
+arch_family_arm = ["driver_serial", "board_bcm2386", "driver_video_bcm2836"] # Raspberry Pi 2
 
 # Target arch features
 arch_target_i386 = []
@@ -19,7 +19,9 @@ arch_target_armv8 = []
 board_bcm2386 = []
 
 # Driver features
-driver_vga = []
+driver_video_vga = []
+driver_video_bcm2836 = []
+
 driver_serial = []
 
 [lib]

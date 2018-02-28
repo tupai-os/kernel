@@ -15,8 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(feature = "driver_vga")]
-pub mod vga;
+pub mod video;
 
 #[cfg(feature = "driver_serial")]
 pub mod serial;

@@ -15,14 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use arch::arm::mmio;
 use arch::arm::mmio::{RegBlock, Reg32};
 use arch::arm::board;
-
-const GPIO_BASE: usize = 0x3F200000;
-
-const GPPUD: usize = GPIO_BASE + 0x94;
-const GPPUD_CLK0: usize = GPIO_BASE + 0x98;
+use super::gpio;
 
 #[allow(dead_code)]
 #[repr(C)]
@@ -52,26 +47,28 @@ lazy_static! {
 }
 
 pub fn init() {
-	// Disable UART0
-	UART.lock().data.write(0);
+	// Acquire UART0 lock
+	let mut uart = UART.lock();
 
-	// Set up pins
-	mmio::write32(GPPUD, 0);
-	mmio::write32(GPPUD_CLK0, (1 << 14) | (1 << 15));
-	mmio::write32(GPPUD_CLK0, 0);
+	// Disable UART0
+	uart.data.write(0);
+
+	// Set up pins 14 and 15 for UART0
+	gpio::reset_pin_clock(0, 14);
+	gpio::reset_pin_clock(0, 15);
 
 	// Clear pending interrupts
-	UART.lock().irq_clear.write(0x7FF);
+	uart.irq_clear.write(0x7FF);
 
 	// Set baud rate
-	UART.lock().int_baud_div.write(1);
-	UART.lock().frac_baud_div.write(40);
+	uart.int_baud_div.write(1);
+	uart.frac_baud_div.write(40);
 
 	// Enable FIFO and 8-bit transmission (inc. 1 stop bit)
-	UART.lock().line_control.write((1 << 4) | (1 << 5) | (1 << 6));
+	uart.line_control.write((1 << 4) | (1 << 5) | (1 << 6));
 
 	// Mask all interrupts
-	UART.lock().irq_mask.write(
+	uart.irq_mask.write(
 		(1 << 1) |
 		(1 << 4) |
 		(1 << 5) |
@@ -83,7 +80,7 @@ pub fn init() {
 	);
 
 	// Reenable UART0
-	UART.lock().control.write((1 << 0) | (1 << 8) | (1 << 9));
+	uart.control.write((1 << 0) | (1 << 8) | (1 << 9));
 }
 
 pub fn write(data: u8) {

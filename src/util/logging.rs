@@ -19,8 +19,8 @@
 
 use core::fmt;
 
-#[cfg(feature = "driver_vga")]
-use driver::vga;
+#[cfg(feature = "driver_video_vga")]
+use driver::video::vga;
 
 #[cfg(feature = "driver_serial")]
 use driver::serial;
@@ -30,7 +30,7 @@ pub fn log_args(args: fmt::Arguments) {
 
 	// Write to relevant driver
 
-	#[cfg(feature = "driver_vga")] {
+	#[cfg(feature = "driver_video_vga")] {
 		vga::writer()
 			.lock()
 			.write_fmt(args)
