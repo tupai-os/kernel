@@ -18,5 +18,5 @@
 #[cfg(feature = "driver_video_vga")]
 pub mod vga;
 
-#[cfg(feature = "driver_video_bcm2836")]
-pub mod bcm2836;
+#[cfg(feature = "driver_video_bcm283x")]
+pub mod bcm283x;

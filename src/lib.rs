@@ -38,7 +38,7 @@ mod driver;
 #[no_mangle]
 pub extern fn kmain(_mb_header: *const u32) {
 	// Setup arch-specific things
-	arch::family::env_setup();
+	arch::base::env_setup();
 
 	loginfo!("Entered kernel main");
 

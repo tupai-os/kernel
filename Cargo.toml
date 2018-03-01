@@ -4,25 +4,33 @@ version = "0.1.0"
 authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
 
 [features]
-# Target family features
-arch_family_x86 = ["driver_video_vga"]
-arch_family_arm = ["driver_serial", "board_bcm2386", "driver_video_bcm2836"] # Raspberry Pi 2
+# Target base
+arch_base_x86 = []
+arch_base_arm = []
 
-# Target arch features
-arch_target_i386 = []
-arch_target_x86_64 = []
+# Target ISA
+arch_isa_i386 = []
+arch_isa_x86_64 = []
+arch_isa_armv7 = []
+arch_isa_armv8 = []
 
-arch_target_armv7 = []
-arch_target_armv8 = []
-
-# Board features
-board_bcm2386 = []
+# Board
+board_model_bcm2835 = []
+board_model_bcm2836 = []
+board_model_bcm2837 = []
 
 # Driver features
-driver_video_vga = []
-driver_video_bcm2836 = []
-
-driver_serial = []
+# TTY drivers
+	driver_tty_com = []
+	driver_tty_vgaconsole = []
+	driver_tty_uart = []
+	driver_tty_bcm283xconsole = []
+# Video drivers
+	driver_video_vga = []
+	driver_video_bcm283x = []
+# Serial drivers
+	driver_serial_com = []
+	driver_serial_uart = []
 
 [lib]
 crate-type = ["staticlib"]

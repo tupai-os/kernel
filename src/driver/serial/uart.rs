@@ -17,7 +17,7 @@
 
 use arch::arm::mmio::{RegBlock, Reg32};
 use arch::arm::board;
-use super::gpio;
+use arch::arm::gpio;
 
 #[allow(dead_code)]
 #[repr(C)]
@@ -91,4 +91,13 @@ pub fn write(data: u8) {
 pub fn read() -> u8 {
 	while UART.lock().masked_line_status.read() & (1 << 4) != 0 {}
 	UART.lock().data.read() as u8
+}
+
+// TODO: Use a trait to wrap tty stuff
+pub fn write_char(c: char) {
+	match c {
+		'\n' => { write(b'\r') }
+		_ => {}
+	}
+	write(c as u8)
 }

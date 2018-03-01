@@ -16,11 +16,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use core::ptr::Unique;
-use core::fmt;
 use volatile::Volatile;
 use spin::Mutex;
 
-use arch::family::target::VIDEO_MEMORY;
+use arch::base::isa::VIDEO_MEMORY;
 
 pub const COLS: usize = 80;
 pub const ROWS: usize = 25;
@@ -95,15 +94,15 @@ impl Writer {
 		self.buffer = unsafe { Unique::new_unchecked(VIDEO_MEMORY as *mut _) };
 	}
 
-	fn write(&mut self, c: char) {
+	fn write(&mut self, c: u8) {
 		match c {
-			'\n' => self.cursor += COLS - (self.cursor % COLS),
-			'\t' => self.cursor += TAB_WIDTH - (self.cursor % TAB_WIDTH),
+			b'\n' => self.cursor += COLS - (self.cursor % COLS),
+			b'\t' => self.cursor += TAB_WIDTH - (self.cursor % TAB_WIDTH),
 			c => {
 				let cursor = self.cursor;
 				let fmt = colors_to_fmt(self.fg_color, self.bg_color);
 				self.buffer()[cursor].write(Entry {
-					c: c as u8,
+					c: c,
 					fmt: fmt,
 				});
 				self.cursor += 1;
@@ -133,19 +132,10 @@ impl Writer {
 	}
 }
 
-impl fmt::Write for Writer {
-	fn write_str(&mut self, s: &str) -> fmt::Result {
-		for c in s.chars() {
-			self.write(c)
-		}
-		Ok(())
-	}
-}
-
 pub fn init() {
 	WRITER.lock().init();
 }
 
-pub fn writer() -> &'static Mutex<Writer> {
-	&WRITER
+pub fn write_char(c: char) {
+	WRITER.lock().write(c as u8)
 }

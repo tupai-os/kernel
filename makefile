@@ -20,21 +20,48 @@
 SRC_ROOT = $(abspath .)
 BUILD_ROOT ?= $(SRC_ROOT)/build
 
+ifndef CFG_arch_base
+  $(error CFG_arch_base must be defined)
+endif
+ifndef CFG_arch_isa
+  $(error CFG_arch_isa must be defined)
+endif
+ifndef CFG_drivers_tty
+  $(error CFG_drivers_tty must be defined)
+endif
+
 # Configurable
 
 KERNEL_EXE ?= $(BUILD_ROOT)/tupai.elf
 KERNEL_MAIN = $(SRC_ROOT)/kmain.zig
 
-ARCH_FAMILY ?= x86
-ARCH_ARCH ?= i386
+ifndef CFG_arch_base
+  $(error CFG_arch_base must be defined)
+endif
+ifndef CFG_arch_isa
+  $(error CFG_arch_isa must be defined)
+endif
+ifndef CFG_drivers_tty
+  $(error CFG_drivers_tty must be defined)
+endif
 
 TOOL_ASM ?= as
 ASM_OBJ = $(BUILD_ROOT)/tupai-asm.o
 
 TOOL_CARGO ?= xargo
-CARGO_TARGET = $(ARCH_TARGET)-tupai
-CARGO_BYPRODUCT = target
 RUST_LIB = $(BUILD_ROOT)/tupai.a
+
+CARGO_TARGET = $(CFG_arch_isa)-tupai
+CARGO_BYPRODUCT = target
+CARGO_FEATURES = \
+  arch_base_$(CFG_arch_base) \
+  arch_isa_$(CFG_arch_isa) \
+  driver_tty_$(CFG_drivers_tty) \
+  $(foreach vd, $(CFG_drivers_video), driver_video_$(vd)) \
+  $(foreach sd, $(CFG_drivers_serial), driver_serial_$(sd))
+ifdef CFG_board_model
+  CARGO_FEATURES += board_model_$(CFG_board_model)
+endif
 
 TOOL_LD ?= ld
 
@@ -43,8 +70,8 @@ TOOL_LD ?= ld
 BUILD_DIRS = $(BUILD_ROOT)
 
 # Find all assembly
-DIR_FAMILY = $(SRC_ROOT)/src/arch/$(ARCH_FAMILY)
-DIR_ARCH = $(DIR_FAMILY)/$(ARCH_TARGET)
+DIR_FAMILY = $(SRC_ROOT)/src/arch/$(CFG_arch_base)
+DIR_ARCH = $(DIR_FAMILY)/$(CFG_arch_isa)
 
 ASM_FILES += $(shell ls $(DIR_FAMILY)/*.{s,S} 2> /dev/null)
 ASM_FILES += $(shell ls $(DIR_FAMILY)/boot/*.{s,S} 2> /dev/null)
@@ -53,20 +80,20 @@ ASM_FILES += $(shell ls $(DIR_ARCH)/*.{s,S} 2> /dev/null)
 ASM_FILES += $(shell ls $(DIR_ARCH)/boot/*.{s,S} 2> /dev/null)
 
 ASM_FLAGS ?=
-ifeq ($(ARCH_FAMILY), x86)
-	ifeq ($(ARCH_TARGET), i386)
+ifeq ($(CFG_arch_base), x86)
+	ifeq ($(CFG_arch_isa), i386)
 		GCC_PREFIX = i686-elf-
 	endif
-	ifeq ($(ARCH_TARGET), x86_64)
+	ifeq ($(CFG_arch_isa), x86_64)
 		GCC_PREFIX = x86_64-elf-
 	endif
 endif
-ifeq ($(ARCH_FAMILY), arm)
-	ifeq ($(ARCH_TARGET), armv7)
+ifeq ($(CFG_arch_base), arm)
+	ifeq ($(CFG_arch_isa), armv7)
 		GCC_PREFIX = arm-none-eabi-
 		ASM_FLAGS += -mcpu=arm1176jzf-s
 	endif
-	ifeq ($(ARCH_TARGET), armv8)
+	ifeq ($(CFG_arch_isa), armv8)
 		GCC_PREFIX = aarch64-none-eabi-
 	endif
 endif
@@ -74,7 +101,7 @@ endif
 TOOL_ASM_EXEC ?= $(GCC_PREFIX)$(TOOL_ASM)
 
 TOOL_LD_EXEC ?= $(GCC_PREFIX)$(TOOL_LD)
-LINK_SCRIPT = $(SRC_ROOT)/arch/$(ARCH_TARGET)/link.ld
+LINK_SCRIPT = $(SRC_ROOT)/arch/$(CFG_arch_isa)/link.ld
 
 SYMBOLS = $(BUILD_ROOT)/tupai.symb
 SYMBOL_CMD = objdump --wide --syms $(KERNEL_EXE) | grep -P '^[0-9A-Fa-f]+\s.*\s[a-zA-Z_][a-zA-Z0-9_]+$$' | sed -r 's/^(\S+)\s+.*\s+(\S+)$$/\1 \2/' | sort > $(SYMBOLS)
@@ -98,7 +125,7 @@ check:
 		check \
 		--debug \
 		--target=$(CARGO_TARGET) \
-		--features "arch_family_$(ARCH_FAMILY) arch_target_$(ARCH_TARGET)"
+		--features "$(CARGO_FEATURES)"
 
 .PHONY: exe
 exe: $(BUILD_DIRS) asm rust
@@ -124,5 +151,5 @@ rust: $(BUILD_DIRS)
 		build \
 		--release \
 		--target=$(CARGO_TARGET) \
-		--features "arch_family_$(ARCH_FAMILY) arch_target_$(ARCH_TARGET)"
+		--features "$(CARGO_FEATURES)"
 	@cp target/$(CARGO_TARGET)/release/libtupai.a $(RUST_LIB)

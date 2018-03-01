@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(feature = "arch_family_x86")] pub mod x86;
-#[cfg(feature = "arch_family_x86")] pub use arch::x86 as family;
+#[cfg(feature = "arch_base_x86")] pub mod x86;
+#[cfg(feature = "arch_base_x86")] pub use arch::x86 as base;
 
-#[cfg(feature = "arch_family_arm")] pub mod arm;
-#[cfg(feature = "arch_family_arm")] pub use arch::arm as family;
+#[cfg(feature = "arch_base_arm")] pub mod arm;
+#[cfg(feature = "arch_base_arm")] pub use arch::arm as base;

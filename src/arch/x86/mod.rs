@@ -20,22 +20,22 @@ pub mod pic;
 pub mod exception;
 pub mod cpu;
 
-#[cfg(feature = "arch_target_i386")] pub mod i386;
-#[cfg(feature = "arch_target_i386")] pub use arch::x86::i386 as target;
+#[cfg(feature = "arch_isa_i386")] pub mod i386;
+#[cfg(feature = "arch_isa_i386")] pub use arch::x86::i386 as isa;
 
-#[cfg(feature = "arch_target_x86_64")] pub mod x86_64;
-#[cfg(feature = "arch_target_x86_64")] pub use arch::x86::x86_64 as target;
+#[cfg(feature = "arch_isa_x86_64")] pub mod x86_64;
+#[cfg(feature = "arch_isa_x86_64")] pub use arch::x86::x86_64 as isa;
 
-#[cfg(feature = "driver_vga")]
-use driver::vga;
+#[cfg(feature = "driver_video_vga")]
+use driver::video::vga;
 
 pub fn env_setup() {
 	// Setup the VGA driver first - we need it to display logs!
-	#[cfg(feature = "driver_vga")] {
+	#[cfg(feature = "driver_video_vga")] {
 		vga::init();
 	}
 
-	target::env_setup();
+	isa::env_setup();
 
 	// Initiate core features
 	pic::init();

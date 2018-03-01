@@ -18,18 +18,23 @@
 pub mod mmio;
 pub mod cpu;
 pub mod exception;
+pub mod gpio;
 
-pub mod boards;
-pub use arch::arm::boards::board as board;
+/* ISA modules */
 
-#[cfg(feature = "arch_target_armv7")] pub mod armv7;
-#[cfg(feature = "arch_target_armv7")] pub use arch::arm::armv7 as target;
+#[cfg(feature = "arch_isa_armv7")] pub mod armv7;
+#[cfg(feature = "arch_isa_armv7")] pub use arch::arm::armv7 as isa;
 
-#[cfg(feature = "arch_target_armv8")] pub mod armv8;
-#[cfg(feature = "arch_target_armv8")] pub use arch::arm::armv8 as target;
+#[cfg(feature = "arch_isa_armv8")] pub mod armv8;
+#[cfg(feature = "arch_isa_armv8")] pub use arch::arm::armv8 as isa;
 
-#[cfg(feature = "driver_serial")]
-use driver::serial;
+/* Board modules */
+
+#[cfg(feature = "board_model_bcm2836")] pub mod bcm2836;
+#[cfg(feature = "board_model_bcm2836")] pub use arch::arm::bcm2836 as board;
+
+#[cfg(feature = "driver_serial_uart")]
+use driver::serial::uart;
 
 pub fn env_setup() {
 	// Only continue if we're the primary core
@@ -37,12 +42,12 @@ pub fn env_setup() {
 		loop { cpu::halt() }
 	}
 
-	// Setup the serial driver first - we need it to display logs!
-	#[cfg(feature = "driver_serial")] {
-		serial::init();
+	// Setup the UART driver first - we need it to display logs!
+	#[cfg(feature = "driver_serial_uart")] {
+		uart::init();
 	}
 
-	target::env_setup();
+	isa::env_setup();
 
 	exception::init();
 }

@@ -1,4 +1,4 @@
-// file : bcm2836.rs
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use arch::arm::boards::bcm2836;
+#[cfg(feature = "driver_serial_com")]
+pub mod com;
 
-use core::fmt;
-use spin::Mutex;
+#[cfg(feature = "driver_serial_uart")]
+pub mod uart;

@@ -19,30 +19,34 @@
 
 use core::fmt;
 
-#[cfg(feature = "driver_video_vga")]
-use driver::video::vga;
+#[cfg(feature = "driver_tty_com")] use driver::serial::com as tty;
+#[cfg(feature = "driver_tty_vgaconsole")] use driver::video::vga as tty;
+#[cfg(feature = "driver_tty_uart")] use driver::serial::uart as tty;
+#[cfg(feature = "driver_tty_bcm283xconsole")] use driver::video::bcm283x as tty;
 
-#[cfg(feature = "driver_serial")]
-use driver::serial;
+struct Writer {}
+
+impl Writer {
+	fn write(&self, c: char) {
+		tty::write_char(c);
+	}
+}
+
+impl fmt::Write for Writer {
+	fn write_str(&mut self, s: &str) -> fmt::Result {
+		for c in s.chars() {
+			self.write(c)
+		}
+		Ok(())
+	}
+}
+
+use spin::Mutex;
+static WRITER: Mutex<Writer> = Mutex::new(Writer {});
 
 pub fn log_args(args: fmt::Arguments) {
 	use core::fmt::Write;
-
-	// Write to relevant driver
-
-	#[cfg(feature = "driver_video_vga")] {
-		vga::writer()
-			.lock()
-			.write_fmt(args)
-			.unwrap();
-	}
-
-	#[cfg(feature = "driver_serial")] {
-		serial::writer()
-			.lock()
-			.write_fmt(args)
-			.unwrap();
-	}
+	WRITER.lock().write_fmt(args).unwrap();
 }
 
 macro_rules! log {
