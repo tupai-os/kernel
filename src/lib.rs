@@ -33,16 +33,20 @@ extern crate lazy_static;
 #[macro_use] mod util;
 mod arch;
 mod cpu;
+mod mem;
 mod driver;
 
 #[no_mangle]
-pub extern fn kmain(_mb_header: *const u32) {
+pub extern fn kmain(_tags_header: *const usize) {
 	// Setup arch-specific things
 	arch::base::env_setup();
 
+	// Setup memory management
+	mem::init();
+
 	loginfo!("Entered kernel main");
 
-	logln!("Welcome to the kernel!");
+	logln!("Welcome to the main kernel!");
 
 	// Wait for something to happen
 	cpu::enable_irqs();

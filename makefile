@@ -41,8 +41,11 @@ endif
 ifndef CFG_arch_isa
   $(error CFG_arch_isa must be defined)
 endif
-ifndef CFG_drivers_tty
-  $(error CFG_drivers_tty must be defined)
+ifndef CFG_drivers_ttyout
+  $(error CFG_drivers_ttyout must be defined)
+endif
+ifndef CFG_drivers_ttyin
+  $(error CFG_drivers_ttyin must be defined)
 endif
 
 TOOL_ASM ?= as
@@ -56,7 +59,8 @@ CARGO_BYPRODUCT = target
 CARGO_FEATURES = \
   arch_base_$(CFG_arch_base) \
   arch_isa_$(CFG_arch_isa) \
-  driver_tty_$(CFG_drivers_tty) \
+  driver_ttyout_$(CFG_drivers_ttyout) \
+  driver_ttyin_$(CFG_drivers_ttyin) \
   $(foreach vd, $(CFG_drivers_video), driver_video_$(vd)) \
   $(foreach sd, $(CFG_drivers_serial), driver_serial_$(sd))
 ifdef CFG_board_model

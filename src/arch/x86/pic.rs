@@ -69,5 +69,5 @@ pub fn init() {
 	port::out8(PORT_PIC2_DATA, 0xFF);
 
 	// TODO: Fix this
-	logok!("Initiated and remapped the PIC");
+	logok!("Initiated and remapped PIC");
 }

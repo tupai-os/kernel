@@ -24,9 +24,9 @@ SECTIONS
 {
 	. = 0x8000;
 	KERNEL_VIRTUAL = 0x0; /* 0xC0000000; */
-	KHEAP_SIZE = 4M;
+	WMA_HEAP_SIZE = 4M;
 
-	kernel_start = .;
+	_kernel_start = .;
 
 	.text.boot : ALIGN(4K)
 	{
@@ -92,11 +92,11 @@ SECTIONS
 		*(.bss.noload)
 
 		. = ALIGN(4K);
-		kheap_start = .;
-		. += KHEAP_SIZE;
-		kheap_end = .;
+		_wma_start = .;
+		. += WMA_HEAP_SIZE;
+		_wma_end = .;
 	}
 
 	. = . - KERNEL_VIRTUAL;
-	kernel_end = .;
+	_kernel_end = .;
 }

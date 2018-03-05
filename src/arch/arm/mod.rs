@@ -42,14 +42,20 @@ pub fn env_setup() {
 		loop { cpu::halt() }
 	}
 
-	// Setup the UART driver first - we need it to display logs!
-	#[cfg(feature = "driver_serial_uart")] {
+	// Setup TTY out drivers first
+	#[cfg(feature = "driver_ttyout_uart")] {
 		uart::init();
 	}
 
 	isa::env_setup();
 
+	// Initiate core features
 	exception::init();
+
+	// Initiate drivers
+	#[cfg(feature = "driver_serial_uart")] {
+		uart::init();
+	}
 }
 
 #[no_mangle]

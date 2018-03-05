@@ -33,11 +33,11 @@ use driver::video::vga;
 use driver::serial::com;
 
 pub fn env_setup() {
-	// Setup tty drivers first
-	#[cfg(feature = "driver_tty_vga")] {
+	// Setup TTY out drivers first
+	#[cfg(feature = "driver_ttyout_vga")] {
 		vga::init();
 	}
-	#[cfg(feature = "driver_tty_com")] {
+	#[cfg(feature = "driver_ttyout_com")] {
 		com::init();
 	}
 

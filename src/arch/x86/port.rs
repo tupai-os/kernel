@@ -63,7 +63,41 @@ pub fn fast_out32(port: u16, value: u32) {
 
 pub fn in8(port: u16) -> u8 {
 	let val: u8;
-	unsafe { asm!("inb %dx, %al" : "={al}"(val) : "{dx}"(port) :: "volatile") }
 	wait(150);
+	unsafe { asm!("inb %dx, %al" : "={al}"(val) : "{dx}"(port) :: "volatile") }
+	val
+}
+
+pub fn in16(port: u16) -> u16 {
+	let val: u16;
+	wait(150);
+	unsafe { asm!("inw %dx, %ax" : "={ax}"(val) : "{dx}"(port) :: "volatile") }
+	val
+}
+
+pub fn in32(port: u16) -> u32 {
+	let val: u32;
+	wait(150);
+	unsafe { asm!("inl %dx, %eax" : "={eax}"(val) : "{dx}"(port) :: "volatile") }
+	val
+}
+
+// Rapid port I/O without delay
+
+pub fn fast_in8(port: u16) -> u8 {
+	let val: u8;
+	unsafe { asm!("inb %dx, %al" : "={al}"(val) : "{dx}"(port) :: "volatile") }
+	val
+}
+
+pub fn fast_in16(port: u16) -> u16 {
+	let val: u16;
+	unsafe { asm!("inw %dx, %ax" : "={ax}"(val) : "{dx}"(port) :: "volatile") }
+	val
+}
+
+pub fn fast_in32(port: u16) -> u32 {
+	let val: u32;
+	unsafe { asm!("inl %dx, %eax" : "={eax}"(val) : "{dx}"(port) :: "volatile") }
 	val
 }
