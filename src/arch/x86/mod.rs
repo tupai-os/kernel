@@ -29,10 +29,16 @@ pub mod cpu;
 #[cfg(feature = "driver_video_vga")]
 use driver::video::vga;
 
+#[cfg(feature = "driver_serial_com")]
+use driver::serial::com;
+
 pub fn env_setup() {
-	// Setup the VGA driver first - we need it to display logs!
-	#[cfg(feature = "driver_video_vga")] {
+	// Setup tty drivers first
+	#[cfg(feature = "driver_tty_vga")] {
 		vga::init();
+	}
+	#[cfg(feature = "driver_tty_com")] {
+		com::init();
 	}
 
 	isa::env_setup();
@@ -40,4 +46,12 @@ pub fn env_setup() {
 	// Initiate core features
 	pic::init();
 	exception::init();
+
+	// Initiate drivers
+	#[cfg(feature = "driver_video_vga")] {
+		vga::init();
+	}
+	#[cfg(feature = "driver_serial_com")] {
+		com::init();
+	}
 }

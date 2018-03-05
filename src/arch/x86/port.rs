@@ -28,6 +28,8 @@ pub fn wait(_cycles: usize) {
 	}
 }
 
+// Output
+
 pub fn out8(port: u16, value: u8) {
 	unsafe { asm!("outb %al, %dx" :: "{dx}"(port), "{al}"(value) :: "volatile") }
 	wait(150);
@@ -55,4 +57,13 @@ pub fn fast_out16(port: u16, value: u16) {
 
 pub fn fast_out32(port: u16, value: u32) {
 	unsafe { asm!("outb %eax, %dx" :: "{dx}"(port), "{eax}"(value) :: "volatile") }
+}
+
+// Input
+
+pub fn in8(port: u16) -> u8 {
+	let val: u8;
+	unsafe { asm!("inb %dx, %al" : "={al}"(val) : "{dx}"(port) :: "volatile") }
+	wait(150);
+	val
 }
