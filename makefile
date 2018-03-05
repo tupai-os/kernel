@@ -20,16 +20,6 @@
 SRC_ROOT = $(abspath .)
 BUILD_ROOT ?= $(SRC_ROOT)/build
 
-ifndef CFG_arch_base
-  $(error CFG_arch_base must be defined)
-endif
-ifndef CFG_arch_isa
-  $(error CFG_arch_isa must be defined)
-endif
-ifndef CFG_drivers_tty
-  $(error CFG_drivers_tty must be defined)
-endif
-
 # Configurable
 
 KERNEL_EXE ?= $(BUILD_ROOT)/tupai.elf
