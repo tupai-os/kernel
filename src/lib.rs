@@ -29,6 +29,7 @@ extern crate spin;
 extern crate compiler_builtins;
 #[macro_use]
 extern crate lazy_static;
+extern crate cstr_core;
 
 #[macro_use] mod util;
 mod arch;

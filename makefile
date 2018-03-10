@@ -145,7 +145,7 @@ asm: $(BUILD_DIRS)
 .PHONY: rust
 rust: $(BUILD_DIRS)
 	@# Why does the following change to RUST_TARGET_PATH work?!
-	@RUST_TARGET_PATH=$(shell pwd) RUSTFLAGS=-g $(TOOL_CARGO) \
+	@RUST_TARGET_PATH=$(shell pwd) RUSTFLAGS="" $(TOOL_CARGO) \
 		build \
 		--release \
 		--target=$(CARGO_TARGET) \

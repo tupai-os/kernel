@@ -64,6 +64,7 @@ SECTIONS
 	.rodata ALIGN(4K) : AT(ADDR(.rodata) - KERNEL_VIRTUAL)
 	{
 		*(.rodata)
+		*(.rodata.*)
 
 		start_ctors = .;
 		*(SORT(.ctors*))
@@ -79,6 +80,7 @@ SECTIONS
 	.data ALIGN(4K) : AT(ADDR(.data) - KERNEL_VIRTUAL)
 	{
 		*(.data)
+		*(.data.*)
 		*(.gnu.linkonce.d*)
 	}
 
