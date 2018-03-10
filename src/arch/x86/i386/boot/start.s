@@ -51,8 +51,8 @@
 		mov $_stack_end.boot, %esp
 
 		// Preserve Multiboot attributes
-		mov %ebx, (_mb_magic.boot)
-		mov %eax, (_mb_header.boot)
+		mov %eax, (_mb_magic.boot)
+		mov %ebx, (_mb_header.boot)
 
 		// Initial boot text
 		push $_boot_msg

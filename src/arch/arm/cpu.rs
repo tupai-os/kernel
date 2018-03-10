@@ -30,7 +30,7 @@ pub fn disable_irqs() {
 	unsafe {
 		asm!(
 			"mrs r0, cpsr;
-			or r0, r0, #0xE0;
+			orr r0, r0, #0xE0;
 			msr cpsr_c, r0"
 			::: "r0"
 		)

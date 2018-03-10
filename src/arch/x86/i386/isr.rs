@@ -26,6 +26,7 @@ pub struct ExceptionFrame {
 	ecx: u32,
 	ebx: u32,
 	eax: u32,
+	kind: u32,
 	error: u32,
 	eip: u32,
 	cs: u32,
@@ -45,11 +46,13 @@ impl fmt::Display for ExceptionFrame {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		writeln!(f,
 			"\
-			\teip: 0x{:X}\n\
-			\tesp: 0x{:X}\n\
-			\tcs:  0x{:X}\n\
-			\tss:  0x{:X}\n",
-			self.eip, self.esp, self.cs, self.ss
+			\tkind:  {}\n\
+			\terror: 0x{:X}\n\
+			\teip:   0x{:X}\n\
+			\tesp:   0x{:X}\n\
+			\tcs:    0x{:X}\n\
+			\tss:    0x{:X}\n",
+			self.kind, self.error, self.eip, self.esp, self.cs, self.ss
 		)
 	}
 }

@@ -42,7 +42,7 @@
 .extern divzero_handler
 .extern debug_handler
 
-.set EXCEPTION_DUMMY_ERROR, 0
+.set EXCEPTION_DUMMY_ERROR, 0xFFFFFFFFFFFFFFFF
 
 .code64
 .section .text
@@ -83,20 +83,47 @@
 		pop %rax
 	.endm
 
-	.align 8
-	_exception_handler0: // DivZero Exception
-		push $EXCEPTION_DUMMY_ERROR // Dummy error
-		PUSH_REGS
-		mov %rsp, %rdi // Pass stack frame
-		call divzero_handler
-		POP_REGS
-		iretq
+	.macro ERROR_EXCEPTION n, name
+		.align 8
+		_exception_handler\n\():
+			push $\n\() // Push exception ID
+			PUSH_REGS
+			mov %rsp, %rdi // Pass stack frame
+			call \name\()_handler
+			POP_REGS
+			iretq
+	.endm
 
-	.align 8
-	_exception_handler1: // Debug Exception
-		push $EXCEPTION_DUMMY_ERROR // Dummy error
-		PUSH_REGS
-		mov %rsp, %rdi // Pass stack frame
-		call debug_handler
-		POP_REGS
-		iretq
+	.macro DUMMY_EXCEPTION n, name
+		.align 8
+		_exception_handler\n\():
+			push $EXCEPTION_DUMMY_ERROR // Dummy error
+			push $\n\() // Push exception ID
+			PUSH_REGS
+			mov %rsp, %rdi // Pass stack frame
+			call \name\()_handler
+			POP_REGS
+			iretq
+	.endm
+
+	DUMMY_EXCEPTION 0 divzero
+	DUMMY_EXCEPTION 1 debug
+	DUMMY_EXCEPTION 2 unimplemented
+	DUMMY_EXCEPTION 3 unimplemented
+	DUMMY_EXCEPTION 4 unimplemented
+	DUMMY_EXCEPTION 5 unimplemented
+	DUMMY_EXCEPTION 6 unimplemented
+	DUMMY_EXCEPTION 7 unimplemented
+	ERROR_EXCEPTION 8 unimplemented
+	DUMMY_EXCEPTION 9 unimplemented
+	ERROR_EXCEPTION 10 unimplemented
+	ERROR_EXCEPTION 11 segnotpresent
+	ERROR_EXCEPTION 12 unimplemented
+	ERROR_EXCEPTION 13 gprotectionfault
+	ERROR_EXCEPTION 14 pagefault
+	DUMMY_EXCEPTION 16 unimplemented
+	ERROR_EXCEPTION 17 unimplemented
+	DUMMY_EXCEPTION 18 unimplemented
+	DUMMY_EXCEPTION 19 unimplemented
+	DUMMY_EXCEPTION 20 unimplemented
+	ERROR_EXCEPTION 30 unimplemented

@@ -3,6 +3,12 @@ name = "tupai"
 version = "0.1.0"
 authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
 
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
 [features]
 # Target base
 arch_base_x86 = []
@@ -22,13 +28,16 @@ board_model_bcm2837 = []
 # Driver features
 # TTY out drivers
 	driver_ttyout_com = []
-	driver_ttyout_vgaconsole = []
+	driver_ttyout_vgatextmode = []
 	driver_ttyout_uart = []
-	driver_ttyout_bcm283xconsole = []
+	driver_ttyout_fbtextmode = []
 # TTY in drivers
 	driver_ttyin_com = []
 	driver_ttyin_kbd = []
 	driver_ttyin_uart = []
+# Tag driver
+	driver_tags_multiboot = []
+	driver_tags_atags = []
 # Video drivers
 	driver_video_vga = []
 	driver_video_bcm283x = []

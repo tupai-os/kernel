@@ -19,10 +19,10 @@
 
 use core::fmt;
 
-#[cfg(feature = "driver_ttyout_com")]            use driver::serial::com    as ttyout;
-#[cfg(feature = "driver_ttyout_vgaconsole")]     use driver::video::vga     as ttyout;
-#[cfg(feature = "driver_ttyout_uart")]           use driver::serial::uart   as ttyout;
-#[cfg(feature = "driver_ttyout_bcm283xconsole")] use driver::video::bcm283x as ttyout;
+#[cfg(feature = "driver_ttyout_com")]             use driver::serial::com    as ttyout;
+#[cfg(feature = "driver_ttyout_vgatextmode")]     use driver::video::vga     as ttyout;
+#[cfg(feature = "driver_ttyout_uart")]            use driver::serial::uart   as ttyout;
+#[cfg(feature = "driver_ttyout_bcm283xtextmode")] use driver::video::bcm283x as ttyout;
 
 struct Writer {}
 

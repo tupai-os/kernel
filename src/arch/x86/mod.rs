@@ -26,19 +26,22 @@ pub mod cpu;
 #[cfg(feature = "arch_isa_x86_64")] pub mod x86_64;
 #[cfg(feature = "arch_isa_x86_64")] pub use arch::x86::x86_64 as isa;
 
-#[cfg(feature = "driver_video_vga")]
-use driver::video::vga;
+// Tag driver
+#[cfg(feature = "driver_tags_multiboot")] use driver::tags::multiboot;
 
-#[cfg(feature = "driver_serial_com")]
-use driver::serial::com;
+// Video drivers
+#[cfg(feature = "driver_video_vga")] use driver::video::vga;
 
-pub fn env_setup() {
+// Serial drivers
+#[cfg(feature = "driver_serial_com")] use driver::serial::com;
+
+pub fn env_setup(tags: *const ()) {
 	// Setup TTY out drivers first
-	#[cfg(feature = "driver_ttyout_vga")] {
-		vga::init();
+	#[cfg(feature = "driver_ttyout_vgatextmode")] {
+		vga::init()
 	}
 	#[cfg(feature = "driver_ttyout_com")] {
-		com::init();
+		com::init()
 	}
 
 	isa::env_setup();
@@ -47,11 +50,16 @@ pub fn env_setup() {
 	pic::init();
 	exception::init();
 
+	// Parse Multiboot data
+	#[cfg(feature = "driver_tags_multiboot")] {
+		multiboot::init(tags)
+	}
+
 	// Initiate drivers
 	#[cfg(feature = "driver_video_vga")] {
-		vga::init();
+		vga::init()
 	}
 	#[cfg(feature = "driver_serial_com")] {
-		com::init();
+		com::init()
 	}
 }

@@ -37,6 +37,9 @@ endif
 ifndef CFG_drivers_ttyin
   $(error CFG_drivers_ttyin must be defined)
 endif
+ifndef CFG_drivers_tags
+  $(error CFG_drivers_tags must be defined)
+endif
 
 TOOL_ASM ?= as
 ASM_OBJ = $(BUILD_ROOT)/tupai-asm.o
@@ -51,6 +54,7 @@ CARGO_FEATURES = \
   arch_isa_$(CFG_arch_isa) \
   driver_ttyout_$(CFG_drivers_ttyout) \
   driver_ttyin_$(CFG_drivers_ttyin) \
+  driver_tags_$(CFG_drivers_tags) \
   $(foreach vd, $(CFG_drivers_video), driver_video_$(vd)) \
   $(foreach sd, $(CFG_drivers_serial), driver_serial_$(sd))
 ifdef CFG_board_model

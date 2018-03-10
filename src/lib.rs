@@ -37,9 +37,9 @@ mod mem;
 mod driver;
 
 #[no_mangle]
-pub extern fn kmain(_tags_header: *const usize) {
+pub extern fn kmain(tags: *const ()) {
 	// Setup arch-specific things
-	arch::base::env_setup();
+	arch::base::env_setup(tags);
 
 	// Setup memory management
 	mem::init();
@@ -62,9 +62,11 @@ pub extern fn _Unwind_Resume() {}
 
 #[lang = "panic_fmt"]
 #[no_mangle]
-pub extern fn panic_fmt() -> ! {
-	logln!("Fmt panic!");
-	loop {
-		cpu::halt()
+pub extern fn panic_fmt(msg: core::fmt::Arguments, file: &'static str, line: u32, column: u32) -> !
+{
+	logln!("Panic in {} on line {} at column {}:\n{}", file, line, column, msg);
+    loop {
+		cpu::disable_irqs();
+		cpu::halt();
 	}
 }

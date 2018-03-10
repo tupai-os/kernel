@@ -36,7 +36,7 @@ pub mod gpio;
 #[cfg(feature = "driver_serial_uart")]
 use driver::serial::uart;
 
-pub fn env_setup() {
+pub fn env_setup(tags: *const ()) {
 	// Only continue if we're the primary core
 	if cpu::get_core_number() != 0 {
 		loop { cpu::halt() }

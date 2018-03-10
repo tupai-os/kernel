@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : cpu.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,26 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(feature = "arch_family_x86")] use arch::x86;
-#[cfg(feature = "arch_family_arm")] use arch::arm;
+#[cfg(feature = "arch_base_x86")] use arch::x86::cpu;
+#[cfg(feature = "arch_base_arm")] use arch::arm::cpu;
 
 pub fn enable_irqs() {
-	#[cfg(feature = "arch_family_x86")] {
-		x86::cpu::enable_irqs();
-	}
-
-	#[cfg(feature = "arch_family_arm")] {
-		arm::cpu::enable_irqs();
-	}
+	cpu::enable_irqs();
 }
 
+pub fn disable_irqs() {
+	cpu::disable_irqs();
+}
 
 pub fn halt() {
-	#[cfg(feature = "arch_family_x86")] {
-		x86::cpu::halt();
-	}
-
-	#[cfg(feature = "arch_family_arm")] {
-		arm::cpu::halt();
-	}
+	cpu::halt();
 }

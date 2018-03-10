@@ -18,3 +18,4 @@
 #[macro_use]
 pub mod logging;
 pub mod mem;
+pub mod elf;

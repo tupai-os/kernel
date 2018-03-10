@@ -1,4 +1,5 @@
-// file : wma.rs
+
+// file : elf.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,30 +16,33 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use util::elf;
+extern {
+	static _kernel_start: u8;
+	static _kernel_end: u8;
 
-use spin::Mutex;
-lazy_static! {
-	static ref END: Mutex<usize> = Mutex::new(elf::wma_bounds().start);
+	static _wma_start: u8;
+	static _wma_end: u8;
 }
 
-pub fn alloc_one<T>() -> &'static mut T {
-	use core::mem;
-	let cend = *END.lock();
-	*END.lock() = cend + mem::size_of::<T>(); // Increment watermark
-	unsafe { &mut *(cend as *mut T) }
+pub struct Bounds {
+	pub start: usize,
+	pub end: usize,
 }
 
-pub fn alloc_many<T>(n: usize) -> &'static mut [T] {
-	use core::{mem, slice};
-	let cend = *END.lock();
-	*END.lock() = cend + mem::size_of::<T>() * n; // Increment watermark
-	unsafe { slice::from_raw_parts_mut(cend as *mut _, n) }
+fn location_of(loc: &u8) -> usize {
+	loc as *const u8 as usize
 }
 
-pub fn init() {
-	logok!("Initiated WMA from 0x{:X} to 0x{:X}",
-		elf::kernel_bounds().start,
-		elf::kernel_bounds().end
-	);
+pub fn kernel_bounds() -> Bounds {
+	Bounds {
+		start: location_of(unsafe { &_kernel_start }),
+		end: location_of(unsafe { &_kernel_end }),
+	}
+}
+
+pub fn wma_bounds() -> Bounds {
+	Bounds {
+		start: location_of(unsafe { &_wma_start }),
+		end: location_of(unsafe { &_wma_end }),
+	}
 }

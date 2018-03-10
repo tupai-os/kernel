@@ -132,8 +132,13 @@ impl Writer {
 	}
 }
 
+use spin::Once;
+static INIT: Once<()> = Once::new();
+
 pub fn init() {
-	WRITER.lock().init();
+	INIT.call_once(|| {
+		WRITER.lock().init();
+	});
 }
 
 pub fn write_char(c: char) {

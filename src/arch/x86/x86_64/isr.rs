@@ -34,6 +34,7 @@ pub struct ExceptionFrame {
 	rcx: u64,
 	rbx: u64,
 	rax: u64,
+	kind: u64,
 	error: u64,
 	rip: u64,
 	cs: u64,
@@ -54,11 +55,13 @@ impl fmt::Display for ExceptionFrame {
 		unsafe {
 			write!(f,
 				"\
-				\trip: 0x{:X}\n\
-				\trsp: 0x{:X}\n\
-				\tcs:  0x{:X}\n\
-				\tss:  0x{:X}",
-				self.rip, self.rsp, self.cs, self.ss
+				\tkind:  {}\n\
+				\terror: 0x{:X}\n\
+				\trip:   0x{:X}\n\
+				\trsp:   0x{:X}\n\
+				\tcs:    0x{:X}\n\
+				\tss:    0x{:X}",
+				self.kind, self.error, self.rip, self.rsp, self.cs, self.ss
 			)
 		}
 	}

@@ -46,41 +46,46 @@ lazy_static! {
 	static ref UART: RegBlock<UartRegs> = RegBlock::new(board::UART0_BASE);
 }
 
+use spin::Once;
+static INIT: Once<()> = Once::new();
+
 pub fn init() {
-	// Acquire UART0 lock
-	let mut uart = UART.lock();
+	INIT.call_once(|| {
+		// Acquire UART0 lock
+		let mut uart = UART.lock();
 
-	// Disable UART0
-	uart.data.write(0);
+		// Disable UART0
+		uart.data.write(0);
 
-	// Set up pins 14 and 15 for UART0
-	gpio::reset_pin_clock(0, 14);
-	gpio::reset_pin_clock(0, 15);
+		// Set up pins 14 and 15 for UART0
+		gpio::reset_pin_clock(0, 14);
+		gpio::reset_pin_clock(0, 15);
 
-	// Clear pending interrupts
-	uart.irq_clear.write(0x7FF);
+		// Clear pending interrupts
+		uart.irq_clear.write(0x7FF);
 
-	// Set baud rate
-	uart.int_baud_div.write(1);
-	uart.frac_baud_div.write(40);
+		// Set baud rate
+		uart.int_baud_div.write(1);
+		uart.frac_baud_div.write(40);
 
-	// Enable FIFO and 8-bit transmission (inc. 1 stop bit)
-	uart.line_control.write((1 << 4) | (1 << 5) | (1 << 6));
+		// Enable FIFO and 8-bit transmission (inc. 1 stop bit)
+		uart.line_control.write((1 << 4) | (1 << 5) | (1 << 6));
 
-	// Mask all interrupts
-	uart.irq_mask.write(
-		(1 << 1) |
-		(1 << 4) |
-		(1 << 5) |
-		(1 << 6) |
-		(1 << 7) |
-		(1 << 8) |
-		(1 << 9) |
-		(1 << 10)
-	);
+		// Mask all interrupts
+		uart.irq_mask.write(
+			(1 << 1) |
+			(1 << 4) |
+			(1 << 5) |
+			(1 << 6) |
+			(1 << 7) |
+			(1 << 8) |
+			(1 << 9) |
+			(1 << 10)
+		);
 
-	// Reenable UART0
-	uart.control.write((1 << 0) | (1 << 8) | (1 << 9));
+		// Reenable UART0
+		uart.control.write((1 << 0) | (1 << 8) | (1 << 9));
+	});
 }
 
 pub fn write(data: u8) {
