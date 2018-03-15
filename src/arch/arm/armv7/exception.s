@@ -65,23 +65,23 @@
 		blx   lr
 
 	.macro IRQ_PREFIX
-		srsdb sp!, #0x13       @ Store the cpsr and sp on the supervisor stack
-		cpsid if, #0x13        @ Switch to supervisor mode, IRQs disabled
+		srsdb sp!, #0x13       @ Store the spsr and pc on the supervisor stack
+		cpsid if,  #0x13       @ Switch to supervisor mode, IRQs disabled
 
-		push {r0-r3, r12, lr} @ Preserve CPU context
+		push  {r0-r3, r12, lr} @ Preserve CPU context
 
-		mov  r0, sp           @ Pass stack frame argument
+		mov   r0, sp           @ Pass stack frame argument
 
-		and  r1, sp, #7       @ Deal with stack misalignment
-		sub  sp, sp, r1
-
-		push {r1}
+		and   r1, sp, #7       @ Deal with stack misalignment
+		sub   sp, sp, r1
+		push  {r1}
 	.endm
 
 	.macro IRQ_SUFFIX
 		pop {r1}
-
 		add sp, sp, r1       @ Restore stack misalignment
+
+		cpsie i @ Reenable interrupts
 
 		pop {r0-r3, r12, lr} @ Restore CPU context
 		rfeia sp!

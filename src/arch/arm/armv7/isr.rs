@@ -26,7 +26,7 @@ pub struct ExceptionFrame {
 	r12: u32,
 	lr: u32,
 	pub pc: u32,
-	cpsr: u32,
+	spsr: u32,
 }
 
 impl ExceptionFrame {
@@ -43,8 +43,8 @@ impl fmt::Display for ExceptionFrame {
 				"\
 				\tpc:   0x{:X}\n\
 				\tlr:   0x{:X}\n\
-				\tcpsr: 0x{:X}",
-				self.pc, self.lr, self.cpsr
+				\tspsr: 0x{:X}",
+				self.pc, self.lr, self.spsr
 			)
 		}
 	}

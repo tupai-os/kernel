@@ -22,7 +22,7 @@ BUILD_ROOT ?= $(SRC_ROOT)/build
 
 # Configurable
 
-KERNEL_EXE ?= $(BUILD_ROOT)/tupai.elf
+KERNEL_ELF ?= $(BUILD_ROOT)/tupai.elf
 KERNEL_MAIN = $(SRC_ROOT)/kmain.zig
 
 ifndef CFG_arch_base
@@ -102,7 +102,7 @@ TOOL_LD_EXEC ?= $(GCC_PREFIX)$(TOOL_LD)
 LINK_SCRIPT = $(SRC_ROOT)/arch/$(CFG_arch_isa)/link.ld
 
 SYMBOLS = $(BUILD_ROOT)/tupai.symb
-SYMBOL_CMD = objdump --wide --syms $(KERNEL_EXE) | grep -P '^[0-9A-Fa-f]+\s.*\s[a-zA-Z_][a-zA-Z0-9_]+$$' | sed -r 's/^(\S+)\s+.*\s+(\S+)$$/\1 \2/' | sort > $(SYMBOLS)
+SYMBOL_CMD = objdump --wide --syms $(KERNEL_ELF) | grep -P '^[0-9A-Fa-f]+\s.*\s[a-zA-Z_][a-zA-Z0-9_]+$$' | sed -r 's/^(\S+)\s+.*\s+(\S+)$$/\1 \2/' | sort > $(SYMBOLS)
 
 # Rules
 
@@ -111,7 +111,7 @@ all: exe symbols
 
 .PHONY: clean
 clean:
-	@rm -r -f $(KERNEL_EXE) $(CARGO_BYPRODUCT)
+	@rm -r -f $(KERNEL_ELF) $(CARGO_BYPRODUCT)
 
 $(BUILD_DIRS):
 	@mkdir -p $@
@@ -130,7 +130,7 @@ exe: $(BUILD_DIRS) asm rust
 	@$(TOOL_LD_EXEC) \
 		-n --gc-sections \
 		-T $(LINK_SCRIPT) \
-		-o $(KERNEL_EXE) \
+		-o $(KERNEL_ELF) \
 		$(ASM_OBJ) $(RUST_LIB)
 
 .PHONY: symbols

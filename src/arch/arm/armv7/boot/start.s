@@ -41,15 +41,6 @@
 			cmp r4, r9
 			blo 1b
 
-		@ Enable the FPU (using coprocessor enable register)
-		push {r0, r1, r2}
-		ldr  r0, =(0xF << 20)
-		mcr  p15, 0, r0, c1, c0, 2
-		mov  r3, #0x40000000       @ Enable FPU in FP exception reg
-		@vmsr FPEXC, r3
-		.long 0xEEE83A10 @ Assembler bug, replace with above line when binutils is fixed!
-		pop {r0, r1, r2}
-
 		@ Place the CPU in IRQ mode, set the IRQ stack
 		mov r0, #0xD2
 		msr cpsr_c, r0
@@ -64,6 +55,15 @@
 		push {r2}
 		bl _relocate_exception_table
 		pop {r2}
+
+		@ Enable the FPU (using coprocessor enable register)
+		push {r0, r1, r2}
+		ldr  r0, =(0xF << 20)
+		mcr  p15, 0, r0, c1, c0, 2
+		mov  r3, #0x40000000       @ Enable FPU in FP exception reg
+		@vmsr FPEXC, r3
+		.long 0xEEE83A10 @ Assembler bug, replace with above line when binutils is fixed!
+		pop {r0, r1, r2}
 
 		mov r0, r2 @ Pass atags pointer
 		ldr r3, =kmain

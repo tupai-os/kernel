@@ -22,7 +22,7 @@ OUTPUT_FORMAT(arm-none-eabi)
 
 SECTIONS
 {
-	. = 0x8000;
+	. = 0x10000; /* 0x8000 */
 	KERNEL_VIRTUAL = 0x0; /* 0xC0000000; */
 	WMA_HEAP_SIZE = 4M;
 
