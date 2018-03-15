@@ -19,7 +19,7 @@ use core::ptr::Unique;
 use volatile::Volatile;
 use spin::Mutex;
 
-use arch::base::isa::VIDEO_MEMORY;
+use arch::base::mem::VIDEO_MEMORY;
 
 pub const COLS: usize = 80;
 pub const ROWS: usize = 25;

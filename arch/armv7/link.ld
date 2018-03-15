@@ -54,6 +54,7 @@ SECTIONS
 		*(.fini*)
 
 		*(.text)
+		*(.text.*)
 		*(.gnu.linkonce.t*)
 	}
 
@@ -85,6 +86,7 @@ SECTIONS
 		*(COMMON)
 		bss_start = .;
 		*(.bss)
+		*(.bss.*)
 		bss_end = .;
 		*(.gnu.linkonce.b*)
 	}

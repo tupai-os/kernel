@@ -68,49 +68,60 @@
 		srsdb sp!, #0x13       @ Store the cpsr and sp on the supervisor stack
 		cpsid if, #0x13        @ Switch to supervisor mode, IRQs disabled
 
-		push  {r0-r3, r12, lr} @ Preserve CPU context
+		push {r0-r3, r12, lr} @ Preserve CPU context
 
-		mov   r0, sp           @ Pass stack frame argument
+		mov  r0, sp           @ Pass stack frame argument
 
-		and   r1, sp, #7       @ Deal with stack misalignment
-		sub   sp, sp, r1
+		and  r1, sp, #7       @ Deal with stack misalignment
+		sub  sp, sp, r1
 
-		push  {r1}
+		push {r1}
 	.endm
 
 	.macro IRQ_SUFFIX
-		pop   {r1}
+		pop {r1}
 
-		add   sp, sp, r1       @ Restore stack misalignment
+		add sp, sp, r1       @ Restore stack misalignment
 
-		pop   {r0-r3, r12, lr} @ Restore CPU context
+		pop {r0-r3, r12, lr} @ Restore CPU context
 		rfeia sp!
 	.endm
+
+	@ Reset handler
+	_reset_handler:
+		IRQ_PREFIX
+		bl reset_handler @ Branch to reset handler
+		IRQ_SUFFIX
+
+	@ Invalid op interrupt handler
+	_invalidop_handler:
+		sub lr, lr, #4  @ Skip lr back to interrupted instruction
+		IRQ_PREFIX
+		bl invalidop_handler @ Branch to Invalid op handler
+		IRQ_SUFFIX
 
 	@ Software interrupt handler
 	_swi_handler:
 		IRQ_PREFIX
-		bl    swi_handler      @ Branch to SWI handler
+		bl swi_handler @ Branch to SWI handler
 		IRQ_SUFFIX
 
 	@ Hardware interrupt handler
 	_hwi_handler:
-		sub   lr, lr, #4       @ Skip lr back to interrupted instruction
+		sub lr, lr, #4  @ Skip lr back to interrupted instruction
 		IRQ_PREFIX
-		bl    hwi_handler      @ Branch to HWI handler
+		bl hwi_handler @ Branch to HWI handler
 		IRQ_SUFFIX
 
 	@ Unimplemented handler
 	_unimplemented_handler:
-		sub   lr, lr, #4       @ Skip lr back to interrupted instruction
+		sub lr, lr, #4            @ Skip lr back to interrupted instruction
 		IRQ_PREFIX
-		bl    unimplemented_handler    @ Branch to unimplemented handler
+		bl unimplemented_handler @ Branch to unimplemented handler
 		IRQ_SUFFIX
 
 	@ Stubs for the rest
 	1:
-		_reset_handler:
-		_invalidop_handler:
 		_prefetchabort_handler:
 		_dataabort_handler:
 		_firq_handler:

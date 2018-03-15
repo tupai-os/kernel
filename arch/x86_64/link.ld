@@ -58,6 +58,7 @@ SECTIONS
 		*(.fini*)
 
 		*(.text)
+		*(.text.*)
 		*(.gnu.linkonce.t*)
 	}
 
@@ -88,6 +89,7 @@ SECTIONS
 	{
 		*(COMMON)
 		*(.bss)
+		*(.bss.*)
 		*(.gnu.linkonce.b*)
 	}
 

@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pub mod isr;
+pub mod mem;
 
 // TODO: Put this in a better place
 pub const VIRTUAL_OFFSET: usize = 0xC0000000;

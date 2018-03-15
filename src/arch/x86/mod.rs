@@ -19,6 +19,7 @@ pub mod port;
 pub mod pic;
 pub mod exception;
 pub mod cpu;
+pub mod mem;
 
 #[cfg(feature = "arch_isa_i386")] pub mod i386;
 #[cfg(feature = "arch_isa_i386")] pub use arch::x86::i386 as isa;
@@ -47,6 +48,8 @@ pub fn env_setup(tags: *const ()) {
 	isa::env_setup();
 
 	// Initiate core features
+	use mem;
+	mem::init();
 	pic::init();
 	exception::init();
 

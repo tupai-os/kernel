@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : mem.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,8 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[macro_use]
-pub mod logging;
-pub mod mem;
-pub mod elf;
-pub mod math;
+use super::isa::mem as isa_mem;
+
+pub const PAGE_SIZE_LOG2: usize = 12;
+pub const PAGE_SIZE_KB: usize = 1 << (PAGE_SIZE_LOG2 - 10);
+pub const PAGE_SIZE: usize = 1 << PAGE_SIZE_LOG2;
+
+pub const VIRTUAL_OFFSET: usize = isa_mem::VIRTUAL_OFFSET;

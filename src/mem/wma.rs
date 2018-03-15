@@ -36,9 +36,14 @@ pub fn alloc_many<T>(n: usize) -> &'static mut [T] {
 	unsafe { slice::from_raw_parts_mut(cend as *mut _, n) }
 }
 
+use spin::Once;
+static INIT: Once<()> = Once::new();
+
 pub fn init() {
-	logok!("Initiated WMA from 0x{:X} to 0x{:X}",
-		elf::kernel_bounds().start,
-		elf::kernel_bounds().end
-	);
+	INIT.call_once(|| {
+		logok!("Initiated WMA from 0x{:X} to 0x{:X}",
+			elf::kernel_bounds().start,
+			elf::kernel_bounds().end
+		);
+	});
 }

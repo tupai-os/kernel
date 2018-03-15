@@ -19,6 +19,7 @@ pub mod mmio;
 pub mod cpu;
 pub mod exception;
 pub mod gpio;
+pub mod mem;
 
 /* ISA modules */
 
@@ -27,6 +28,9 @@ pub mod gpio;
 
 #[cfg(feature = "arch_isa_armv8")] pub mod armv8;
 #[cfg(feature = "arch_isa_armv8")] pub use arch::arm::armv8 as isa;
+
+// Tag driver
+#[cfg(feature = "driver_tags_atags")] use driver::tags::atags;
 
 /* Board modules */
 
@@ -50,7 +54,14 @@ pub fn env_setup(tags: *const ()) {
 	isa::env_setup();
 
 	// Initiate core features
+	use mem;
+	mem::init();
 	exception::init();
+
+	// Parse atags data
+	#[cfg(feature = "driver_tags_atags")] {
+		atags::init(tags)
+	}
 
 	// Initiate drivers
 	#[cfg(feature = "driver_serial_uart")] {

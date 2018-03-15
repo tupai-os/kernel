@@ -49,6 +49,10 @@ pub fn log_args(args: fmt::Arguments) {
 	WRITER.lock().write_fmt(args).unwrap();
 }
 
+pub unsafe fn force_unlock() {
+	WRITER.force_unlock()
+}
+
 macro_rules! log {
 	($($arg:tt)*) => (
 		$crate::util::logging::log_args(format_args!($($arg)*))

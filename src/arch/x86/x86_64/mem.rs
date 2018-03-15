@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : mem.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,8 +15,4 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[macro_use]
-pub mod logging;
-pub mod mem;
-pub mod elf;
-pub mod math;
+pub const VIRTUAL_OFFSET: usize = 0xFFFFFFFF80000000;

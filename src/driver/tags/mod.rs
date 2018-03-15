@@ -17,3 +17,6 @@
 
 #[cfg(feature = "driver_tags_multiboot")]
 pub mod multiboot;
+
+#[cfg(feature = "driver_tags_atags")]
+pub mod atags;

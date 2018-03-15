@@ -175,12 +175,15 @@ enum Tag {
 	Efi64TableTag(&'static Efi64TableTag),
 }
 
+use util::math;
+
 impl TagIterator {
 	fn from(ptr: *const ()) -> TagIterator {
 		use core::mem;
 		let fixed_tag = unsafe { &*(ptr as *const FixedTag) };
+		use arch::base;
 		TagIterator {
-			ptr: (ptr as usize + mem::size_of::<FixedTag>()) & (!0x7),
+			ptr: math::align_up(ptr as usize + mem::size_of::<FixedTag>(), 3),
 		}
 	}
 }
@@ -190,7 +193,7 @@ impl Iterator for TagIterator {
 
 	fn next(&mut self) -> Option<Tag> {
 		let basic_tag = unsafe { &*(self.ptr as *const BasicTag) };
-		self.ptr = (self.ptr + basic_tag.size as usize + 7) & (!0x7); // Increment pointer
+		self.ptr = math::align_up(self.ptr + basic_tag.size as usize, 3); // Increment pointer
 		match basic_tag.kind {
 			0  => None,
 			1  => Some(Tag::BootCommandTag(unsafe { &*(self.ptr as *const BootCommandTag) })),
@@ -288,16 +291,15 @@ impl fmt::Display for Tag {
 
 pub fn init(tags: *const ()) {
 	INIT.call_once(|| {
-		loginfo!("Parsing Multiboot tags...");
+		loginfo!("Parsing Multiboot tags at 0x{:X}...", tags as usize);
 
 		for tag in TagIterator::from(tags) {
 			logln!("|--> {}", tag);
 
 			match tag {
 				Tag::MemoryTag(t) => {
-					// TODO: Add memory preservation
-					//use mem::pfa;
-					//pfa::reserve(0, t.upper, pfa::RAM_FREE);
+					use mem::pfa;
+					pfa::set_range_kb(0, t.upper as usize, pfa::RAM_FREE);
 					logok!("Reserved memory")
 				}
 				_ => {}

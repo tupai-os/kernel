@@ -16,10 +16,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pub mod wma;
-//pub mod pfa;
+pub mod pfa;
 //pub mod heap;
 
 pub fn init() {
 	wma::init();
+	pfa::init();
 	logok!("Initiated memory management");
 }

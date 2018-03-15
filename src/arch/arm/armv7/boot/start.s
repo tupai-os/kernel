@@ -26,7 +26,8 @@
 @ r15 -> 0x00008000 = Execution start
 .section .text.boot
 	_start.boot:
-		@ Clear BSS
+
+	@ Clear BSS
 		ldr r4, =bss_start.boot
 		ldr r9, =bss_end.boot
 		mov r5, #0
@@ -40,8 +41,14 @@
 			cmp r4, r9
 			blo 1b
 
-		@ Relocate the IRQ table
-		bl _relocate_exception_table
+		@ Enable the FPU (using coprocessor enable register)
+		push {r0, r1, r2}
+		ldr  r0, =(0xF << 20)
+		mcr  p15, 0, r0, c1, c0, 2
+		mov  r3, #0x40000000       @ Enable FPU in FP exception reg
+		@vmsr FPEXC, r3
+		.long 0xEEE83A10 @ Assembler bug, replace with above line when binutils is fixed!
+		pop {r0, r1, r2}
 
 		@ Place the CPU in IRQ mode, set the IRQ stack
 		mov r0, #0xD2
@@ -53,6 +60,12 @@
 		msr cpsr_c, r0
 		mov sp, #0x7000
 
+		@ Relocate the IRQ table
+		push {r2}
+		bl _relocate_exception_table
+		pop {r2}
+
+		mov r0, r2 @ Pass atags pointer
 		ldr r3, =kmain
 		blx r3
 

@@ -21,6 +21,32 @@ use super::cpu;
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
+extern fn reset_handler(frame: *mut isr::ExceptionFrame) {
+	logln!("Reset occured!");
+	loop {
+		cpu::halt()
+	}
+}
+
+#[no_mangle]
+#[allow(dead_code)]
+#[linkage = "external"]
+extern fn invalidop_handler(frame: *mut isr::ExceptionFrame) {
+	unsafe {
+		use util::logging;
+		logging::force_unlock()
+	}
+	logln!("Invalid operation occured!");
+	logln!("Frame is at 0x{}", frame as usize);
+	logln!("Machine state:\n{}", unsafe { &*frame }.pc);
+	loop {
+		cpu::halt()
+	}
+}
+
+#[no_mangle]
+#[allow(dead_code)]
+#[linkage = "external"]
 extern fn hwi_handler(frame: *mut isr::ExceptionFrame) {
 	logln!("HWI occured!");
 }
@@ -37,8 +63,14 @@ extern fn swi_handler(frame: *mut isr::ExceptionFrame) {
 #[allow(dead_code)]
 #[linkage = "external"]
 extern fn unimplemented_handler(frame: *mut isr::ExceptionFrame) {
+	unsafe {
+		use util::logging;
+		logging::force_unlock()
+	}
 	logln!("Unimplemented exception occured!");
-	loop { cpu::halt() }
+	loop {
+		cpu::halt()
+	}
 }
 
 
