@@ -40,7 +40,7 @@ pub mod mem;
 #[cfg(feature = "driver_serial_uart")]
 use driver::serial::uart;
 
-pub fn env_setup(tags: *const ()) {
+pub fn init(tags: *const ()) {
 	// Only continue if we're the primary core
 	if cpu::get_core_number() != 0 {
 		loop { cpu::halt() }
@@ -52,7 +52,7 @@ pub fn env_setup(tags: *const ()) {
 		uart::init();
 	}
 
-	isa::env_setup();
+	isa::init();
 
 	// Initiate core features
 	use mem;

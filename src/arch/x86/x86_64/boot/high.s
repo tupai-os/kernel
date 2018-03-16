@@ -32,7 +32,7 @@
 .section .bss
 	.align 16
 	_stack_start:
-		.skip 8192 // 8K stack
+		.skip 16 * 1024 // 16K stack
 	_stack_end:
 
 .code64

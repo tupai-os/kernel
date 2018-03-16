@@ -30,7 +30,7 @@ pub mod mem;
 // Tag driver
 #[cfg(feature = "driver_tags_multiboot")] use driver::tags::multiboot;
 
-pub fn env_setup(tags: *const ()) {
+pub fn init(tags: *const ()) {
 	// Setup TTY out drivers first
 	#[cfg(feature = "driver_ttyout_vgatextmode")] {
 		use driver::video::vga;
@@ -41,7 +41,7 @@ pub fn env_setup(tags: *const ()) {
 		com::init()
 	}
 
-	isa::env_setup();
+	isa::init();
 
 	// Initiate core features
 	use mem;

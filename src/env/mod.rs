@@ -17,11 +17,44 @@
 
 pub mod env;
 
+use env::env::{EnvId, ENVID_MAX, Env};
 use spin::Mutex;
+
 use alloc::btree_map::BTreeMap;
-use env::env::{EnvId, Env};
 lazy_static! {
 	static ref ENVS: Mutex<BTreeMap<EnvId, Env>> = Mutex::new(BTreeMap::new());
+}
+
+bitflags! {
+	pub struct Flags: u8 {
+		const KERNEL = 0b0001;
+	}
+}
+
+static ENVID_COUNTER: Mutex<EnvId> = Mutex::new(0);
+
+fn get_new_id() -> EnvId {
+	let mut envid_counter = ENVID_COUNTER.lock();
+	let id = *envid_counter + 1;
+	*envid_counter = id;
+	id
+}
+
+pub fn create(name: &str, flags: Flags) -> Option<EnvId> {
+	let new_id = get_new_id();
+
+	ENVS.lock().insert(new_id, Env::new(new_id, name));
+
+	logln!("Created environment '{}' with id {}", name, new_id);
+	Some(new_id)
+}
+
+pub fn get<'a>(id: EnvId) -> Option<Env> {
+	let id = id;
+	match ENVS.lock().get_mut(&id) {
+		Some(e) => Some(e.clone()),
+		None => None
+	}
 }
 
 pub fn init() {

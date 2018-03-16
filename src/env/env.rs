@@ -15,10 +15,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub type EnvId = u32;
+pub type EnvId = u64;
+
+pub const ENVID_MAX: EnvId = !0;
 
 use arch::base::isa::paging::PageMap;
+use alloc::string::{String, ToString};
+use alloc::arc::Arc;
+#[derive(Clone)]
 pub struct Env {
-	id: EnvId,
-	mmap: PageMap,
+	pub id: EnvId,
+	pub name: String,
+	pub mmap: Arc<PageMap>,
+}
+
+impl Env {
+	pub fn new(id: EnvId, name: &str) -> Env {
+		Env {
+			id: id,
+			name: name.to_string(),
+			mmap: Arc::new(PageMap::new()),
+		}
+	}
 }

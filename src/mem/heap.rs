@@ -175,7 +175,7 @@ pub fn init() {
 pub fn display(start: usize, n: usize) {
 	unsafe {
 		use HEAP;
-		let mut heap = &*((&HEAP) as *const Heap);
+		let heap = &*((&HEAP) as *const Heap);
 		heap.display(start, n);
 	}
 }

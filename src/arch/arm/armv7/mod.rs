@@ -22,6 +22,6 @@ pub mod paging;
 // TODO: Put this in a better place
 pub const VIRTUAL_OFFSET: usize = 0xC0000000;
 
-pub fn env_setup() {
+pub fn init() {
 	// Nothing yet
 }

@@ -39,6 +39,8 @@ extern crate lazy_static;
 extern crate cstr_core;
 #[macro_use]
 extern crate alloc;
+#[macro_use]
+extern crate bitflags;
 
 #[macro_use] mod util;
 mod arch;
@@ -53,21 +55,34 @@ pub static HEAP: Heap = Heap::empty();
 
 #[no_mangle]
 pub extern fn kmain(tags: *const ()) {
-	// Setup arch-specific things
-	arch::base::env_setup(tags);
+	// Initiate arch-specific things
+	arch::base::init(tags);
 
 	// Initiate core systems
 	env::init();
 
-	// Reserve memory
-	mem::pfa::reserve_kernel();
+	// Create kernel environment
+	let kernel_env = env::create("kernel", env::Flags::KERNEL)
+		.expect("Failed to create kernel environment");
+	logok!("Created kernel environment");
+	use util::elf::kernel_bounds;
+	use mem::pfa::{PageEntry, Flags, set_range};
+	match set_range(
+		kernel_bounds().start,
+		kernel_bounds().end,
+		PageEntry::new(kernel_env, Flags::RAM | Flags::USED)
+	) {
+		Ok(_) => logok!("Reserved kernel from {:p} to {:p}", kernel_bounds().start as *const (), kernel_bounds().end as *const ()),
+		Err(e) => panic!("Could not reserve kernel memory: {:?}", e),
+	}
 
 	// Initiate drivers
 	driver::init();
+	loginfo!("Initiated drivers");
 
-	logok!("Main kernel initiated!");
+	loginfo!("Kernel initiated");
 
-	mem::pfa::display(); // Display memory usage
+	mem::pfa::display();
 
 	// Wait for something to happen
 	loginfo!("Initiation completed, waiting for scheduler...");

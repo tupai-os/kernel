@@ -18,6 +18,14 @@
 use arch::base::mem;
 use env::env::EnvId;
 
+bitflags! {
+	pub struct Flags: u32 {
+		const NONE = 0;
+		const RAM  = 0b0001;
+		const USED = 0b0001;
+	}
+}
+
 const PROC_MAX: usize = (1 << 16);
 const PAGE_NUM: usize = (4 * 1024 * 1024) / mem::PAGE_SIZE_KB; // 4G of pages
 
@@ -25,13 +33,14 @@ const OWNER_INVALID: EnvId = 0;
 const OWNER_FREE: EnvId = 1;
 const OWNER_KERNEL: EnvId = 2;
 
-pub const ENTRY_INVALID: PageEntry = PageEntry::new(OWNER_INVALID);
-pub const ENTRY_FREE_RAM: PageEntry = PageEntry::new(OWNER_FREE);
+pub const ENTRY_INVALID: PageEntry = PageEntry::new(0, Flags::NONE);
+pub const ENTRY_FREE_RAM: PageEntry = PageEntry::new(0, Flags::RAM);
 
 #[repr(C, packed)]
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct PageEntry {
 	owner: EnvId,
+	flags: Flags,
 }
 
 struct PageMap {
@@ -39,9 +48,10 @@ struct PageMap {
 }
 
 impl PageEntry {
-	const fn new(owner: u32) -> PageEntry {
+	pub const fn new(owner: EnvId, flags: Flags) -> PageEntry {
 		PageEntry {
 			owner: owner,
+			flags: flags,
 		}
 	}
 }
@@ -70,12 +80,21 @@ impl PageMap {
 	}
 
 	fn display(&self) {
+		use env;
+
 		let mut centry = ENTRY_INVALID;
 		logln!("Page Map:");
 		for i in 0..self.entries.len() {
 			if self.entries[i] != centry || i == 0 {
 				centry = self.entries[i];
-				logln!("[0x{:0>18X}] owner = {}", i * mem::PAGE_SIZE, centry.owner)
+
+				use alloc::string::ToString;
+				let owner_name = match env::get(centry.owner) {
+					Some(o) => o.name,
+					None => "<none>".to_string(),
+				};
+
+				logln!("[0x{:0>18X}] => {:<12} owner = {} flags = 0b{:0>8b}", i * mem::PAGE_SIZE, owner_name, centry.owner, centry.flags)
 			}
 		}
 		logln!("[0x{:0>18X}] <unmapped>", self.entries.len() * mem::PAGE_SIZE)
@@ -122,15 +141,7 @@ pub fn set_range_kb(start_kb: usize, end_kb: usize, entry: PageEntry) -> Result<
 
 pub fn set_range(start: usize, end: usize, entry: PageEntry) -> Result<(), AllocErr> {
 	use util::math::align_up;
-	set_range_kb(start >> 10, align_up(end, 10) >> 10, PageEntry::new(OWNER_KERNEL))
-}
-
-pub fn reserve_kernel() {
-	use util::elf;
-	match set_range(elf::kernel_bounds().start, elf::kernel_bounds().end, PageEntry::new(OWNER_KERNEL)) {
-		Ok(_) => logok!("Reserved kernel from {:p} to {:p}", elf::kernel_bounds().start as *const (), elf::kernel_bounds().end as *const ()),
-		Err(e) => panic!("Could not reserve kernel memory: {:?}", e),
-	}
+	set_range_kb(start >> 10, align_up(end, 10) >> 10, entry)
 }
 
 pub fn display() {

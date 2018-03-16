@@ -21,7 +21,7 @@ pub mod isr;
 pub mod mem;
 pub mod paging;
 
-pub fn env_setup() {
+pub fn init() {
 	gdt::init();
 	idt::init();
 }
