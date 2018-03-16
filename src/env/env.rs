@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : env.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,13 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod gdt;
-pub mod idt;
-pub mod isr;
-pub mod mem;
-pub mod paging;
+pub type EnvId = u32;
 
-pub fn env_setup() {
-	gdt::init();
-	idt::init();
+use arch::base::isa::paging::PageMap;
+pub struct Env {
+	id: EnvId,
+	mmap: PageMap,
 }

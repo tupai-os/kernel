@@ -294,7 +294,7 @@ pub fn init(tags: *const ()) {
 		loginfo!("Parsing Multiboot tags at 0x{:X}...", tags as usize);
 
 		let mut tag_count = 0;
-		for tag in iter {
+		for tag in TagIterator::from(tags) {
 			//logln!("|--> {}", tag);
 			match tag {
 				Tag::MemoryTag(t) => {

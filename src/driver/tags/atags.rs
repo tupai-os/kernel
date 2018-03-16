@@ -1,4 +1,3 @@
-
 // file : atags.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>

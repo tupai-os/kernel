@@ -20,3 +20,8 @@ pub mod vga;
 
 #[cfg(feature = "driver_video_bcm283x")]
 pub mod bcm283x;
+
+pub fn init() {
+	#[cfg(feature = "driver_video_vga")] { vga::init(); }
+	#[cfg(feature = "driver_video_bcm283x")] { bcm283x::init(); }
+}

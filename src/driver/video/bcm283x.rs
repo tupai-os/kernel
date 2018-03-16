@@ -19,3 +19,7 @@ use arch::arm::bcm2836;
 
 use core::fmt;
 use spin::Mutex;
+
+pub fn init() {
+	// Nothing yet
+}

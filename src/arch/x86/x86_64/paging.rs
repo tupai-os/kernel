@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : paging.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,13 +15,32 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod gdt;
-pub mod idt;
-pub mod isr;
-pub mod mem;
-pub mod paging;
+const MAP_DEPTH: usize = 4;
+const ENTRIES_PER_LEVEL: usize = 512;
 
-pub fn env_setup() {
-	gdt::init();
-	idt::init();
+type Entry = u64;
+
+#[repr(packed, C)]
+struct PageLevel {
+	entries: [Entry; ENTRIES_PER_LEVEL],
+}
+
+pub struct PageMap {
+	root: PageLevel,
+}
+
+impl PageLevel {
+	fn empty() -> PageLevel {
+		PageLevel {
+			entries: [0; ENTRIES_PER_LEVEL],
+		}
+	}
+}
+
+impl PageMap {
+	pub fn new() -> PageMap{
+		PageMap {
+			root: PageLevel::empty(),
+		}
+	}
 }

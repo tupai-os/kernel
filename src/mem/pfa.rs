@@ -16,13 +16,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use arch::base::mem;
+use env::env::EnvId;
 
 const PROC_MAX: usize = (1 << 16);
 const PAGE_NUM: usize = (4 * 1024 * 1024) / mem::PAGE_SIZE_KB; // 4G of pages
 
-const OWNER_INVALID: u32 = 0;
-const OWNER_FREE: u32 = 1;
-const OWNER_KERNEL: u32 = 2;
+const OWNER_INVALID: EnvId = 0;
+const OWNER_FREE: EnvId = 1;
+const OWNER_KERNEL: EnvId = 2;
 
 pub const ENTRY_INVALID: PageEntry = PageEntry::new(OWNER_INVALID);
 pub const ENTRY_FREE_RAM: PageEntry = PageEntry::new(OWNER_FREE);
@@ -30,7 +31,7 @@ pub const ENTRY_FREE_RAM: PageEntry = PageEntry::new(OWNER_FREE);
 #[repr(C, packed)]
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct PageEntry {
-	owner: u32,
+	owner: EnvId,
 }
 
 struct PageMap {

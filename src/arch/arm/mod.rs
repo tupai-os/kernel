@@ -48,6 +48,7 @@ pub fn env_setup(tags: *const ()) {
 
 	// Setup TTY out drivers first
 	#[cfg(feature = "driver_ttyout_uart")] {
+		use driver::serial::uart;
 		uart::init();
 	}
 
@@ -61,11 +62,6 @@ pub fn env_setup(tags: *const ()) {
 	// Parse atags data
 	#[cfg(feature = "driver_tags_atags")] {
 		atags::init(tags)
-	}
-
-	// Initiate drivers
-	#[cfg(feature = "driver_serial_uart")] {
-		uart::init();
 	}
 }
 

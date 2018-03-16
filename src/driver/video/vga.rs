@@ -138,6 +138,7 @@ static INIT: Once<()> = Once::new();
 pub fn init() {
 	INIT.call_once(|| {
 		WRITER.lock().init();
+		logok!("Initiated VGA driver");
 	});
 }
 

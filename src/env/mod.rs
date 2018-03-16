@@ -15,13 +15,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod gdt;
-pub mod idt;
-pub mod isr;
-pub mod mem;
-pub mod paging;
+pub mod env;
 
-pub fn env_setup() {
-	gdt::init();
-	idt::init();
+use spin::Mutex;
+use alloc::btree_map::BTreeMap;
+use env::env::{EnvId, Env};
+lazy_static! {
+	static ref ENVS: Mutex<BTreeMap<EnvId, Env>> = Mutex::new(BTreeMap::new());
+}
+
+pub fn init() {
+	ENVS.lock();
+	logok!("Initiated environments");
 }

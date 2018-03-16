@@ -18,3 +18,9 @@
 pub mod tags;
 pub mod video;
 pub mod serial;
+
+pub fn init() {
+	// Initiate each driver subsystem
+	serial::init();
+	video::init();
+}

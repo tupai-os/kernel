@@ -20,3 +20,9 @@ pub mod com;
 
 #[cfg(feature = "driver_serial_uart")]
 pub mod uart;
+
+
+pub fn init() {
+	#[cfg(feature = "driver_serial_com")] { com::init(); }
+	#[cfg(feature = "driver_serial_uart")] { uart::init(); }
+}

@@ -27,6 +27,9 @@
 #![feature(allocator_internals)]
 #![no_std]
 
+// Disable this later
+#![allow(dead_code)]
+
 extern crate rlibc;
 extern crate volatile;
 extern crate spin;
@@ -42,6 +45,7 @@ mod arch;
 mod cpu;
 mod mem;
 mod driver;
+mod env;
 
 use mem::heap::Heap;
 #[global_allocator]
@@ -52,14 +56,21 @@ pub extern fn kmain(tags: *const ()) {
 	// Setup arch-specific things
 	arch::base::env_setup(tags);
 
-	loginfo!("Entered kernel main");
+	// Initiate core systems
+	env::init();
 
-	// Initiate memory things
+	// Reserve memory
 	mem::pfa::reserve_kernel();
+
+	// Initiate drivers
+	driver::init();
+
+	logok!("Main kernel initiated!");
+
 	mem::pfa::display(); // Display memory usage
-	logln!("Welcome to the main kernel!");
 
 	// Wait for something to happen
+	loginfo!("Initiation completed, waiting for scheduler...");
 	cpu::enable_irqs();
 	cpu::halt();
 }

@@ -30,18 +30,14 @@ pub mod mem;
 // Tag driver
 #[cfg(feature = "driver_tags_multiboot")] use driver::tags::multiboot;
 
-// Video drivers
-#[cfg(feature = "driver_video_vga")] use driver::video::vga;
-
-// Serial drivers
-#[cfg(feature = "driver_serial_com")] use driver::serial::com;
-
 pub fn env_setup(tags: *const ()) {
 	// Setup TTY out drivers first
 	#[cfg(feature = "driver_ttyout_vgatextmode")] {
+		use driver::video::vga;
 		vga::init()
 	}
 	#[cfg(feature = "driver_ttyout_com")] {
+		use driver::serial::com;
 		com::init()
 	}
 
@@ -56,13 +52,5 @@ pub fn env_setup(tags: *const ()) {
 	// Parse Multiboot data
 	#[cfg(feature = "driver_tags_multiboot")] {
 		multiboot::init(tags)
-	}
-
-	// Initiate drivers
-	#[cfg(feature = "driver_video_vga")] {
-		vga::init()
-	}
-	#[cfg(feature = "driver_serial_com")] {
-		com::init()
 	}
 }

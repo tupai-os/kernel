@@ -51,7 +51,6 @@ impl Heap {
 		self.blocks = wma::alloc_many::<Block>(BLOCK_COUNT).as_ptr() as usize;
 
 		let mut map = self.get_map();
-		let mut blocks = self.get_blocks();
 
 		// Free all entries
 		for entry in map.iter_mut() {
