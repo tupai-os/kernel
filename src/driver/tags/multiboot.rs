@@ -299,7 +299,7 @@ pub fn init(tags: *const ()) {
 			match tag {
 				Tag::MemoryTag(t) => {
 					use mem::pfa;
-					pfa::set_range_kb(0, t.upper as usize, pfa::RAM_FREE);
+					pfa::set_range_kb(1024, t.upper as usize, pfa::ENTRY_FREE_RAM); // 1M to XK
 					logok!("Reserved memory")
 				}
 				_ => {}

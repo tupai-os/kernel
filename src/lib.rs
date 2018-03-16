@@ -44,6 +44,7 @@ pub extern fn kmain(tags: *const ()) {
 
 	// Setup memory management
 	mem::init();
+	mem::pfa::display();
 
 	loginfo!("Entered kernel main");
 

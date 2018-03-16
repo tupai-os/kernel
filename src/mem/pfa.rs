@@ -20,17 +20,17 @@ use arch::base::mem;
 const PROC_MAX: usize = (1 << 16);
 const PAGE_NUM: usize = (4 * 1024 * 1024) / mem::PAGE_SIZE_KB; // 4G of pages
 
-const OWNER_INVALID: u16 = 0;
-const OWNER_FREE: u16 = 1;
+const OWNER_INVALID: u32 = 0;
+const OWNER_FREE: u32 = 1;
+const OWNER_KERNEL: u32 = 2;
 
-pub const RAM_INVALID: PageEntry = PageEntry::invalid();
-pub const RAM_FREE: PageEntry = PageEntry::free();
+pub const ENTRY_INVALID: PageEntry = PageEntry::new(OWNER_INVALID);
+pub const ENTRY_FREE_RAM: PageEntry = PageEntry::new(OWNER_FREE);
 
 #[repr(C, packed)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct PageEntry {
-	owner: u16,
-	attr: u16,
+	owner: u32,
 }
 
 struct PageMap {
@@ -38,17 +38,9 @@ struct PageMap {
 }
 
 impl PageEntry {
-	const fn invalid() -> PageEntry {
+	const fn new(owner: u32) -> PageEntry {
 		PageEntry {
-			owner: OWNER_INVALID,
-			attr: 0b0,
-		}
-	}
-
-	const fn free() -> PageEntry {
-		PageEntry {
-			owner: OWNER_FREE,
-			attr: 0b0,
+			owner: owner,
 		}
 	}
 }
@@ -75,6 +67,17 @@ impl PageMap {
 			Ok(())
 		}
 	}
+
+	fn display(&self) {
+		let mut centry = ENTRY_INVALID;
+		logln!("Page Map:");
+		for i in 0..self.entries.len() {
+			if self.entries[i] != centry || i == 0 {
+				centry = self.entries[i];
+				logln!("[{:0>#010X}] (owner = {})", i * mem::PAGE_SIZE, centry.owner)
+			}
+		}
+	}
 }
 
 use spin::Mutex;
@@ -87,7 +90,7 @@ static INIT: Once<()> = Once::new();
 
 pub fn init() {
 	INIT.call_once(|| {
-		MAP.lock().clear_with(PageEntry::invalid());
+		MAP.lock().clear_with(ENTRY_INVALID);
 
 		logok!("Initiated PFA with {} entries", MAP.lock().entries.len());
 	});
@@ -114,4 +117,18 @@ pub fn set_range_kb(start_kb: usize, end_kb: usize, entry: PageEntry) -> Result<
 	}
 
 	Ok(())
+}
+
+pub fn set_range(start: usize, end: usize, entry: PageEntry) -> Result<(), AllocErr> {
+	use util::math::align_up;
+	set_range_kb(start >> 10, align_up(end, 10) >> 10, PageEntry::new(OWNER_KERNEL))
+}
+
+pub fn reserve_kernel() {
+	use util::elf;
+	set_range(elf::kernel_bounds().start, elf::kernel_bounds().end, PageEntry::new(OWNER_KERNEL));
+}
+
+pub fn display() {
+	MAP.lock().display()
 }
