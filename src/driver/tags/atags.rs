@@ -83,19 +83,22 @@ pub fn init(tags: *const ()) {
 	INIT.call_once(|| {
 		loginfo!("Parsing atags at 0x{:X}...", tags as usize);
 
+		let mut tag_count = 0;
 		for tag in TagIterator::from(tags) {
-			logln!("|--> {}", tag);
-
+			//logln!("|--> {}", tag);
 			match tag {
 				Tag::MemTag(t) => {
 					use mem::pfa;
-					pfa::set_range_kb(t.start as usize >> 10, t.bytes as usize >> 10, pfa::RAM_FREE);
+					pfa::set_range_kb(t.start as usize >> 10, t.bytes as usize >> 10, pfa::ENTRY_FREE_RAM)
+						.expect_err("Could not reserve free RAM");
 					logok!("Reserved memory")
 				}
 				_ => {}
 			}
+
+			tag_count += 1;
 		}
 
-		logok!("Parsed atags");
+		logok!("Parsed {} atags", tag_count);
 	});
 }

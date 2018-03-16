@@ -293,19 +293,22 @@ pub fn init(tags: *const ()) {
 	INIT.call_once(|| {
 		loginfo!("Parsing Multiboot tags at 0x{:X}...", tags as usize);
 
-		for tag in TagIterator::from(tags) {
-			logln!("|--> {}", tag);
-
+		let mut tag_count = 0;
+		for tag in iter {
+			//logln!("|--> {}", tag);
 			match tag {
 				Tag::MemoryTag(t) => {
 					use mem::pfa;
-					pfa::set_range_kb(1024, t.upper as usize, pfa::ENTRY_FREE_RAM); // 1M to XK
+					pfa::set_range_kb(1024, t.upper as usize, pfa::ENTRY_FREE_RAM) // 1M to XK
+						.expect_err("Could not reserve free RAM");
 					logok!("Reserved memory")
 				}
 				_ => {}
 			}
+
+			tag_count += 1;
 		}
 
-		logok!("Parsed Multiboot tags");
+		logok!("Parsed {} Multiboot tags", tag_count);
 	});
 }

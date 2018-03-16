@@ -97,6 +97,7 @@ pub fn init() {
 	});
 }
 
+#[derive(Debug)]
 pub enum AllocErr {
 	Conflict,
 	OutOfRange,
@@ -125,8 +126,10 @@ pub fn set_range(start: usize, end: usize, entry: PageEntry) -> Result<(), Alloc
 
 pub fn reserve_kernel() {
 	use util::elf;
-	set_range(elf::kernel_bounds().start, elf::kernel_bounds().end, PageEntry::new(OWNER_KERNEL));
-	logok!("Reserved kernel from {:p} to {:p}", elf::kernel_bounds().start as *const (), elf::kernel_bounds().end as *const ());
+	match set_range(elf::kernel_bounds().start, elf::kernel_bounds().end, PageEntry::new(OWNER_KERNEL)) {
+		Ok(_) => logok!("Reserved kernel from {:p} to {:p}", elf::kernel_bounds().start as *const (), elf::kernel_bounds().end as *const ()),
+		Err(e) => panic!("Could not reserve kernel memory: {:?}", e),
+	}
 }
 
 pub fn display() {
