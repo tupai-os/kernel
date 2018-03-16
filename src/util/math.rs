@@ -20,7 +20,7 @@ pub fn align_down(x: usize, log2: usize) -> usize {
 }
 
 pub fn align_up(x: usize, log2: usize) -> usize {
-	(x - 1 + (1 << log2)) & (!0 << log2)
+	(x + (1 << log2) - 1) & (!0 << log2)
 }
 
 pub fn addr_to_page_index(addr: usize) -> usize {

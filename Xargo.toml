@@ -1,0 +1,8 @@
+[target.i386-tupai.dependencies]
+alloc = {}
+
+[target.x86_64-tupai.dependencies]
+alloc = {}
+
+[target.armv7-tupai.dependencies]
+alloc = {}

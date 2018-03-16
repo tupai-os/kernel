@@ -24,7 +24,7 @@ SECTIONS
 {
 	. = 0x10000; /* 0x8000 */
 	KERNEL_VIRTUAL = 0x0; /* 0xC0000000; */
-	WMA_HEAP_SIZE = 4M;
+	WMA_HEAP_SIZE = 48M;
 
 	_kernel_start = .;
 

@@ -25,14 +25,26 @@ lazy_static! {
 pub fn alloc_one<T>() -> &'static mut T {
 	use core::mem;
 	let cend = *END.lock();
-	*END.lock() = cend + mem::size_of::<T>(); // Increment watermark
+	let alloc_size = mem::size_of::<T>();
+
+	if cend + alloc_size > elf::wma_bounds().end {
+		panic!("Attempted to allocate past bounds of WMA")
+	}
+
+	*END.lock() = cend + alloc_size; // Increment watermark
 	unsafe { &mut *(cend as *mut T) }
 }
 
 pub fn alloc_many<T>(n: usize) -> &'static mut [T] {
 	use core::{mem, slice};
 	let cend = *END.lock();
-	*END.lock() = cend + mem::size_of::<T>() * n; // Increment watermark
+	let alloc_size = mem::size_of::<T>() * n;
+
+	if cend + alloc_size > elf::wma_bounds().end {
+		panic!("Attempted to allocate past bounds of WMA")
+	}
+
+	*END.lock() = cend + alloc_size; // Increment watermark
 	unsafe { slice::from_raw_parts_mut(cend as *mut _, n) }
 }
 
@@ -41,9 +53,9 @@ static INIT: Once<()> = Once::new();
 
 pub fn init() {
 	INIT.call_once(|| {
-		logok!("Initiated WMA from 0x{:X} to 0x{:X}",
-			elf::kernel_bounds().start,
-			elf::kernel_bounds().end
+		logok!("Initiated WMA from {:p} to {:p}",
+			elf::wma_bounds().start as *const (),
+			elf::wma_bounds().end as *const ()
 		);
 	});
 }

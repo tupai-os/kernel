@@ -17,10 +17,11 @@
 
 pub mod wma;
 pub mod pfa;
-//pub mod heap;
+pub mod heap;
 
 pub fn init() {
 	wma::init();
 	pfa::init();
+	heap::init();
 	logok!("Initiated memory management");
 }

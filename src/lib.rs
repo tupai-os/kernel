@@ -21,6 +21,10 @@
 #![feature(const_fn)]
 #![feature(linkage)]
 #![feature(compiler_builtins_lib)]
+#![feature(alloc)]
+#![feature(global_allocator)]
+#![feature(allocator_api)]
+#![feature(allocator_internals)]
 #![no_std]
 
 extern crate rlibc;
@@ -30,6 +34,8 @@ extern crate compiler_builtins;
 #[macro_use]
 extern crate lazy_static;
 extern crate cstr_core;
+#[macro_use]
+extern crate alloc;
 
 #[macro_use] mod util;
 mod arch;
@@ -37,17 +43,20 @@ mod cpu;
 mod mem;
 mod driver;
 
+use mem::heap::Heap;
+#[global_allocator]
+pub static HEAP: Heap = Heap::empty();
+
 #[no_mangle]
 pub extern fn kmain(tags: *const ()) {
 	// Setup arch-specific things
 	arch::base::env_setup(tags);
 
-	// Setup memory management
-	mem::init();
-	mem::pfa::display();
-
 	loginfo!("Entered kernel main");
 
+	// Initiate memory things
+	mem::pfa::reserve_kernel();
+	mem::pfa::display(); // Display memory usage
 	logln!("Welcome to the main kernel!");
 
 	// Wait for something to happen

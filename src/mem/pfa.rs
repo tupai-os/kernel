@@ -74,9 +74,10 @@ impl PageMap {
 		for i in 0..self.entries.len() {
 			if self.entries[i] != centry || i == 0 {
 				centry = self.entries[i];
-				logln!("[{:0>#010X}] (owner = {})", i * mem::PAGE_SIZE, centry.owner)
+				logln!("[0x{:0>18X}] owner = {}", i * mem::PAGE_SIZE, centry.owner)
 			}
 		}
+		logln!("[0x{:0>18X}] <unmapped>", self.entries.len() * mem::PAGE_SIZE)
 	}
 }
 
@@ -90,9 +91,9 @@ static INIT: Once<()> = Once::new();
 
 pub fn init() {
 	INIT.call_once(|| {
-		MAP.lock().clear_with(ENTRY_INVALID);
-
-		logok!("Initiated PFA with {} entries", MAP.lock().entries.len());
+		let mut map = MAP.lock();
+		map.clear_with(ENTRY_INVALID);
+		logok!("Initiated PFA at {:p} with {} entries", map.entries.as_ptr(), map.entries.len());
 	});
 }
 
@@ -105,8 +106,6 @@ pub fn set_range_kb(start_kb: usize, end_kb: usize, entry: PageEntry) -> Result<
 	use util::math::kb_to_page_index;
 	let start_index = kb_to_page_index(start_kb);
 	let size = kb_to_page_index(end_kb - start_kb);
-
-	logln!("Len = {}", size);
 
 	let mut map = MAP.lock();
 	for i in 0..size {
@@ -127,6 +126,7 @@ pub fn set_range(start: usize, end: usize, entry: PageEntry) -> Result<(), Alloc
 pub fn reserve_kernel() {
 	use util::elf;
 	set_range(elf::kernel_bounds().start, elf::kernel_bounds().end, PageEntry::new(OWNER_KERNEL));
+	logok!("Reserved kernel from {:p} to {:p}", elf::kernel_bounds().start as *const (), elf::kernel_bounds().end as *const ());
 }
 
 pub fn display() {
