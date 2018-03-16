@@ -39,9 +39,9 @@
 	_stack_end.boot:
 
 	_mb_magic.boot:
-		.long
+		.long 0
 	_mb_header.boot:
-		.long
+		.long 0
 
 .code32
 .section .text.boot

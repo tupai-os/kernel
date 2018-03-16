@@ -94,7 +94,7 @@ impl PageMap {
 					None => "<none>".to_string(),
 				};
 
-				logln!("[0x{:0>18X}] => {:<12} owner = {} flags = 0b{:0>8b}", i * mem::PAGE_SIZE, owner_name, centry.owner, centry.flags)
+				logln!("[0x{:0>18X}] => {:<8} owner = {} flags = 0b{:0>8b}", i * mem::PAGE_SIZE, owner_name, centry.owner, centry.flags)
 			}
 		}
 		logln!("[0x{:0>18X}] <unmapped>", self.entries.len() * mem::PAGE_SIZE)
