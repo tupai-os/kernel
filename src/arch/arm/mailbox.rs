@@ -17,10 +17,12 @@
 
 use arch::arm::mmio::{RegBlock, Reg32};
 use super::board;
+use arch::base::isa;
 
 #[allow(dead_code)]
 #[repr(u8)]
-enum Channel {
+#[derive(Copy, Clone)]
+pub enum Channel {
 	PowerManagement = 0,
 	Framebuffer     = 1,
 	VirtualUart     = 2,
@@ -52,31 +54,46 @@ lazy_static! {
 	static ref MAILBOX: RegBlock<Mailbox> = RegBlock::new(board::MAILBOX_BASE);
 }
 
-pub fn write(channel: Channel, addr: u32) {
-	if addr & 0xF != 0 {
-		panic!("Mailbox address must be 16-aligned");
+pub fn recv(channel: Channel) -> Result<u32, ()> {
+	if channel as u8 > 0xF {
+		logln!("Mailbox channel cannot be larger than 16");
+		Err(())
+	} else {
+		let mut mailbox = MAILBOX.lock();
+
+		loop {
+			while mailbox.status.read() & MAILBOX_EMPTY != 0 {
+				isa::flush_cache();
+			}
+
+			isa::mem_barrier();
+			let msg = mailbox.read.read();
+			isa::mem_barrier();
+
+			if msg & 0xF == channel as u32 {
+				return Ok(msg & !0xF)
+			}
+		}
+	}
+}
+
+pub fn send(channel: Channel, data: u32) -> Result<(), ()> {
+	if data & 0xF != 0 {
+		logln!("Mailbox data address must be 16-aligned");
+		Err(())
 	} else {
 		// Acquire mailbox lock
 		let mut mailbox = MAILBOX.lock();
 
 		// Wait for mailbox to empty, then write
-		while mailbox.status.read() & MAILBOX_FULL != 0 {}
-		mailbox.write.write(addr | channel as u32);
-	}
-}
+		while mailbox.status.read() & MAILBOX_FULL != 0 {
+			logln!("Waiting for mailbox to be empty...");
+			isa::flush_cache();
+		}
 
-pub fn read(channel: Channel) -> bool {
-	// Acquire mailbox lock
-	let mut mailbox = MAILBOX.lock();
+		isa::mem_barrier();
+		mailbox.write.write(data | channel as u32);
 
-	// Wait for mailbox to empty, then write
-	while mailbox.status.read() & MAILBOX_EMPTY != 0 {}
-	mailbox.write.write(addr | channel as u32);
-
-	// Read if the channel matches
-	if mailbox.read.read() & 0xF == channel as u32 {
-		return mailbox.read.read() >> 4 == 0;
-	} else {
-		return false;
+		Ok(())
 	}
 }

@@ -20,6 +20,7 @@ pub mod cpu;
 pub mod exception;
 pub mod gpio;
 pub mod mem;
+pub mod mailbox;
 
 /* ISA modules */
 

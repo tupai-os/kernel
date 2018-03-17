@@ -1,4 +1,4 @@
-// file : bcm2836.rs
+// file : paging.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,6 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub const UART0_BASE: usize = 0x3F201000;
-pub const GPIO_BASE: usize = 0x3F200000;
-pub const MAILBOX_BASE: usize = 0x3F00B880;
+pub struct PageMap {
+	// Nothing yet
+}
+
+impl PageMap {
+	pub fn new() -> PageMap{
+		PageMap {
+		}
+	}
+}

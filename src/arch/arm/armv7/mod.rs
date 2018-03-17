@@ -22,6 +22,18 @@ pub mod paging;
 // TODO: Put this in a better place
 pub const VIRTUAL_OFFSET: usize = 0xC0000000;
 
+pub fn mem_barrier() {
+	unsafe {
+		asm!("dsb")
+	}
+}
+
+pub fn flush_cache() {
+	unsafe {
+		asm!("mcr p15, #0, $0, c7, c14, #0" :: "r"(0))
+	}
+}
+
 pub fn init() {
 	// Nothing yet
 }

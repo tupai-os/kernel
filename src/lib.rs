@@ -27,8 +27,9 @@
 #![feature(allocator_internals)]
 #![no_std]
 
-// Disable this later
+// Disable these later
 #![allow(dead_code)]
+#![feature(core_float)]
 
 extern crate rlibc;
 extern crate volatile;
