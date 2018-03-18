@@ -1,4 +1,4 @@
-// file : exception.s
+// file : isr.s
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -14,33 +14,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-.global _exception_handler0
-.global _exception_handler1
-.global _exception_handler2
-.global _exception_handler3
-.global _exception_handler4
-.global _exception_handler5
-.global _exception_handler6
-.global _exception_handler7
-.global _exception_handler8
-.global _exception_handler9
-.global _exception_handler10
-.global _exception_handler11
-.global _exception_handler12
-.global _exception_handler13
-.global _exception_handler14
-// <Reserved>
-.global _exception_handler16
-.global _exception_handler17
-.global _exception_handler18
-.global _exception_handler19
-.global _exception_handler20
-// <Reserved>
-.global _exception_handler30
-
-.extern divzero_handler
-.extern debug_handler
 
 .set EXCEPTION_DUMMY_ERROR, 0xFFFFFFFFFFFFFFFF
 
@@ -85,24 +58,30 @@
 
 	.macro ERROR_EXCEPTION n, name
 		.align 8
+		.global _exception_handler\n\()
 		_exception_handler\n\():
 			push $\n\() // Push exception ID
 			PUSH_REGS
 			mov %rsp, %rdi // Pass stack frame
+			.extern \name\()_handler
 			call \name\()_handler
 			POP_REGS
+			add $16, %rsp // Remove error and ID from stack
 			iretq
 	.endm
 
 	.macro DUMMY_EXCEPTION n, name
 		.align 8
+		.global _exception_handler\n\()
 		_exception_handler\n\():
 			push $EXCEPTION_DUMMY_ERROR // Dummy error
 			push $\n\() // Push exception ID
 			PUSH_REGS
 			mov %rsp, %rdi // Pass stack frame
+			.extern \name\()_handler
 			call \name\()_handler
 			POP_REGS
+			add $16, %rsp // Remove error and ID from stack
 			iretq
 	.endm
 
@@ -127,3 +106,18 @@
 	DUMMY_EXCEPTION 19 unimplemented
 	DUMMY_EXCEPTION 20 unimplemented
 	ERROR_EXCEPTION 30 unimplemented
+
+	.macro INTERRUPT name
+		.align 8
+		.global _\name\()_handler
+		_\name\()_handler:
+			PUSH_REGS
+			mov %rsp, %rdi // Pass stack frame
+			.extern \name\()_handler
+			call \name\()_handler
+			POP_REGS
+			iretq
+	.endm
+
+	INTERRUPT pit
+	INTERRUPT spurious

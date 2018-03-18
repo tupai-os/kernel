@@ -15,6 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+use core::fmt;
+
+pub trait Frame {
+	fn get_instruction_ptr(&self) -> u64;
+}
+
 #[allow(dead_code)]
 #[repr(C, packed)]
 #[derive(Copy, Clone)]
@@ -43,13 +49,43 @@ pub struct ExceptionFrame {
 	ss: u64,
 }
 
-impl ExceptionFrame {
-	pub fn get_instruction_ptr(&self) -> u64 {
+#[allow(dead_code)]
+#[repr(C, packed)]
+#[derive(Copy, Clone)]
+pub struct InterruptFrame {
+	rbp: u64,
+	r15: u64,
+	r14: u64,
+	r13: u64,
+	r12: u64,
+	r11: u64,
+	r10: u64,
+	r9: u64,
+	r8: u64,
+	rdi: u64,
+	rsi: u64,
+	rdx: u64,
+	rcx: u64,
+	rbx: u64,
+	rax: u64,
+	rip: u64,
+	cs: u64,
+	rflags: u64,
+	rsp: u64,
+	ss: u64,
+}
+
+impl Frame for ExceptionFrame {
+	fn get_instruction_ptr(&self) -> u64 {
+		self.rip
+	}
+}
+impl Frame for InterruptFrame {
+	fn get_instruction_ptr(&self) -> u64 {
 		self.rip
 	}
 }
 
-use core::fmt;
 impl fmt::Display for ExceptionFrame {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		unsafe {
@@ -62,6 +98,21 @@ impl fmt::Display for ExceptionFrame {
 				\tcs:    0x{:X}\n\
 				\tss:    0x{:X}",
 				self.kind, self.error, self.rip, self.rsp, self.cs, self.ss
+			)
+		}
+	}
+}
+
+impl fmt::Display for InterruptFrame {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		unsafe {
+			write!(f,
+				"\
+				\trip:   0x{:X}\n\
+				\trsp:   0x{:X}\n\
+				\tcs:    0x{:X}\n\
+				\tss:    0x{:X}",
+				self.rip, self.rsp, self.cs, self.ss
 			)
 		}
 	}

@@ -88,7 +88,9 @@ pub extern fn kmain(tags: *const ()) {
 	// Wait for something to happen
 	loginfo!("Initiation completed, waiting for scheduler...");
 	cpu::enable_irqs();
-	cpu::halt();
+	loop {
+		cpu::halt()
+	}
 }
 
 #[lang = "eh_personality"]

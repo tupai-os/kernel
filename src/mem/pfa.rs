@@ -20,9 +20,14 @@ use env::env::EnvId;
 
 bitflags! {
 	pub struct Flags: u32 {
-		const NONE = 0;
-		const RAM  = 0b0001;
-		const USED = 0b0001;
+		const NONE    = 0;
+
+		const RAM     = 0b0001; // Is this page standard R/W RAM?
+		const MMIO    = 0b0010; // Is this page part of a MMIO block?
+		const _UNUSED = 0b0011;
+
+		const USED    = 0b0100; // Is this page actively used?
+		const STATIC  = 0b1000; // Is this page immovable (i.e: physically memory-mapped)?
 	}
 }
 

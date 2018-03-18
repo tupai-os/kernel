@@ -50,7 +50,7 @@ impl Heap {
 		self.map = wma::alloc_many::<MapEntry>(BLOCK_COUNT).as_ptr() as usize;
 		self.blocks = wma::alloc_many::<Block>(BLOCK_COUNT).as_ptr() as usize;
 
-		let mut map = self.get_map();
+		let map = self.get_map();
 
 		// Free all entries
 		for entry in map.iter_mut() {
@@ -100,7 +100,7 @@ impl Heap {
 use alloc::heap::{Alloc, AllocErr, Layout};
 unsafe impl<'a> Alloc for &'a Heap {
 	unsafe fn alloc(&mut self, layout: Layout) -> Result<*mut u8, AllocErr> {
-		let mut map = self.get_map();
+		let map = self.get_map();
 
 		use util::math;
 		let n_blocks = math::align_up(layout.size(), BLOCK_SIZE_LOG2) >> BLOCK_SIZE_LOG2;
@@ -134,7 +134,7 @@ unsafe impl<'a> Alloc for &'a Heap {
 	}
 
 	unsafe fn dealloc(&mut self, ptr: *mut u8, layout: Layout) {
-		let mut map = self.get_map();
+		let map = self.get_map();
 
 		let i = self.ptr_to_index(ptr).expect("Attempted to dealloc block-unaligned pointer");
 
@@ -159,7 +159,7 @@ pub fn init() {
 	unsafe {
 		// I wish there was nicer syntax than this. I've not found it yet.
 		// Prepare for some wild casting
-		let mut heap = &mut *((&HEAP) as *const Heap as usize as *mut Heap);
+		let heap = &mut *((&HEAP) as *const Heap as usize as *mut Heap);
 		heap.init();
 	}
 	logok!("Initiated heap at {:p} with {} blocks and map at {:p}", HEAP.blocks as *const (), BLOCK_COUNT, HEAP.map as *const ());

@@ -25,6 +25,8 @@ const PORT_PIC2_CMD: u16 = 0xA0;
 const PORT_PIC1_DATA: u16 = PORT_PIC1_CMD + 1;
 const PORT_PIC2_DATA: u16 = PORT_PIC2_CMD + 1;
 
+const EOI: u8 = 0x20;
+
 #[allow(dead_code)]
 #[repr(u8)]
 enum ICW1 {
@@ -70,4 +72,21 @@ pub fn init() {
 
 	// TODO: Fix this
 	logok!("Initiated and remapped PIC");
+}
+
+pub fn unmask(irq: usize) {
+	if irq < 16 {
+		let port: u16 = if irq < 8 { PORT_PIC1_DATA } else { PORT_PIC2_DATA };
+		let mask = port::in8(port) & !(1 << (irq as u8 & 0b111));
+		port::out8(port, mask);
+	}
+}
+
+pub fn ack(irq: usize) {
+	if irq < 16 {
+		if irq >= 8 {
+			port::out8(PORT_PIC2_CMD, EOI);
+		}
+		port::out8(PORT_PIC1_CMD, EOI);
+	}
 }

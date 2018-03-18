@@ -149,3 +149,7 @@ pub fn init() {
 pub fn set_handler(vec: usize, func: IsrPtr) {
 	IDT.lock().set_entry(vec, func);
 }
+
+pub fn reinstall() {
+	IDT.lock().install()
+}

@@ -15,6 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+use core::fmt;
+
+pub trait Frame {
+	fn get_instruction_ptr(&self) -> u32;
+}
+
 #[allow(dead_code)]
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -35,13 +41,35 @@ pub struct ExceptionFrame {
 	ss: u32,
 }
 
-impl ExceptionFrame {
-	pub fn get_instruction_ptr(&self) -> u32 {
+#[allow(dead_code)]
+#[repr(C, packed)]
+#[derive(Copy, Clone)]
+pub struct InterruptFrame {
+	ebp: u32,
+	edi: u32,
+	esi: u32,
+	edx: u32,
+	ecx: u32,
+	ebx: u32,
+	eax: u32,
+	eip: u32,
+	cs: u32,
+	eflags: u32,
+	esp: u32,
+	ss: u32,
+}
+
+impl Frame for ExceptionFrame {
+	fn get_instruction_ptr(&self) -> u32 {
+		self.eip
+	}
+}
+impl Frame for InterruptFrame {
+	fn get_instruction_ptr(&self) -> u32 {
 		self.eip
 	}
 }
 
-use core::fmt;
 impl fmt::Display for ExceptionFrame {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		writeln!(f,
@@ -53,6 +81,19 @@ impl fmt::Display for ExceptionFrame {
 			\tcs:    0x{:X}\n\
 			\tss:    0x{:X}\n",
 			self.kind, self.error, self.eip, self.esp, self.cs, self.ss
+		)
+	}
+}
+
+impl fmt::Display for InterruptFrame {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		writeln!(f,
+			"\
+			\teip:   0x{:X}\n\
+			\tesp:   0x{:X}\n\
+			\tcs:    0x{:X}\n\
+			\tss:    0x{:X}\n",
+			self.eip, self.esp, self.cs, self.ss
 		)
 	}
 }

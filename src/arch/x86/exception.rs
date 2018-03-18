@@ -159,6 +159,8 @@ pub fn init() {
 	// <Reserved>
 	idt::set_handler(30, _exception_handler30 as idt::IsrPtr);
 
+	idt::reinstall();
+
 	// TODO: Fix this
 	logok!("Set exception handlers");
 }

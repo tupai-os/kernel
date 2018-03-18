@@ -20,6 +20,8 @@ pub mod pic;
 pub mod exception;
 pub mod cpu;
 pub mod mem;
+pub mod spurious;
+pub mod pit;
 
 #[cfg(feature = "arch_isa_i386")] pub mod i386;
 #[cfg(feature = "arch_isa_i386")] pub use arch::x86::i386 as isa;
@@ -48,6 +50,10 @@ pub fn init(tags: *const ()) {
 	mem::init();
 	pic::init();
 	exception::init();
+
+	// Initiate hardware exception things
+	spurious::init();
+	pit::init();
 
 	// Parse Multiboot data
 	#[cfg(feature = "driver_tags_multiboot")] {
