@@ -21,15 +21,23 @@
 #![feature(const_fn)]
 #![feature(linkage)]
 #![feature(compiler_builtins_lib)]
-#![feature(alloc)]
-#![feature(global_allocator)]
+//#![feature(alloc)]
+//#![feature(global_allocator)]
 #![feature(allocator_api)]
 #![feature(allocator_internals)]
+#![feature(global_asm)]
 #![no_std]
 
 // Disable these later
 #![allow(dead_code)]
 #![feature(core_float)]
+
+mod hal;
+mod isa;
+mod chipset;
+mod family;
+
+//global_asm!(include_str!("test.s"));
 
 extern crate rlibc;
 extern crate volatile;
@@ -38,58 +46,17 @@ extern crate compiler_builtins;
 #[macro_use]
 extern crate lazy_static;
 extern crate cstr_core;
-#[macro_use]
-extern crate alloc;
+//#[macro_use]
+//extern crate alloc;
 #[macro_use]
 extern crate bitflags;
 
-#[macro_use] mod util;
-mod arch;
-mod cpu;
-mod mem;
-mod driver;
-mod env;
-
-use mem::heap::Heap;
-#[global_allocator]
-pub static HEAP: Heap = Heap::empty();
-
 #[no_mangle]
 pub extern fn kmain(tags: *const ()) {
-	// Initiate arch-specific things
-	arch::base::init(tags);
+	loop {}
 
-	// Initiate core systems
-	env::init();
-
-	// Create kernel environment
-	let kernel_env = env::create("kernel", env::Flags::KERNEL)
-		.expect("Failed to create kernel environment");
-	logok!("Created kernel environment");
-	use util::elf::kernel_bounds;
-	use mem::pfa::{PageEntry, Flags, set_range};
-	match set_range(
-		kernel_bounds().start,
-		kernel_bounds().end,
-		PageEntry::new(kernel_env, Flags::RAM | Flags::USED)
-	) {
-		Ok(_) => logok!("Reserved kernel from {:p} to {:p}", kernel_bounds().start as *const (), kernel_bounds().end as *const ()),
-		Err(e) => panic!("Could not reserve kernel memory: {:?}", e),
-	}
-
-	// Initiate drivers
-	driver::init();
-	loginfo!("Initiated drivers");
-
-	loginfo!("Kernel initiated");
-
-	mem::pfa::display();
-
-	// Wait for something to happen
-	loginfo!("Initiation completed, waiting for scheduler...");
-	cpu::enable_irqs();
-	loop {
-		cpu::halt()
+	#[cfg(test_cfg = "MY_VALUE")] {
+		compile_error!("Hi there!");
 	}
 }
 
@@ -104,9 +71,5 @@ pub extern fn _Unwind_Resume() {}
 #[no_mangle]
 pub extern fn panic_fmt(msg: core::fmt::Arguments, file: &'static str, line: u32, column: u32) -> !
 {
-	logln!("Panic in {} on line {} at column {}:\n{}", file, line, column, msg);
-    loop {
-		cpu::disable_irqs();
-		cpu::halt();
-	}
+	loop {}
 }

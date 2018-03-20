@@ -126,7 +126,7 @@ check:
 		--features "$(CARGO_FEATURES)"
 
 .PHONY: exe
-exe: $(BUILD_DIRS) asm rust
+exe: $(BUILD_DIRS) rust
 	@$(TOOL_LD_EXEC) \
 		-n --gc-sections \
 		-T $(LINK_SCRIPT) \
@@ -137,10 +137,6 @@ exe: $(BUILD_DIRS) asm rust
 symbols: exe
 	@echo "Generating symbols..."
 	@$(SYMBOL_CMD)
-
-.PHONY: asm
-asm: $(BUILD_DIRS)
-	@$(TOOL_ASM_EXEC) $(ASM_FLAGS) -o $(ASM_OBJ) -c $(ASM_FILES)
 
 .PHONY: rust
 rust: $(BUILD_DIRS)
