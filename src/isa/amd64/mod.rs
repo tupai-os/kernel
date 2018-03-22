@@ -1,4 +1,4 @@
-// file : x86.rs
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -14,3 +14,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+global_asm!(include_str!("boot/check.s"));
+global_asm!(include_str!("boot/high.s"));
+global_asm!(include_str!("boot/paging.s"));
+global_asm!(include_str!("boot/paging64.s"));
+global_asm!(include_str!("boot/vga.s"));
+global_asm!(include_str!("boot/start.s"));

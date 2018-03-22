@@ -1,4 +1,4 @@
-// file : amd64.rs
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -14,3 +14,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+global_asm!(include_str!("boot/check.s"));
+global_asm!(include_str!("boot/multiboot.s"));
+global_asm!(include_str!("boot/vga.s"));
