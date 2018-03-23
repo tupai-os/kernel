@@ -70,7 +70,7 @@ check:
 .PHONY: exe
 exe: $(BUILD_DIRS) rust
 	@echo "Linking kernel..."
-	$(TOOL_LINKER) \
+	@$(TOOL_LINKER) \
 		-n --gc-sections \
 		-T $(LINK_SCRIPT) \
 		-o $(KERNEL_ELF) \

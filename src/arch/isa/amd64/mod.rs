@@ -1,4 +1,4 @@
-// file : ibmpc.rs
+// file : amd64.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,6 +15,33 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub fn init() {
-	// Nothing yet
+pub mod boot;
+pub mod gdt;
+pub mod idt;
+pub mod isr;
+pub mod port;
+
+use driver;
+
+pub fn enable_irqs() {
+	unsafe { asm!("sti"); }
+}
+
+pub fn disable_irqs() {
+	unsafe { asm!("cli"); }
+}
+
+pub fn halt() {
+	unsafe { asm!("hlt"); }
+}
+
+#[no_mangle]
+#[allow(dead_code)]
+#[linkage = "external"]
+pub extern fn kearly(tags: *const ()) {
+	use kmain;
+
+	driver::init();
+	let args = ["testing"];
+	kmain(&args);
 }

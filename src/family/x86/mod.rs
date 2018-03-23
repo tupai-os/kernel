@@ -18,3 +18,9 @@
 global_asm!(include_str!("boot/check.s"));
 global_asm!(include_str!("boot/multiboot.s"));
 global_asm!(include_str!("boot/vga.s"));
+
+mod exception;
+
+pub fn init() {
+	exception::init();
+}

@@ -32,13 +32,6 @@
 #![allow(dead_code)]
 #![feature(core_float)]
 
-mod hal;
-mod isa;
-mod chipset;
-mod family;
-
-//global_asm!(include_str!("test.s"));
-
 extern crate rlibc;
 extern crate volatile;
 extern crate spin;
@@ -51,13 +44,20 @@ extern crate cstr_core;
 #[macro_use]
 extern crate bitflags;
 
-#[no_mangle]
-pub extern fn kmain(tags: *const ()) {
-	loop {}
+#[macro_use]
+mod log;
+mod arch;
+mod driver;
 
-	#[cfg(test_cfg = "MY_VALUE")] {
-		compile_error!("Hi there!");
-	}
+pub use arch::hal as hal;
+
+#[no_mangle]
+#[allow(dead_code)]
+#[linkage = "external"]
+pub extern fn kmain(args: &[&str]) {
+	logln!("Kernel args: {:?}", args);
+	hal::irq::enable();
+	hal::cpu::halt();
 }
 
 #[lang = "eh_personality"]

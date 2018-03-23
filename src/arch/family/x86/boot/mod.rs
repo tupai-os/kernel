@@ -1,4 +1,4 @@
-// file : ibmpc.rs
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,6 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub fn init() {
-	// Nothing yet
-}
+global_asm!(include_str!("check.s"));
+global_asm!(include_str!("multiboot.s"));
+global_asm!(include_str!("vga.s"));

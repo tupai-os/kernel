@@ -20,7 +20,7 @@ fn write_cfg(key: &str, val: &str) {
 }
 
 fn write_feature(key: &str) {
-	println!("cargo:rustc-cfg={}", key);
+	println!("cargo:rustc-cfg={}=\"true\"", key);
 }
 
 fn main() {
@@ -30,6 +30,6 @@ fn main() {
 	write_cfg("arch_isa",     "amd64"); // ia32, a32, a64
 	write_cfg("arch_chipset", "ibmpc"); // bcm2836
 
+	write_feature("log_serial_com");
 	write_feature("driver_serial_com");
-	write_feature("driver_serial_uart");
 }

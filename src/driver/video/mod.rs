@@ -1,4 +1,4 @@
-// file : ibmpc.rs
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,6 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#[cfg(feature = "driver_video_vga")]
+pub mod vga;
+
+#[cfg(feature = "driver_video_bcm283x")]
+pub mod bcm283x;
+
 pub fn init() {
-	// Nothing yet
+	#[cfg(feature = "driver_video_vga")] { vga::init(); }
+	#[cfg(feature = "driver_video_bcm283x")] { bcm283x::init(); }
 }

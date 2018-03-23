@@ -1,4 +1,4 @@
-// file : ibmpc.rs
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,6 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#[cfg(driver_serial_com = "true")]
+pub mod com;
+
+#[cfg(driver_serial_uart = "true")]
+pub mod uart;
+
 pub fn init() {
-	// Nothing yet
+	#[cfg(driver_serial_com = "true")] { com::init(); }
+	#[cfg(driver_serial_uart = "true")] { uart::init(); }
 }

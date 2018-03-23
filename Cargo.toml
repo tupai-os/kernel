@@ -42,6 +42,11 @@ panic = "abort"
 	# More specific HAL configuration
 	arch_chipset_ibmpc   = ["arch_family_x86"]
 	arch_chipset_bcm2836 = ["arch_family_arm"]
+# Logging features
+	log_serial_com = ["driver_serial_com"]
+# Driver features
+	# Serial
+	driver_serial_com = ["arch_family_x86"]
 
 [lib]
 crate-type = ["staticlib"]

@@ -15,6 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub use isa::amd64 as isa;
+pub use isa::amd64     as isa;
 pub use chipset::ibmpc as chipset;
-pub use family::x86 as family;
+pub use family::x86    as family;
+
+pub fn init() {
+	isa::init();
+	family::init();
+	chipset::init();
+}
