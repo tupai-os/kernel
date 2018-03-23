@@ -25,6 +25,7 @@ global_asm!(include_str!("isr.s"));
 
 use driver;
 use arch::family::x86;
+use arch::tags::multiboot;
 
 pub const PAGE_SIZE_KB_LOG2: usize = 4;
 
@@ -50,6 +51,8 @@ pub extern fn kearly(tags: *const ()) {
 	idt::init();
 
 	x86::init();
+
+	multiboot::parse(tags);
 
 	driver::init();
 	let args = ["testing"];

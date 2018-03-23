@@ -19,3 +19,4 @@ pub mod hal;
 pub mod isa;
 pub mod family;
 pub mod chipset;
+pub mod tags;

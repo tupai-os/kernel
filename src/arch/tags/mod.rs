@@ -1,4 +1,4 @@
-// file : build.rs
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,22 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-fn write_cfg(key: &str, val: &str) {
-	println!("cargo:rustc-cfg={}=\"{}\"", key, val);
-}
+#[cfg(arch_tags = "multiboot")] pub mod multiboot;
+#[cfg(arch_tags = "atags")]     pub mod atags;
 
-fn write_feature(key: &str) {
-	println!("cargo:rustc-cfg={}=\"true\"", key);
-}
-
-fn main() {
-	// Testing only
-	write_cfg("arch_hal",     "x64");       // i386, armv7, armv8
-	write_cfg("arch_family",  "x86");       // arm
-	write_cfg("arch_isa",     "amd64");     // ia32, a32, a64
-	write_cfg("arch_chipset", "pc");        // bcm2836
-	write_cfg("arch_tags",    "multiboot"); // atags
-
-	write_feature("log_serial_com");
-	write_feature("driver_serial_com");
-}
+// Export selected tags module
+#[cfg(arch_tags = "multiboot")] pub use self::multiboot as selected;
+#[cfg(arch_tags = "atags")]     pub use self::atags     as selected;
