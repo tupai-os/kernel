@@ -1,4 +1,4 @@
-// file : armv7.rs
+// file : process.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,4 +15,27 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-compile_error!("This module is unimplemented");
+use hal::mem::PageMap;
+
+pub type Id = u64;
+
+pub const ID_MAX: Id = !0;
+
+use alloc::string::{String, ToString};
+use alloc::arc::Arc;
+#[derive(Clone)]
+pub struct Process {
+	pub id: Id,
+	pub name: String,
+	pub mmap: Arc<PageMap>,
+}
+
+impl Process {
+	pub fn new(id: Id, name: &str) -> Process {
+		Process {
+			id: id,
+			name: name.to_string(),
+			mmap: Arc::new(PageMap::new()),
+		}
+	}
+}

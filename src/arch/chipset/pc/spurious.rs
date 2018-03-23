@@ -1,4 +1,4 @@
-// file : ibmpc.rs
+// file : spurious.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,6 +15,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+use arch::isa::selected::{idt, isr};
+use super::pic;
+
+const IRQ: usize = 7;
+
+extern {
+	fn _spurious_handler();
+}
+
 pub fn init() {
-	// Nothing yet
+	idt::set_handler(pic::REMAP_OFFSET + IRQ, _spurious_handler as idt::IsrPtr);
+	idt::reinstall();
+	logok!("Set spurious IRQ handler");
+}
+
+#[no_mangle]
+#[allow(dead_code)]
+#[linkage = "external"]
+extern fn spurious_handler(frame: *mut isr::InterruptFrame) {
+	// Do nothing
 }

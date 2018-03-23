@@ -1,4 +1,4 @@
-// file : ia32.rs
+// file : math.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,4 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-compile_error!("This module is unimplemented");
+use hal::mem::PAGE_SIZE_KB_LOG2;
+
+pub fn align_down(x: usize, log2: usize) -> usize {
+	x & (!0 << log2)
+}
+
+pub fn align_up(x: usize, log2: usize) -> usize {
+	(x + (1 << log2) - 1) & (!0 << log2)
+}
+
+pub fn addr_to_page_index(addr: usize) -> usize {
+	addr >> (PAGE_SIZE_KB_LOG2 + 10)
+}
+
+pub fn kb_to_page_index(kb: usize) -> usize {
+	kb >> PAGE_SIZE_KB_LOG2
+}

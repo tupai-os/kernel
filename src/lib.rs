@@ -21,8 +21,8 @@
 #![feature(const_fn)]
 #![feature(linkage)]
 #![feature(compiler_builtins_lib)]
-//#![feature(alloc)]
-//#![feature(global_allocator)]
+#![feature(alloc)]
+#![feature(global_allocator)]
 #![feature(allocator_api)]
 #![feature(allocator_internals)]
 #![feature(global_asm)]
@@ -39,25 +39,36 @@ extern crate compiler_builtins;
 #[macro_use]
 extern crate lazy_static;
 extern crate cstr_core;
-//#[macro_use]
-//extern crate alloc;
+#[macro_use]
+extern crate alloc;
 #[macro_use]
 extern crate bitflags;
 
 #[macro_use]
 mod log;
 mod arch;
+mod util;
+mod mem;
+mod process;
 mod driver;
 
-pub use arch::hal as hal;
+pub use arch::hal::selected as hal;
+
+use mem::heap::Heap;
+#[global_allocator]
+pub static HEAP: Heap = Heap::empty();
 
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
 pub extern fn kmain(args: &[&str]) {
 	logln!("Kernel args: {:?}", args);
+
+	// Wait for something to happen
 	hal::irq::enable();
-	hal::cpu::halt();
+	loop {
+		hal::cpu::halt();
+	}
 }
 
 #[lang = "eh_personality"]
@@ -71,5 +82,8 @@ pub extern fn _Unwind_Resume() {}
 #[no_mangle]
 pub extern fn panic_fmt(msg: core::fmt::Arguments, file: &'static str, line: u32, column: u32) -> !
 {
-	loop {}
+	log!("PANIC: {} in {} on line {} at column {}", msg, file, line, column);
+	loop {
+		hal::irq::disable();
+	}
 }

@@ -17,3 +17,7 @@
 
 #[cfg(arch_family = "x86")] pub mod x86;
 #[cfg(arch_family = "arm")] pub mod arm;
+
+// Export selected family module
+#[cfg(arch_family = "x86")] pub use self::x86 as selected;
+#[cfg(arch_family = "arm")] pub use self::arm as selected;

@@ -19,9 +19,14 @@ pub mod boot;
 pub mod gdt;
 pub mod idt;
 pub mod isr;
-pub mod port;
+pub mod mem;
+
+global_asm!(include_str!("isr.s"));
 
 use driver;
+use arch::family::x86;
+
+pub const PAGE_SIZE_KB_LOG2: usize = 4;
 
 pub fn enable_irqs() {
 	unsafe { asm!("sti"); }
@@ -40,6 +45,11 @@ pub fn halt() {
 #[linkage = "external"]
 pub extern fn kearly(tags: *const ()) {
 	use kmain;
+
+	gdt::init();
+	idt::init();
+
+	x86::init();
 
 	driver::init();
 	let args = ["testing"];

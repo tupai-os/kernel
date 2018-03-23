@@ -1,4 +1,4 @@
-// file : arm.rs
+// file : mem.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,4 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-compile_error!("This module is unimplemented");
+use core::marker::Copy;
+
+pub unsafe fn copy<T: Copy>(src: &[T], dest: &mut [T]) {
+	dest.copy_from_slice(src)
+}

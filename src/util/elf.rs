@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : elf.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,8 +15,33 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(arch_chipset = "ibmpc")]   pub mod ibmpc;
-#[cfg(arch_chipset = "bcm2836")] pub mod bcm2836;
+extern {
+	static _kernel_start: u8;
+	static _kernel_end: u8;
 
-#[cfg(arch_chipset = "ibmpc")]   pub use self::ibmpc::*;
-#[cfg(arch_chipset = "bcm2836")] pub use self::bcm2836::*;
+	static _wma_start: u8;
+	static _wma_end: u8;
+}
+
+pub struct Bounds {
+	pub start: usize,
+	pub end: usize,
+}
+
+fn location_of(loc: &u8) -> usize {
+	loc as *const u8 as usize
+}
+
+pub fn kernel_bounds() -> Bounds {
+	Bounds {
+		start: location_of(unsafe { &_kernel_start }),
+		end: location_of(unsafe { &_kernel_end }),
+	}
+}
+
+pub fn wma_bounds() -> Bounds {
+	Bounds {
+		start: location_of(unsafe { &_wma_start }),
+		end: location_of(unsafe { &_wma_end }),
+	}
+}

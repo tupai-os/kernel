@@ -44,12 +44,13 @@
 //	 fn get_map(virt_page: usize) -> Option<usize>;
 // }
 
-#[cfg(arch_hal = "i386")]  mod i386;
-#[cfg(arch_hal = "x64")]   mod x64;
-#[cfg(arch_hal = "armv7")] mod armv7;
-#[cfg(arch_hal = "armv8")] mod armv8;
+#[cfg(arch_hal = "i386")]  pub mod i386;
+#[cfg(arch_hal = "x64")]   pub mod x64;
+#[cfg(arch_hal = "armv7")] pub mod armv7;
+#[cfg(arch_hal = "armv8")] pub mod armv8;
 
-#[cfg(arch_hal = "i386")]  pub use self::i386::*;
-#[cfg(arch_hal = "x64")]   pub use self::x64::*;
-#[cfg(arch_hal = "armv7")] pub use self::armv7::*;
-#[cfg(arch_hal = "armv8")] pub use self::armv8::*;
+// Export selected HAL module
+#[cfg(arch_hal = "i386")]  pub use self::i386  as selected;
+#[cfg(arch_hal = "x64")]   pub use self::x64   as selected;
+#[cfg(arch_hal = "armv7")] pub use self::armv7 as selected;
+#[cfg(arch_hal = "armv8")] pub use self::armv8 as selected;

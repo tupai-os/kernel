@@ -92,3 +92,10 @@ pub mod irq {
 	pub use self::amd64::enable_irqs as enable;
 	pub use self::amd64::disable_irqs as disable;
 }
+
+pub mod mem {
+	use arch::isa::amd64;
+
+	pub use self::amd64::PAGE_SIZE_KB_LOG2;
+	pub use self::amd64::mem::PageMap;
+}

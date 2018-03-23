@@ -28,7 +28,7 @@ fn main() {
 	write_cfg("arch_hal",     "x64");   // i386, armv7, armv8
 	write_cfg("arch_family",  "x86");   // arm
 	write_cfg("arch_isa",     "amd64"); // ia32, a32, a64
-	write_cfg("arch_chipset", "ibmpc"); // bcm2836
+	write_cfg("arch_chipset", "pc"); // bcm2836
 
 	write_feature("log_serial_com");
 	write_feature("driver_serial_com");

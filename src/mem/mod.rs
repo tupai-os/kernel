@@ -15,18 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod idt;
-pub mod gdt;
-pub mod isr;
-pub mod cpu;
-
-global_asm!(include_str!("boot/check.s"));
-global_asm!(include_str!("boot/high.s"));
-global_asm!(include_str!("boot/paging.s"));
-global_asm!(include_str!("boot/paging64.s"));
-global_asm!(include_str!("boot/vga.s"));
-global_asm!(include_str!("boot/start.s"));
+pub mod wma;
+pub mod pfa;
+pub mod heap;
 
 pub fn init() {
-	// Nothing yet
+	wma::init();
+	pfa::init();
+	heap::init();
+	logok!("Initiated memory management");
 }

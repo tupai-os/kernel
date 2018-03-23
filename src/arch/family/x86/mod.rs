@@ -15,9 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-mod boot;
-mod exception;
+pub mod boot;
+pub mod port;
+pub mod exception;
+
+use arch::chipset::pc;
 
 pub fn init() {
 	exception::init();
+	pc::init();
 }

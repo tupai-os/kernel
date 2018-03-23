@@ -1,4 +1,4 @@
-// file : armv8.rs
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,4 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-compile_error!("This module is unimplemented");
+#[macro_use]
+pub mod mem;
+pub mod elf;
+pub mod math;

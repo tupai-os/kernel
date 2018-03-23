@@ -1,4 +1,4 @@
-// file : i386.rs
+// file : mem.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,4 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-compile_error!("This module is unimplemented");
+pub struct PageMap {
+	// Nothing yet
+}
+
+impl PageMap {
+	pub fn new() -> PageMap {
+		PageMap {}
+	}
+}
