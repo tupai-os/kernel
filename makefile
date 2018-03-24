@@ -20,6 +20,10 @@
 SRC_ROOT = $(abspath .)
 BUILD_ROOT ?= $(SRC_ROOT)/build
 
+ifndef TARGET
+  $(error No target defined, pass TARGET=<name>)
+endif
+
 # Configurable
 
 KERNEL_ELF ?= $(BUILD_ROOT)/tupai.elf
@@ -27,7 +31,7 @@ KERNEL_ELF ?= $(BUILD_ROOT)/tupai.elf
 TOOL_CARGO ?= xargo
 RUST_LIB = $(BUILD_ROOT)/tupai.a
 
-CARGO_TARGET = $(CFG_arch_isa)-tupai
+CARGO_TARGET = $(TARGET)-tupai
 CARGO_BYPRODUCT = target
 
 TOOL_LINKER ?= ld
@@ -40,7 +44,8 @@ BUILD_DIRS = $(BUILD_ROOT)
 DIR_FAMILY = $(SRC_ROOT)/src/arch/$(CFG_arch_base)
 DIR_ARCH = $(DIR_FAMILY)/$(CFG_arch_isa)
 
-LINK_SCRIPT = $(SRC_ROOT)/arch/$(CFG_arch_isa)/link.ld
+TARGET_PATH = $(SRC_ROOT)/tgt/$(TARGET)/
+LINK_SCRIPT = $(SRC_ROOT)/tgt/$(TARGET)/link.ld
 
 SYMBOLS = $(BUILD_ROOT)/tupai.symb
 SYMBOL_CMD = objdump --wide --syms $(KERNEL_ELF) | grep -P '^[0-9A-Fa-f]+\s.*\s[a-zA-Z_][a-zA-Z0-9_]+$$' | sed -r 's/^(\S+)\s+.*\s+(\S+)$$/\1 \2/' | sort > $(SYMBOLS)
@@ -84,7 +89,7 @@ symbols: exe
 .PHONY: rust
 rust: $(BUILD_DIRS)
 	@echo "Invoking cargo build..."
-	@RUST_TARGET_PATH=$(shell pwd) RUSTFLAGS="" $(TOOL_CARGO) \
+	RUST_TARGET_PATH=$(TARGET_PATH) RUSTFLAGS="" $(TOOL_CARGO) \
 		build \
 		--release \
 		--target=$(CARGO_TARGET) \
