@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#![no_main]
+#![no_std]
+
 #![feature(lang_items)]
 #![feature(asm)]
 #![feature(ptr_internals)]
@@ -26,7 +29,6 @@
 #![feature(allocator_api)]
 #![feature(allocator_internals)]
 #![feature(global_asm)]
-#![no_std]
 
 // Disable these later
 #![allow(dead_code)]

@@ -8,6 +8,7 @@
 	"arch": "x86_64",
 	"os": "none",
 	"vendor": "unknown",
+	"executables": true,
 
 	"disable-redzone": true,
 	"features": "-mmx,-sse,+soft-float",

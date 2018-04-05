@@ -1,0 +1,26 @@
+[target.x64-tupai]
+rustflags = [
+	"-C", "link-arg=-Ttargets/x64/link.ld",
+	"-C", "linker=x86_64-elf-ld",
+	"-Z", "linker-flavor=ld",
+	"-Z", "pre-link-arg=-nostartfiles",
+	"-Z", "thinlto=no",
+]
+
+[target.i386-tupai]
+rustflags = [
+	"-C", "link-arg=-Ttargets/i386/link.ld",
+	"-C", "linker=i686-elf-ld",
+	"-Z", "linker-flavor=ld",
+	"-Z", "pre-link-arg=-nostartfiles",
+	"-Z", "thinlto=no",
+]
+
+[target.rpi2-tupai]
+rustflags = [
+	"-C", "link-arg=-Ttargets/rpi2/link.ld",
+	"-C", "linker=arm-none-eabi-ld",
+	"-Z", "linker-flavor=ld",
+	"-Z", "pre-link-arg=-nostartfiles",
+	"-Z", "thinlto=no",
+]

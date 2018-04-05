@@ -1,4 +1,4 @@
-// file : x64.rs
+// file : vga.s
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,22 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod cpu {
-	use arch::isa::amd64;
+.extern _vga_cursor.boot
 
-	pub use self::amd64::halt;
-}
+.global _vga_boot_cursor
 
-pub mod irq {
-	use arch::isa::amd64;
+.code32
+.section .text.boot
+	_vga_boot_cursor:
+		push %ebp
+		mov %esp, %ebp
 
-	pub use self::amd64::enable_irqs as enable;
-	pub use self::amd64::disable_irqs as disable;
-}
+		movl (_vga_cursor.boot), %eax
 
-pub mod mem {
-	use arch::isa::amd64;
-
-	pub use self::amd64::PAGE_SIZE_KB_LOG2;
-	pub use self::amd64::mem::PageMap;
-}
+		pop %ebp
+		ret

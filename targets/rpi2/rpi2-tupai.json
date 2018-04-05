@@ -8,9 +8,9 @@
 	"arch": "arm",
 	"os": "none",
 	"vendor": "unknown",
+	"executables": true,
 
 	"env": "eabi",
-	"executables": true,
 	"relocation-model": "static",
 	"no-compiler-rt": true
 }

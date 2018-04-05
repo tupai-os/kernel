@@ -8,6 +8,7 @@
 	"arch": "x86",
 	"os": "none",
 	"vendor": "unknown",
+	"executables": true,
 
 	"features": "-mmx,-sse,+soft-float",
 	"panic-strategy": "abort"

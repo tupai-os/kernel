@@ -65,33 +65,22 @@ $(BUILD_DIRS):
 
 .PHONY: check
 check:
-	@echo "Invoking cargo check..."
-	@RUST_TARGET_PATH=$(shell pwd) $(TOOL_CARGO) \
+	@echo "Checking Rust code..."
+	@RUST_TARGET_PATH="$(SRC_ROOT)/targets/$TUPAI_TARGET" $(TOOL_CARGO) \
 		check \
-		--debug \
-		--target=$(CARGO_TARGET) \
-		--features "$(CARGO_FEATURES)"
+		--release \
+		--target="$TUPAI_TARGET-tupai"
 
 .PHONY: exe
-exe: $(BUILD_DIRS) rust
-	@echo "Linking kernel..."
-	@$(TOOL_LINKER) \
-		-n --gc-sections \
-		-T $(LINK_SCRIPT) \
-		-o $(KERNEL_ELF) \
-		$(ASM_OBJ) $(RUST_LIB)
+exe: $(BUILD_DIRS)
+	@echo "Compiling Rust code..."
+	@RUST_TARGET_PATH="$(SRC_ROOT)/targets/$(TARGET)" TUPAI_TARGET=$(TARGET) $(TOOL_CARGO) \
+		build \
+		--release \
+		--target="$(TARGET)-tupai"
+	@cp target/$(CARGO_TARGET)/release/tupai $(KERNEL_ELF)
 
 .PHONY: symbols
 symbols: exe
 	@echo "Generating symbols..."
 	@$(SYMBOL_CMD)
-
-.PHONY: rust
-rust: $(BUILD_DIRS)
-	@echo "Invoking cargo build..."
-	RUST_TARGET_PATH=$(TARGET_PATH) RUSTFLAGS="" $(TOOL_CARGO) \
-		build \
-		--release \
-		--target=$(CARGO_TARGET) \
-		--features "$(CARGO_FEATURES)"
-	@cp target/$(CARGO_TARGET)/release/libtupai.a $(RUST_LIB)

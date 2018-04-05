@@ -18,8 +18,9 @@
 [package]
 name = "tupai"
 version = "0.1.0"
+license = "GNU General Public License v3"
 authors = ["Joshua Barretto <joshua.s.barretto@gmail.com>"]
-build = "build.rs"
+build = "build-config.rs"
 
 [profile.dev]
 panic = "abort"
@@ -28,28 +29,11 @@ panic = "abort"
 panic = "abort"
 
 [features]
-# Arch-dependent features
-	# HAL
-	arch_hal_amd64   = ["arch_family_x86"]
-	arch_hal_i386    = ["arch_family_x86"]
-	arch_hal_a32     = ["arch_family_arm"]
-	arch_hal_aarch64 = ["arch_family_arm"]
-
-	# Shared HAL-dependent features
-	arch_family_x86 = []
-	arch_family_arm = []
-
-	# More specific HAL configuration
-	arch_chipset_ibmpc   = ["arch_family_x86"]
-	arch_chipset_bcm2836 = ["arch_family_arm"]
-# Logging features
-	log_serial_com = ["driver_serial_com"]
+# Logging options
+log_serial_com = []
 # Driver features
 	# Serial
-	driver_serial_com = ["arch_family_x86"]
-
-[lib]
-crate-type = ["staticlib"]
+	driver_serial_com = []
 
 [dependencies]
 rlibc = "1.0.0"

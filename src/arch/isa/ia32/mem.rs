@@ -1,4 +1,4 @@
-// file : x64.rs
+// file : mem.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,22 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod cpu {
-	use arch::isa::amd64;
-
-	pub use self::amd64::halt;
+pub struct PageMap {
+	// Nothing yet
 }
 
-pub mod irq {
-	use arch::isa::amd64;
-
-	pub use self::amd64::enable_irqs as enable;
-	pub use self::amd64::disable_irqs as disable;
-}
-
-pub mod mem {
-	use arch::isa::amd64;
-
-	pub use self::amd64::PAGE_SIZE_KB_LOG2;
-	pub use self::amd64::mem::PageMap;
+impl PageMap {
+	pub fn new() -> PageMap {
+		PageMap {}
+	}
 }

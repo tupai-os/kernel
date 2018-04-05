@@ -1,4 +1,5 @@
-// file : build.rs
+
+// file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,22 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-fn write_cfg(key: &str, val: &str) {
-	println!("cargo:rustc-cfg={}=\"{}\"", key, val);
-}
-
-fn write_feature(key: &str) {
-	println!("cargo:rustc-cfg={}=\"true\"", key);
-}
-
-fn main() {
-	// Testing only
-	write_cfg("arch_hal",     "x64");       // i386, armv7, armv8
-	write_cfg("arch_family",  "x86");       // arm
-	write_cfg("arch_isa",     "amd64");     // ia32, a32, a64
-	write_cfg("arch_chipset", "pc");        // bcm2836
-	write_cfg("arch_tags",    "multiboot"); // atags
-
-	write_feature("log_serial_com");
-	write_feature("driver_serial_com");
-}
+global_asm!(include_str!("high.s"));
+global_asm!(include_str!("paging.s"));
+global_asm!(include_str!("vga.s"));
+global_asm!(include_str!("start.s"));
