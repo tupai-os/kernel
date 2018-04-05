@@ -1,4 +1,4 @@
-// file : chipset.rs
+// file : regions.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,12 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod pic;
-pub mod spurious;
-pub mod pit;
+use llapi::mem::VMEMORY_OFFSET;
 
-pub fn init() {
-	pic::init();
-	spurious::init();
-	pit::init();
-}
+pub const VGA_TEXTMODE_RAM: usize = VMEMORY_OFFSET + 0xB8000;

@@ -19,9 +19,3 @@
 #[cfg(arch_isa = "amd64")] pub mod amd64;
 #[cfg(arch_isa = "a32")]   pub mod a32;
 #[cfg(arch_isa = "a64")]   pub mod a64;
-
-// Export selected ISA module
-#[cfg(arch_isa = "ia32")]  pub use self::ia32  as selected;
-#[cfg(arch_isa = "amd64")] pub use self::amd64 as selected;
-#[cfg(arch_isa = "a32")]   pub use self::a32   as selected;
-#[cfg(arch_isa = "a64")]   pub use self::a64   as selected;

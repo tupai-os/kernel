@@ -29,11 +29,11 @@ panic = "abort"
 panic = "abort"
 
 [features]
-# Logging options
-log_serial_com = []
 # Driver features
 	# Serial
 	driver_serial_com = []
+	# Video
+	driver_video_vga = []
 
 [dependencies]
 rlibc = "1.0.0"

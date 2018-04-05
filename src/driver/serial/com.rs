@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use arch::family::x86::port::{out8, in8};
+use llapi::intrinsic::family::port::{out8, in8};
 use spin::{Mutex, Once};
 
 static LOCK: Mutex<u32> = Mutex::new(0);

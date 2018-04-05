@@ -19,7 +19,7 @@ use core::ptr::Unique;
 use volatile::Volatile;
 use spin::Mutex;
 
-use arch::base::mem::VIDEO_MEMORY;
+use llapi::intrinsic::chipset::regions::VGA_TEXTMODE_RAM;
 
 pub const COLS: usize = 80;
 pub const ROWS: usize = 25;
@@ -91,7 +91,7 @@ impl Writer {
 		self.cursor = unsafe { _vga_boot_cursor() };
 		self.fg_color = Color::White;
 		self.bg_color = Color::Black;
-		self.buffer = unsafe { Unique::new_unchecked(VIDEO_MEMORY as *mut _) };
+		self.buffer = unsafe { Unique::new_unchecked(VGA_TEXTMODE_RAM as *mut _) };
 	}
 
 	fn write(&mut self, c: u8) {

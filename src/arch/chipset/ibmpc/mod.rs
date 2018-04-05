@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : chipset.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,5 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(arch_chipset = "ibmpc")]   pub mod ibmpc;
-#[cfg(arch_chipset = "bcm2836")] pub mod bcm2836;
+pub mod regions;
+pub mod pic;
+pub mod spurious;
+pub mod pit;
+
+pub fn init() {
+	pic::init();
+	spurious::init();
+	pit::init();
+}

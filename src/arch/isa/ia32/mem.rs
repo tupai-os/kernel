@@ -15,6 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// Invariant constants
+pub const PAGE_SIZE_KB_LOG2: usize = 4;
+
+// Variant constants
+pub const VMEMORY_OFFSET: usize = 0xC0000000;
+
 pub struct PageMap {
 	// Nothing yet
 }

@@ -19,7 +19,8 @@
 
 use core::fmt;
 
-#[cfg(log_serial_com = "true")] use driver::serial::com as logger;
+#[cfg(log_driver = "serial_com")] use driver::serial::com as logger;
+#[cfg(log_driver = "video_vga")] use driver::video::vga as logger;
 
 struct Writer {}
 

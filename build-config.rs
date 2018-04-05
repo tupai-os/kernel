@@ -29,20 +29,25 @@ fn main() {
 	// Testing only
 	match env::var("TUPAI_TARGET").unwrap().as_ref() {
 		"x64" => {
+			write_cfg("arch_llapi", "x64");
+
 			write_cfg("arch_hal",     "x64");       // i386, armv7, armv8
 			write_cfg("arch_family",  "x86");       // arm
 			write_cfg("arch_isa",     "amd64");     // ia32, a32, a64
-			write_cfg("arch_chipset", "pc");        // bcm2836
+			write_cfg("arch_chipset", "ibmpc");     // bcm2836
 			write_cfg("arch_tags",    "multiboot"); // atags
 
-			write_feature("log_serial_com");
+			write_cfg("log_driver", "video_vga");
 			write_feature("driver_serial_com");
+			write_feature("driver_video_vga");
 		},
 		"i386" => {
+			write_cfg("arch_llapi", "i386");
+
 			write_cfg("arch_hal",     "i386");      // x64, armv7, armv8
 			write_cfg("arch_family",  "x86");       // arm
 			write_cfg("arch_isa",     "ia32");      // amd64, a32, a64
-			write_cfg("arch_chipset", "pc");        // bcm2836
+			write_cfg("arch_chipset", "ibmpc");     // bcm2836
 			write_cfg("arch_tags",    "multiboot"); // atags
 
 			write_feature("log_serial_com");

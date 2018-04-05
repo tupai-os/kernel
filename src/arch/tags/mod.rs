@@ -17,7 +17,3 @@
 
 #[cfg(arch_tags = "multiboot")] pub mod multiboot;
 #[cfg(arch_tags = "atags")]     pub mod atags;
-
-// Export selected tags module
-#[cfg(arch_tags = "multiboot")] pub use self::multiboot as selected;
-#[cfg(arch_tags = "atags")]     pub use self::atags     as selected;

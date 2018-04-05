@@ -27,8 +27,6 @@ use driver;
 use arch::family::x86;
 use arch::tags::multiboot;
 
-pub const PAGE_SIZE_KB_LOG2: usize = 4;
-
 pub fn enable_irqs() {
 	unsafe { asm!("sti"); }
 }

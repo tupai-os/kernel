@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use hal::mem::PAGE_SIZE_KB_LOG2;
+use llapi::mem::PAGE_SIZE_KB_LOG2;
 
 pub fn align_down(x: usize, log2: usize) -> usize {
 	x & (!0 << log2)

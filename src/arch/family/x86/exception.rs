@@ -15,9 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use arch::isa::selected::idt;
-use arch::isa::selected::isr;
-use arch::hal::selected::cpu;
+use llapi::intrinsic::isa::idt;
+use llapi::intrinsic::isa::isr;
+use llapi::cpu;
 
 extern {
 	fn _exception_handler0();

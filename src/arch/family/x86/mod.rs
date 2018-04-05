@@ -19,9 +19,9 @@ pub mod boot;
 pub mod port;
 pub mod exception;
 
-use arch::chipset::pc;
+use llapi::intrinsic::chipset;
 
 pub fn init() {
 	exception::init();
-	pc::init();
+	chipset::init();
 }

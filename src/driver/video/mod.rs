@@ -15,13 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(feature = "driver_video_vga")]
+#[cfg(driver_video_vga = "true")]
 pub mod vga;
 
-#[cfg(feature = "driver_video_bcm283x")]
+#[cfg(driver_video_bcm283x = "true")]
 pub mod bcm283x;
 
 pub fn init() {
-	#[cfg(feature = "driver_video_vga")] { vga::init(); }
-	#[cfg(feature = "driver_video_bcm283x")] { bcm283x::init(); }
+	#[cfg(driver_video_vga = "true")] { vga::init(); }
+	#[cfg(driver_video_bcm283x = "true")] { bcm283x::init(); }
 }

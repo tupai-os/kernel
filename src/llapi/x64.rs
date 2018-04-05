@@ -1,4 +1,4 @@
-// file : spurious.rs
+// file : x64.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,24 +15,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use arch::isa::selected::{idt, isr};
-use super::pic;
-
-const IRQ: usize = 7;
-
-extern {
-	fn _spurious_handler();
+pub mod cpu {
+	pub use arch::isa::amd64::halt;
 }
 
-pub fn init() {
-	idt::set_handler(pic::REMAP_OFFSET + IRQ, _spurious_handler as idt::IsrPtr);
-	idt::reinstall();
-	logok!("Set spurious IRQ handler");
+pub mod irq {
+	pub use arch::isa::amd64::enable_irqs as enable;
+	pub use arch::isa::amd64::disable_irqs as disable;
 }
 
-#[no_mangle]
-#[allow(dead_code)]
-#[linkage = "external"]
-extern fn spurious_handler(frame: *mut isr::InterruptFrame) {
-	// Do nothing
+pub mod mem {
+	pub use arch::isa::amd64::mem::PAGE_SIZE_KB_LOG2;
+	pub use arch::isa::amd64::mem::VMEMORY_OFFSET;
+	pub use arch::isa::amd64::mem::PageMap;
+}
+
+pub mod intrinsic {
+	pub use arch::isa::amd64 as isa;
+	pub use arch::family::x86 as family;
+	pub use arch::chipset::ibmpc as chipset;
 }

@@ -53,8 +53,7 @@ mod util;
 mod mem;
 mod process;
 mod driver;
-
-pub use arch::hal::selected as hal;
+mod llapi;
 
 use mem::heap::Heap;
 #[global_allocator]
@@ -64,12 +63,12 @@ pub static HEAP: Heap = Heap::empty();
 #[allow(dead_code)]
 #[linkage = "external"]
 pub extern fn kmain(args: &[&str]) {
-	logln!("Kernel args: {:?}", args);
+	logln!("Kernel booted with arguments: {:?}", args);
 
 	// Wait for something to happen
-	hal::irq::enable();
+	llapi::irq::enable();
 	loop {
-		hal::cpu::halt();
+		llapi::cpu::halt();
 	}
 }
 
@@ -86,6 +85,7 @@ pub extern fn panic_fmt(msg: core::fmt::Arguments, file: &'static str, line: u32
 {
 	log!("PANIC: {} in {} on line {} at column {}", msg, file, line, column);
 	loop {
-		hal::irq::disable();
+		llapi::irq::disable();
+		llapi::cpu::halt();
 	}
 }
