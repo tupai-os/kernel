@@ -23,7 +23,6 @@ pub mod mem;
 
 global_asm!(include_str!("isr.s"));
 
-use driver;
 use arch::family::x86;
 use arch::tags::multiboot;
 
@@ -52,7 +51,6 @@ pub extern fn kearly(tags: *const ()) {
 
 	multiboot::parse(tags);
 
-	driver::init();
 	let args = ["testing"];
 	kmain(&args);
 }

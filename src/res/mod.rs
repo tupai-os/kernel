@@ -15,15 +15,42 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(arch_llapi = "x64")]  mod x64;
-#[cfg(arch_llapi = "i386")] mod i386;
-#[cfg(arch_llapi = "rpi2")] mod rpi2;
+use {
+	process,
+	thread,
+	spin::Mutex,
+	alloc::{
+		boxed::Box,
+		Vec,
+		BTreeMap,
+	},
+};
 
-#[cfg(arch_llapi = "x64")]  use self::x64  as selected;
-#[cfg(arch_llapi = "i386")] use self::i386 as selected;
-#[cfg(arch_llapi = "rpi2")] use self::rpi2 as selected;
+pub type Id = u64;
 
-pub use self::selected::cpu as cpu;
-pub use self::selected::irq as irq;
-pub use self::selected::mem as mem;
-pub use self::selected::intrinsic as intrinsic;
+pub enum Res {
+	Process(process::Process),
+	Thread(thread::Thread),
+}
+
+lazy_static! {
+	static ref IDS: Mutex<Id> = Mutex::new(0);
+	static ref RES: Mutex<BTreeMap<Id, Res>> = Mutex::new(BTreeMap::new());
+}
+
+pub fn create(res: Res) -> Id {
+	let nid = {
+		// TODO: Prevent ID overflow
+		let mut ids = IDS.lock();
+		*ids += 1;
+		*ids
+	};
+	RES.lock().insert(nid, res);
+	logln!("Created resource with Id {}", nid);
+	return nid;
+}
+
+pub fn init() {
+	RES.lock();
+	logok!("Resources initiated");
+}

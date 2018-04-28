@@ -18,101 +18,94 @@
 use core::fmt;
 
 pub trait Frame {
-	fn get_instruction_ptr(&self) -> u64;
+	fn get_instruction_ptr(&self) -> u32;
 }
 
 #[allow(dead_code)]
-#[repr(C, packed)]
-#[derive(Copy, Clone)]
+#[repr(C)]
+#[derive(Copy, Clone, Default)]
 pub struct ExceptionFrame {
-	rbp: u64,
-	r15: u64,
-	r14: u64,
-	r13: u64,
-	r12: u64,
-	r11: u64,
-	r10: u64,
-	r9: u64,
-	r8: u64,
-	rdi: u64,
-	rsi: u64,
-	rdx: u64,
-	rcx: u64,
-	rbx: u64,
-	rax: u64,
-	kind: u64,
-	error: u64,
-	rip: u64,
-	cs: u64,
-	rflags: u64,
-	rsp: u64,
-	ss: u64,
+	ebp: u32,
+	edi: u32,
+	esi: u32,
+	edx: u32,
+	ecx: u32,
+	ebx: u32,
+	eax: u32,
+	kind: u32,
+	error: u32,
+	eip: u32,
+	cs: u32,
+	eflags: u32,
+	esp: u32,
+	ss: u32,
 }
 
 #[allow(dead_code)]
 #[repr(C, packed)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct InterruptFrame {
-	rbp: u64,
-	r15: u64,
-	r14: u64,
-	r13: u64,
-	r12: u64,
-	r11: u64,
-	r10: u64,
-	r9: u64,
-	r8: u64,
-	rdi: u64,
-	rsi: u64,
-	rdx: u64,
-	rcx: u64,
-	rbx: u64,
-	rax: u64,
-	rip: u64,
-	cs: u64,
-	rflags: u64,
-	rsp: u64,
-	ss: u64,
+	ebp: u32,
+	edi: u32,
+	esi: u32,
+	edx: u32,
+	ecx: u32,
+	ebx: u32,
+	eax: u32,
+	eip: u32,
+	cs: u32,
+	eflags: u32,
+	esp: u32,
+	ss: u32,
+}
+
+impl InterruptFrame {
+	pub fn new(entry: usize, stack: usize) -> InterruptFrame {
+		InterruptFrame {
+			ebp: stack as u32,
+			eip: entry as u32,
+			esp: stack as u32,
+			..Default::default()
+		}
+	}
 }
 
 impl Frame for ExceptionFrame {
-	fn get_instruction_ptr(&self) -> u64 {
-		self.rip
+	fn get_instruction_ptr(&self) -> u32 {
+		self.eip
 	}
 }
 impl Frame for InterruptFrame {
-	fn get_instruction_ptr(&self) -> u64 {
-		self.rip
+	fn get_instruction_ptr(&self) -> u32 {
+		self.eip
 	}
 }
 
 impl fmt::Display for ExceptionFrame {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		unsafe {
-			write!(f,
-				"\
-				\tkind:  {}\n\
-				\terror: 0x{:X}\n\
-				\trip:   0x{:X}\n\
-				\trsp:   0x{:X}\n\
-				\tcs:    0x{:X}\n\
-				\tss:    0x{:X}",
-				self.kind, self.error, self.rip, self.rsp, self.cs, self.ss
-			)
-		}
+		writeln!(f,
+			"\
+			\tkind:  {}\n\
+			\terror: 0x{:X}\n\
+			\teip:   0x{:X}\n\
+			\tesp:   0x{:X}\n\
+			\tcs:    0x{:X}\n\
+			\tss:    0x{:X}\n",
+			self.kind, self.error, self.eip, self.esp, self.cs, self.ss
+		)
 	}
 }
 
 impl fmt::Display for InterruptFrame {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		unsafe {
-			write!(f,
+			writeln!(f,
 				"\
-				\trip:   0x{:X}\n\
-				\trsp:   0x{:X}\n\
+				\teip:   0x{:X}\n\
+				\tesp:   0x{:X}\n\
 				\tcs:    0x{:X}\n\
-				\tss:    0x{:X}",
-				self.rip, self.rsp, self.cs, self.ss
+				\tss:    0x{:X}\n",
+				self.eip, self.esp, self.cs, self.ss
 			)
 		}
 	}

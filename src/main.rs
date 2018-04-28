@@ -38,22 +38,21 @@ extern crate rlibc;
 extern crate volatile;
 extern crate spin;
 extern crate compiler_builtins;
-#[macro_use]
-extern crate lazy_static;
 extern crate cstr_core;
-#[macro_use]
+#[macro_use] extern crate lazy_static;
+#[macro_use] extern crate bitflags;
 extern crate alloc;
-#[macro_use]
-extern crate bitflags;
 
-#[macro_use]
-mod log;
+#[macro_use] mod log;
+
+mod llapi;
 mod arch;
-mod util;
 mod mem;
+mod util;
+mod res;
+mod thread;
 mod process;
 mod driver;
-mod llapi;
 
 use mem::heap::Heap;
 #[global_allocator]
@@ -65,10 +64,27 @@ pub static HEAP: Heap = Heap::empty();
 pub extern fn kmain(args: &[&str]) {
 	logln!("Kernel booted with arguments: {:?}", args);
 
+	log::init();
+
+	mem::init();
+	res::init();
+
+	driver::init();
+
+	let init = thread::create("init").unwrap();
+
+	logln!("Finished initiation");
+
 	// Wait for something to happen
-	llapi::irq::enable();
 	loop {
+		llapi::irq::enable();
 		llapi::cpu::halt();
+	}
+}
+
+fn init_thread() -> i32 {
+	loop {
+		logln!("Hello!");
 	}
 }
 

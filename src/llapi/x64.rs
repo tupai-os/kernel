@@ -22,6 +22,8 @@ pub mod cpu {
 pub mod irq {
 	pub use arch::isa::amd64::enable_irqs as enable;
 	pub use arch::isa::amd64::disable_irqs as disable;
+
+	pub use arch::isa::amd64::isr::InterruptFrame;
 }
 
 pub mod mem {

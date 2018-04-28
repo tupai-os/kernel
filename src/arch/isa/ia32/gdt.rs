@@ -25,19 +25,18 @@ pub const CODE_SELECTOR: usize = size_of::<Entry>() * 1;
 #[allow(dead_code)]
 #[repr(u8)]
 enum Access {
-	ReadWrite  = 0b00000010,
-	Execute    = 0b00001000,
-	Present    = 0b10000000,
-	One        = 0b00010000,
-	Kernel     = 0b00000000,
-	User       = 0b01100000,
-	Conforming = 0b00000100,
+	ReadWrite = 0b00000010,
+	Execute   = 0b00001000,
+	Present   = 0b10000000,
+	One       = 0b00010000,
+	Kernel    = 0b00000000,
+	User      = 0b01100000,
 }
 
 #[repr(u8)]
 enum Granularity {
-	Page   = 0b00001000,
-	Long64 = 0b00000010,
+	Page        = 0b00001000,
+	Protected32 = 0b00000100,
 }
 
 #[derive(Copy, Clone)]
@@ -60,7 +59,7 @@ struct Table {
 #[repr(C, packed)]
 struct Ptr {
 	limit: u16,
-	base: u64,
+	base: u32,
 }
 
 static GDT: Mutex<Table> = Mutex::new(
@@ -98,7 +97,6 @@ impl Table {
 			Access::ReadWrite as u8 |
 			Access::Execute as u8 |
 			Access::One as u8 |
-			Access::Conforming as u8 |
 			Access::Present as u8;
 
 		let data_access =
@@ -113,7 +111,7 @@ impl Table {
 
 		let granularity =
 			Granularity::Page as u8 |
-			Granularity::Long64 as u8;
+			Granularity::Protected32 as u8;
 
 		self.entries = [
 			Entry::null(),
@@ -146,7 +144,7 @@ impl Ptr {
 	fn from(table: &Table) -> Ptr {
 		Ptr {
 			limit: (SIZE * size_of::<Entry>()) as u16 - 1,
-			base: table as *const _ as u64,
+			base: table as *const _ as u32,
 		}
 	}
 }

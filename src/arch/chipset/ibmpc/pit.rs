@@ -62,5 +62,5 @@ pub fn set_rate(rate: u32) {
 #[linkage = "external"]
 extern fn pit_handler(frame: *mut isr::InterruptFrame) {
 	pic::ack(IRQ);
-	log!("!");
+	//log!("!");
 }

@@ -16,4 +16,4 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #[cfg(arch_chipset = "ibmpc")]   pub mod ibmpc;
-#[cfg(arch_chipset = "bcm2836")] pub mod bcm2836;
+#[cfg(arch_chipset = "bcm2835")] pub mod bcm2835;

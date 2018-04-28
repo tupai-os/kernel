@@ -94,3 +94,8 @@ macro_rules! logfail {
 		log!(concat!($fmt, "\n"), $($arg)*)
 	});
 }
+
+pub fn init() {
+	logger::init();
+	logok!("Logging initiated");
+}

@@ -15,15 +15,4 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(arch_llapi = "x64")]  mod x64;
-#[cfg(arch_llapi = "i386")] mod i386;
-#[cfg(arch_llapi = "rpi2")] mod rpi2;
-
-#[cfg(arch_llapi = "x64")]  use self::x64  as selected;
-#[cfg(arch_llapi = "i386")] use self::i386 as selected;
-#[cfg(arch_llapi = "rpi2")] use self::rpi2 as selected;
-
-pub use self::selected::cpu as cpu;
-pub use self::selected::irq as irq;
-pub use self::selected::mem as mem;
-pub use self::selected::intrinsic as intrinsic;
+global_asm!(include_str!("start.s"));

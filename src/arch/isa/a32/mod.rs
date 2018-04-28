@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : a32.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,15 +15,53 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(arch_llapi = "x64")]  mod x64;
-#[cfg(arch_llapi = "i386")] mod i386;
-#[cfg(arch_llapi = "rpi2")] mod rpi2;
+pub mod boot;
+pub mod isr;
+pub mod mem;
 
-#[cfg(arch_llapi = "x64")]  use self::x64  as selected;
-#[cfg(arch_llapi = "i386")] use self::i386 as selected;
-#[cfg(arch_llapi = "rpi2")] use self::rpi2 as selected;
+global_asm!(include_str!("exception.s"));
 
-pub use self::selected::cpu as cpu;
-pub use self::selected::irq as irq;
-pub use self::selected::mem as mem;
-pub use self::selected::intrinsic as intrinsic;
+use arch::family::arm;
+use arch::tags::atags;
+
+pub fn enable_irqs() {
+	unsafe {
+		asm!(
+			"mrs r0, cpsr;
+			bic r0, r0, #0xE0;
+			msr cpsr_c, r0"
+			::: "r0"
+		);
+	}
+}
+
+pub fn disable_irqs() {
+	unsafe {
+		asm!(
+			"mrs r0, cpsr;
+			orr r0, r0, #0xE0;
+			msr cpsr_c, r0"
+			::: "r0"
+		);
+	}
+}
+
+pub fn halt() {
+	unsafe {
+		asm!("wfi");
+	}
+}
+
+#[no_mangle]
+#[allow(dead_code)]
+#[linkage = "external"]
+pub extern fn kearly(tags: *const ()) {
+	use kmain;
+
+	arm::init();
+
+	atags::parse(tags);
+
+	let args = ["testing"];
+	kmain(&args);
+}

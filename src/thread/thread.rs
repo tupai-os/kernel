@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : thread.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,15 +15,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(arch_llapi = "x64")]  mod x64;
-#[cfg(arch_llapi = "i386")] mod i386;
-#[cfg(arch_llapi = "rpi2")] mod rpi2;
+use llapi::irq::InterruptFrame;
 
-#[cfg(arch_llapi = "x64")]  use self::x64  as selected;
-#[cfg(arch_llapi = "i386")] use self::i386 as selected;
-#[cfg(arch_llapi = "rpi2")] use self::rpi2 as selected;
+use alloc::{boxed::Box, Vec};
 
-pub use self::selected::cpu as cpu;
-pub use self::selected::irq as irq;
-pub use self::selected::mem as mem;
-pub use self::selected::intrinsic as intrinsic;
+pub type Id = u64;
+pub const ID_MAX: Id = !0;
+
+pub struct Thread {
+	id: Id,
+	stack: Stack,
+	frame: InterruptFrame,
+}
+
+pub type Stack = Box<Vec<u8>>;
+
+impl Thread {
+	pub fn new(id: Id, name: &str, entry: fn() -> i32, stack: Stack) -> Thread {
+		let stack_ptr = stack.as_ptr() as usize;
+		Thread {
+			id: id,
+			stack: stack,
+			frame: InterruptFrame::new(entry as usize, stack_ptr),
+		}
+	}
+}

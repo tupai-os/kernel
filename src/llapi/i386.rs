@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : i386.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,15 +15,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(arch_llapi = "x64")]  mod x64;
-#[cfg(arch_llapi = "i386")] mod i386;
-#[cfg(arch_llapi = "rpi2")] mod rpi2;
+pub mod cpu {
+	pub use arch::isa::ia32::halt;
+}
 
-#[cfg(arch_llapi = "x64")]  use self::x64  as selected;
-#[cfg(arch_llapi = "i386")] use self::i386 as selected;
-#[cfg(arch_llapi = "rpi2")] use self::rpi2 as selected;
+pub mod irq {
+	pub use arch::isa::ia32::enable_irqs as enable;
+	pub use arch::isa::ia32::disable_irqs as disable;
 
-pub use self::selected::cpu as cpu;
-pub use self::selected::irq as irq;
-pub use self::selected::mem as mem;
-pub use self::selected::intrinsic as intrinsic;
+	pub use arch::isa::ia32::isr::InterruptFrame;
+}
+
+pub mod mem {
+	pub use arch::isa::ia32::mem::PAGE_SIZE_KB_LOG2;
+	pub use arch::isa::ia32::mem::VMEMORY_OFFSET;
+	pub use arch::isa::ia32::mem::PageMap;
+}
+
+pub mod intrinsic {
+	pub use arch::isa::ia32 as isa;
+	pub use arch::family::x86 as family;
+	pub use arch::chipset::ibmpc as chipset;
+}

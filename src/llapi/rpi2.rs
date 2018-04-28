@@ -1,4 +1,4 @@
-// file : x64.rs
+// file : rpi2.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -16,21 +16,24 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pub mod cpu {
-	use arch::isa::amd64;
-
-	pub use self::amd64::halt;
+	pub use arch::isa::a32::halt;
 }
 
 pub mod irq {
-	use arch::isa::amd64;
+	pub use arch::isa::a32::enable_irqs as enable;
+	pub use arch::isa::a32::disable_irqs as disable;
 
-	pub use self::amd64::enable_irqs as enable;
-	pub use self::amd64::disable_irqs as disable;
+	pub use arch::isa::a32::isr::InterruptFrame;
 }
 
 pub mod mem {
-	use arch::isa::amd64;
+	pub use arch::isa::a32::mem::PAGE_SIZE_KB_LOG2;
+	pub use arch::isa::a32::mem::VMEMORY_OFFSET;
+	pub use arch::isa::a32::mem::PageMap;
+}
 
-	pub use self::amd64::PAGE_SIZE_KB_LOG2;
-	pub use self::amd64::mem::PageMap;
+pub mod intrinsic {
+	pub use arch::isa::a32 as isa;
+	pub use arch::family::arm as family;
+	pub use arch::chipset::bcm2835 as chipset;
 }

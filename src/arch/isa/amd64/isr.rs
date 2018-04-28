@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use core::fmt;
+use super::idt;
 
 pub trait Frame {
 	fn get_instruction_ptr(&self) -> u64;
@@ -23,7 +24,7 @@ pub trait Frame {
 
 #[allow(dead_code)]
 #[repr(C, packed)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct ExceptionFrame {
 	rbp: u64,
 	r15: u64,
@@ -51,7 +52,7 @@ pub struct ExceptionFrame {
 
 #[allow(dead_code)]
 #[repr(C, packed)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct InterruptFrame {
 	rbp: u64,
 	r15: u64,
@@ -73,6 +74,17 @@ pub struct InterruptFrame {
 	rflags: u64,
 	rsp: u64,
 	ss: u64,
+}
+
+impl InterruptFrame {
+	pub fn new(entry: usize, stack: usize) -> InterruptFrame {
+		InterruptFrame {
+			rbp: stack as u64,
+			rip: entry as u64,
+			rsp: stack as u64,
+			..Default::default()
+		}
+	}
 }
 
 impl Frame for ExceptionFrame {

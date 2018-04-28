@@ -19,8 +19,8 @@ pub mod process;
 
 pub use self::process::{Id, ID_MAX, Process};
 use spin::Mutex;
-
 use alloc::btree_map::BTreeMap;
+
 lazy_static! {
 	static ref PROCS: Mutex<BTreeMap<Id, Process>> = Mutex::new(BTreeMap::new());
 }
@@ -31,12 +31,12 @@ bitflags! {
 	}
 }
 
-static PROCID_COUNTER: Mutex<Id> = Mutex::new(0);
+static ID_COUNTER: Mutex<Id> = Mutex::new(0);
 
 fn get_new_id() -> Id {
-	let mut procid_counter = PROCID_COUNTER.lock();
-	let id = *procid_counter + 1;
-	*procid_counter = id;
+	let mut id_counter = ID_COUNTER.lock();
+	let id = *id_counter + 1;
+	*id_counter = id;
 	if id > ID_MAX {
 		panic!("Ran out of process identifiers");
 	} else {
@@ -49,7 +49,7 @@ pub fn create(name: &str, flags: Flags) -> Option<Id> {
 
 	PROCS.lock().insert(new_id, Process::new(new_id, name));
 
-	logln!("Created environment '{}' with id {}", name, new_id);
+	logln!("Created process '{}' with id {}", name, new_id);
 	Some(new_id)
 }
 
@@ -62,6 +62,5 @@ pub fn get<'a>(id: Id) -> Option<Process> {
 }
 
 pub fn init() {
-	PROCS.lock();
 	logok!("Initiated processes");
 }

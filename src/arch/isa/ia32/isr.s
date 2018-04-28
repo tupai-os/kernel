@@ -15,74 +15,57 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-.set EXCEPTION_DUMMY_ERROR, 0xFFFFFFFFFFFFFFFF
+.set EXCEPTION_DUMMY_ERROR, 0
 
-.code64
 .section .text
 	.macro PUSH_REGS
-		push %rax
-		push %rbx
-		push %rcx
-		push %rdx
-		push %rsi
-		push %rdi
-		push %r8
-		push %r9
-		push %r10
-		push %r11
-		push %r12
-		push %r13
-		push %r14
-		push %r15
-		push %rbp
+		push %eax
+		push %ebx
+		push %ecx
+		push %edx
+		push %esi
+		push %edi
+		push %ebp
 		cld
 	.endm
 
 	.macro POP_REGS
-		pop %rbp
-		pop %r15
-		pop %r14
-		pop %r13
-		pop %r12
-		pop %r11
-		pop %r10
-		pop %r9
-		pop %r8
-		pop %rdi
-		pop %rsi
-		pop %rdx
-		pop %rcx
-		pop %rbx
-		pop %rax
+		pop %ebp
+		pop %edi
+		pop %esi
+		pop %edx
+		pop %ecx
+		pop %ebx
+		pop %eax
 	.endm
 
 	.macro ERROR_EXCEPTION n, name
-		.align 8
+		.align 4
 		.global _exception_handler\n\()
 		_exception_handler\n\():
 			push $\n\() // Push exception ID
 			PUSH_REGS
-			mov %rsp, %rdi // Pass stack frame
+			push %esp // Pass stack frame
 			.extern \name\()_handler
 			call \name\()_handler
 			POP_REGS
-			add $16, %rsp // Remove error and ID from stack
-			iretq
+			add $8, %esp // Remove error and ID from stack
+			iret
 	.endm
 
 	.macro DUMMY_EXCEPTION n, name
-		.align 8
+		.align 4
 		.global _exception_handler\n\()
 		_exception_handler\n\():
 			push $EXCEPTION_DUMMY_ERROR // Dummy error
 			push $\n\() // Push exception ID
 			PUSH_REGS
-			mov %rsp, %rdi // Pass stack frame
+			push %esp // Pass stack frame
 			.extern \name\()_handler
 			call \name\()_handler
 			POP_REGS
-			add $16, %rsp // Remove error and ID from stack
-			iretq
+			add $8, %esp // Remove error and ID from stack
+			iret
 	.endm
 
 	DUMMY_EXCEPTION 0 divzero
@@ -108,15 +91,15 @@
 	ERROR_EXCEPTION 30 unimplemented
 
 	.macro INTERRUPT name
-		.align 8
+		.align 4
 		.global _\name\()_handler
 		_\name\()_handler:
 			PUSH_REGS
-			mov %rsp, %rdi // Pass stack frame
+			push %esp // Pass stack frame
 			.extern \name\()_handler
 			call \name\()_handler
 			POP_REGS
-			iretq
+			iret
 	.endm
 
 	INTERRUPT pit

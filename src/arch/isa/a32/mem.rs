@@ -1,4 +1,4 @@
-// file : i386.rs
+// file : mem.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,22 +15,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod cpu {
-	use arch::isa::ia32;
+// Invariant constants
+pub const PAGE_SIZE_KB_LOG2: usize = 4;
 
-	pub use self::ia32::halt;
+// Variant constants
+pub const VMEMORY_OFFSET: usize = 0; //0xC0000000;
+
+pub struct PageMap {
+	// Nothing yet
 }
 
-pub mod irq {
-	use arch::isa::ia32;
-
-	pub use self::ia32::enable_irqs as enable;
-	pub use self::ia32::disable_irqs as disable;
-}
-
-pub mod mem {
-	use arch::isa::ia32;
-
-	pub use self::ia32::PAGE_SIZE_KB_LOG2;
-	pub use self::ia32::mem::PageMap;
+impl PageMap {
+	pub fn new() -> PageMap {
+		PageMap {}
+	}
 }

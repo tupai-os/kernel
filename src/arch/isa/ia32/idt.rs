@@ -21,7 +21,7 @@ use super::gdt;
 
 const SIZE: usize = 256;
 
-pub type IsrPtr = u64;
+pub type IsrPtr = u32;
 
 #[allow(dead_code)]
 #[repr(u8)]
@@ -44,9 +44,7 @@ struct Entry {
 	selector: u16,
 	zero0: u8,
 	attributes: u8,
-	base_mid: u16,
-	base_hi: u32,
-	zero1: u32,
+	base_hi: u16,
 }
 
 #[repr(C)]
@@ -58,7 +56,7 @@ struct Table {
 #[repr(C, packed)]
 struct Ptr {
 	limit: u16,
-	base: u64,
+	base: u32,
 }
 
 static IDT: Mutex<Table> = Mutex::new(
@@ -72,9 +70,7 @@ impl Entry {
 			selector: 0,
 			zero0: 0,
 			attributes: 0,
-			base_mid: 0,
 			base_hi: 0,
-			zero1: 0,
 		}
 	}
 
@@ -82,29 +78,28 @@ impl Entry {
 		Entry::from(None)
 	}
 
-	fn from(isr: Option<u64>) -> Entry {
+	fn from(isr: Option<IsrPtr>) -> Entry {
 		let isr_addr = match isr {
 			Some(i) => i,
 			None => 0x0,
 		};
 
+		let attributes = Attribute::IntGate as u8 |
+			Attribute::Dpl0 as u8 |
+			match isr {
+				Some(_) => Attribute::Present as u8,
+				None => 0,
+			};
+
 		Entry {
 			base_lo: (isr_addr >> 0) as u16 & 0xFFFF,
-			base_mid: (isr_addr >> 16) as u16 & 0xFFFF,
-			base_hi: (isr_addr >> 32) as u32 & 0xFFFFFFFF,
+			base_hi: (isr_addr >> 16) as u16 & 0xFFFF,
 
 			selector: gdt::CODE_SELECTOR as u16,
 
-			attributes:
-				Attribute::IntGate as u8 |
-				Attribute::Dpl0 as u8 |
-				match isr {
-					Some(_) => Attribute::Present as u8,
-					None => 0,
-				},
+			attributes: attributes,
 
 			zero0: 0,
-			zero1: 0,
 		}
 	}
 }
@@ -140,11 +135,10 @@ impl Ptr {
 	fn from(table: &Table) -> Ptr {
 		Ptr {
 			limit: (SIZE * size_of::<Entry>()) as u16 - 1,
-			base: table as *const _ as u64,
+			base: table as *const _ as u32,
 		}
 	}
 }
-
 
 pub fn init() {
 	IDT.lock().init();

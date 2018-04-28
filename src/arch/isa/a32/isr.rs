@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : isr.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,15 +15,37 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(arch_llapi = "x64")]  mod x64;
-#[cfg(arch_llapi = "i386")] mod i386;
-#[cfg(arch_llapi = "rpi2")] mod rpi2;
+#[allow(dead_code)]
+#[repr(C, packed)]
+#[derive(Copy, Clone)]
+pub struct ExceptionFrame {
+	r0: u32,
+	r1: u32,
+	r2: u32,
+	r3: u32,
+	r12: u32,
+	lr: u32,
+	pub pc: u32,
+	spsr: u32,
+}
 
-#[cfg(arch_llapi = "x64")]  use self::x64  as selected;
-#[cfg(arch_llapi = "i386")] use self::i386 as selected;
-#[cfg(arch_llapi = "rpi2")] use self::rpi2 as selected;
+impl ExceptionFrame {
+	pub fn get_instruction_ptr(&self) -> u32 {
+		self.lr
+	}
+}
 
-pub use self::selected::cpu as cpu;
-pub use self::selected::irq as irq;
-pub use self::selected::mem as mem;
-pub use self::selected::intrinsic as intrinsic;
+use core::fmt;
+impl fmt::Display for ExceptionFrame {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		unsafe {
+			write!(f,
+				"\
+				\tpc:   0x{:X}\n\
+				\tlr:   0x{:X}\n\
+				\tspsr: 0x{:X}",
+				self.pc, self.lr, self.spsr
+			)
+		}
+	}
+}

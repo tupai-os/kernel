@@ -18,7 +18,6 @@
 use llapi::mem::PageMap;
 
 pub type Id = u64;
-
 pub const ID_MAX: Id = !0;
 
 use alloc::string::{String, ToString};

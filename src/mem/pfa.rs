@@ -41,7 +41,7 @@ const OWNER_KERNEL: process::Id = 2;
 pub const ENTRY_INVALID: PageEntry = PageEntry::new(0, Flags::NONE);
 pub const ENTRY_FREE_RAM: PageEntry = PageEntry::new(0, Flags::RAM);
 
-#[repr(C, packed)]
+#[repr(C)]
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct PageEntry {
 	owner: process::Id,

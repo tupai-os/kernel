@@ -66,18 +66,22 @@ $(BUILD_DIRS):
 .PHONY: check
 check:
 	@echo "Checking Rust code..."
-	@RUST_TARGET_PATH="$(SRC_ROOT)/targets/$TUPAI_TARGET" $(TOOL_CARGO) \
-		check \
-		--release \
-		--target="$TUPAI_TARGET-tupai"
+	@RUST_TARGET_PATH="$(SRC_ROOT)/targets/$TUPAI_TARGET" \
+		TUPAI_TARGET=$(TARGET) \
+		$(TOOL_CARGO) \
+			check \
+			--release \
+			--target="$TUPAI_TARGET-tupai"
 
 .PHONY: exe
 exe: $(BUILD_DIRS)
 	@echo "Compiling Rust code..."
-	@RUST_TARGET_PATH="$(SRC_ROOT)/targets/$(TARGET)" TUPAI_TARGET=$(TARGET) $(TOOL_CARGO) \
-		build \
-		--release \
-		--target="$(TARGET)-tupai"
+	@RUST_TARGET_PATH="$(SRC_ROOT)/targets/$(TARGET)" \
+		TUPAI_TARGET=$(TARGET) \
+		$(TOOL_CARGO) \
+			build \
+			--release \
+			--target="$(TARGET)-tupai"
 	@cp target/$(CARGO_TARGET)/release/tupai $(KERNEL_ELF)
 
 .PHONY: symbols
