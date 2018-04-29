@@ -19,9 +19,11 @@ pub mod regions;
 pub mod pic;
 pub mod spurious;
 pub mod pit;
+pub mod kbd;
 
 pub fn init() {
 	pic::init();
 	spurious::init();
 	pit::init();
+	kbd::init();
 }

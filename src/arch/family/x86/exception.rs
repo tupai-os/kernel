@@ -77,44 +77,50 @@ pub enum Exception {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn divzero_handler(frame: *mut isr::ExceptionFrame) {
+extern fn divzero_handler(frame: *mut isr::ExceptionFrame) -> *mut isr::ExceptionFrame {
 	exception_panic(Exception::DivZero, unsafe { &*frame });
+	return frame;
 }
 
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn debug_handler(frame: *mut isr::ExceptionFrame) {
+extern fn debug_handler(frame: *mut isr::ExceptionFrame) -> *mut isr::ExceptionFrame {
 	exception_panic(Exception::Debug, unsafe { &*frame });
+	return frame;
 }
 
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn segnotpresent_handler(frame: *mut isr::ExceptionFrame) {
+extern fn segnotpresent_handler(frame: *mut isr::ExceptionFrame) -> *mut isr::ExceptionFrame {
 	exception_panic(Exception::SegNotPresent, unsafe { &*frame });
+	return frame;
 }
 
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn gprotectionfault_handler(frame: *mut isr::ExceptionFrame) {
+extern fn gprotectionfault_handler(frame: *mut isr::ExceptionFrame) -> *mut isr::ExceptionFrame {
 	exception_panic(Exception::GProtectionFault, unsafe { &*frame });
+	return frame;
 }
 
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn pagefault_handler(frame: *mut isr::ExceptionFrame) {
+extern fn pagefault_handler(frame: *mut isr::ExceptionFrame) -> *mut isr::ExceptionFrame {
 	exception_panic(Exception::PageFault, unsafe { &*frame });
+	return frame;
 }
 
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn unimplemented_handler(frame: *mut isr::ExceptionFrame) {
+extern fn unimplemented_handler(frame: *mut isr::ExceptionFrame) -> *mut isr::ExceptionFrame {
 	logln!("Unimplemented exception occured");
 	logln!("Machine state:\n{}", unsafe { &*frame });
+	return frame;
 }
 
 fn exception_panic(ex: Exception, frame: &isr::ExceptionFrame) {

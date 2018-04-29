@@ -48,6 +48,7 @@
 			push %esp // Pass stack frame
 			.extern \name\()_handler
 			call \name\()_handler
+			mov %eax, %esp // Swap out new stack frame
 			POP_REGS
 			add $8, %esp // Remove error and ID from stack
 			iret
@@ -63,6 +64,7 @@
 			push %esp // Pass stack frame
 			.extern \name\()_handler
 			call \name\()_handler
+			mov %eax, %esp // Swap out new stack frame
 			POP_REGS
 			add $8, %esp // Remove error and ID from stack
 			iret
@@ -98,6 +100,7 @@
 			push %esp // Pass stack frame
 			.extern \name\()_handler
 			call \name\()_handler
+			mov %eax, %esp // Swap out new stack frame
 			POP_REGS
 			iret
 	.endm

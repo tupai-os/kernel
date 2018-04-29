@@ -82,7 +82,7 @@ pub fn unmask(irq: usize) {
 	}
 }
 
-pub fn ack(irq: usize) {
+pub fn eoi(irq: usize) {
 	if irq < 16 {
 		if irq >= 8 {
 			out8(PORT_PIC2_CMD, EOI);

@@ -65,6 +65,7 @@
 			mov %rsp, %rdi // Pass stack frame
 			.extern \name\()_handler
 			call \name\()_handler
+			mov %rax, %rsp // Swap out new stack frame
 			POP_REGS
 			add $16, %rsp // Remove error and ID from stack
 			iretq
@@ -80,6 +81,7 @@
 			mov %rsp, %rdi // Pass stack frame
 			.extern \name\()_handler
 			call \name\()_handler
+			mov %rax, %rsp // Swap out new stack frame
 			POP_REGS
 			add $16, %rsp // Remove error and ID from stack
 			iretq
@@ -115,9 +117,11 @@
 			mov %rsp, %rdi // Pass stack frame
 			.extern \name\()_handler
 			call \name\()_handler
+			mov %rax, %rsp // Swap out new stack frame
 			POP_REGS
 			iretq
 	.endm
 
 	INTERRUPT pit
+	INTERRUPT kbd
 	INTERRUPT spurious

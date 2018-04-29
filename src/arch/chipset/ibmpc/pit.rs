@@ -16,8 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::intrinsic::isa::{idt, isr};
-use llapi::intrinsic::family::port::out8;
+use {
+	llapi::intrinsic::{
+		isa::{idt, isr},
+		family::port::out8,
+	},
+	spin::Mutex,
+};
+
 use super::pic;
 
 const IRQ: usize = 0;
@@ -31,7 +37,6 @@ extern {
 	fn _pit_handler();
 }
 
-use spin::Mutex;
 static RATE: Mutex<u32> = Mutex::new(0);
 
 pub fn init() {
@@ -60,7 +65,9 @@ pub fn set_rate(rate: u32) {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn pit_handler(frame: *mut isr::InterruptFrame) {
-	pic::ack(IRQ);
+extern fn pit_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFrame {
 	//log!("!");
+
+	pic::eoi(IRQ);
+	return frame;
 }

@@ -162,7 +162,8 @@ pub fn init() {
 		let heap = &mut *((&HEAP) as *const Heap as usize as *mut Heap);
 		heap.init();
 	}
-	logok!("Initiated heap at {:p} with {} blocks and map at {:p}", HEAP.blocks as *const (), BLOCK_COUNT, HEAP.map as *const ());
+	logok!("Initiated heap blocks at {:p} with {} blocks", HEAP.blocks as *const (), BLOCK_COUNT);
+	logok!("Initiated heap map at {:p}", HEAP.map as *const ());
 
 	// Test everything works
 	use alloc::boxed::Box;
