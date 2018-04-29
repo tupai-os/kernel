@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : irqlock.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,11 +15,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[macro_use]
-pub mod mem;
-pub mod elf;
-pub mod math;
-pub mod irqlock;
+use llapi::irq;
 
-// Re-exports
-pub use self::irqlock::IrqLock as IrqLock;
+pub struct IrqLock {
+	reenable: bool,
+}
+
+impl IrqLock {
+	pub fn new() -> IrqLock {
+		let nlock = IrqLock {
+			reenable: irq::enabled(),
+		};
+		irq::disable();
+		return nlock;
+	}
+}
+
+impl Drop for IrqLock {
+	fn drop(&mut self) {
+		if self.reenable {
+			irq::enable();
+		} else {
+			irq::disable();
+		}
+	}
+}

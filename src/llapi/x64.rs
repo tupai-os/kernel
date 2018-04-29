@@ -20,8 +20,9 @@ pub mod cpu {
 }
 
 pub mod irq {
-	pub use arch::isa::amd64::enable_irqs as enable;
-	pub use arch::isa::amd64::disable_irqs as disable;
+	pub use arch::isa::amd64::irq_enable as enable;
+	pub use arch::isa::amd64::irq_disable as disable;
+	pub use arch::isa::amd64::irq_enabled as enabled;
 
 	pub use arch::isa::amd64::isr::InterruptFrame;
 }

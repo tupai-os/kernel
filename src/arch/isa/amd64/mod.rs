@@ -26,12 +26,25 @@ global_asm!(include_str!("isr.s"));
 use arch::family::x86;
 use arch::tags::multiboot;
 
-pub fn enable_irqs() {
+pub fn irq_enable() {
 	unsafe { asm!("sti"); }
 }
 
-pub fn disable_irqs() {
+pub fn irq_disable() {
 	unsafe { asm!("cli"); }
+}
+
+pub fn irq_enabled() -> bool {
+	let val: u64;
+	unsafe {
+		asm!(
+			"pushfq
+			pop %rax"
+			:"={rax}"(val)
+			::: "volatile"
+		);
+	}
+	return (val & (1 << 9)) != 0;
 }
 
 pub fn halt() {

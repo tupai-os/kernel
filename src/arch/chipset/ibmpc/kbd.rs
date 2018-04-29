@@ -24,7 +24,9 @@ use {
 			in8,
 		},
 	},
+	util::IrqLock,
 	spin::Mutex,
+	alloc::VecDeque,
 };
 
 use super::pic;
@@ -39,49 +41,61 @@ const PORT_CMD: u16 = 0x60;
 const PORT_STATUS: u16 = 0x64;
 const PORT_DATA: u16 = 0x60;
 
+const KEY_CODE: u8 = !(1 << 7);
+const KEY_PRESSED: u8 = 1 << 7;
+
+const KEY_LSHIFT: u8 = 0x2A;
+const KEY_LCTRL: u8 = 0x1D;
+
 // TODO: Get rid of this hack, write a proper keyboard driver
 lazy_static! {
-	static ref shift_down: Mutex<bool> = Mutex::new(false);
+	static ref CHAR_BUFFER: Mutex<VecDeque<char>> = Mutex::new(VecDeque::new());
+	static ref MODS: Mutex<[bool; 3]> = Mutex::new([false, false, false]);
 }
 
-const SCANCODES_UK: [char; 128] = [
+const MOD_SHIFT: usize = 0;
+const MOD_CTRL: usize = 1;
+const MOD_SUPER: usize = 2;
+
+const SCANCODES_US: [char; 128] = [
 	'!', '\x1B', '1', '2', '3', '4', '5', '6', '7', '8',	// 9
-	'9', '0', '-', '=', '\x08', // Backspace
+	'9', '0', '-', '=',
+	'\x08', // Backspace
 	'\t', // Tab
 	'q', 'w', 'e', 'r',	// 19
 	't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', // Enter key
-	'!', // 29 - Control
+	'!', // 29 - Left control
 	'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', // 39
 	'\'', '`',
-	'!',   // Left shift
+	'!', // Left shift
 	'\\', 'z', 'x', 'c', 'v', 'b', 'n', // 49
 	'm', ',', '.', '/',
-	'!',   // Right shift
+	'!', // Right shift
 	'*',
-	'!',   // Alt
+	'!',  // Alt
 	' ', // Space bar
-	'!',   // Caps lock
-	'!',   // 59 - F1 key ... >
-	'!',   '!',   '!',   '!',   '!',   '!',   '!',   '!',
-	'!',   // < ... F10
-	'!',   // 69 - Num lock
-	'!',   // Scroll Lock
-	'!',   // Home key
-	'!',   // Up Arrow
-	'!',   // Page Up
+	'!', // Caps lock
+	'!', // 59 - F1 key ... >
+	'!', '!',   '!',   '!',   '!',   '!',   '!',   '!',
+	'!', // < ... F10
+	'!', // 69 - Num lock
+	'!', // Scroll Lock
+	'!', // Home key
+	'!', // Up Arrow
+	'!', // Page Up
 	'-',
-	'!',   // Left Arrow
+	'!', // Left Arrow
 	'!',
-	'!',   // Right Arrow
+	'!', // Right Arrow
 	'+',
-	'!',   // 79 - End key
-	'!',   // Down Arrow
-	'!',   // Page Down
-	'!',   // Insert Key
-	'!',   // Delete Key
+	'!', // 79 - End key
+	'!', // Down Arrow
+	'!', // Page Down
+	'!', // Insert Key
+	'!', // Delete Key
 	'!', '!', '!',
-	'!',   // F11 Key
-	'!',   // F12 Key
+	'!', // F11 Key
+	'!', // F12 Key
 	// All other keys are undefined
 	'!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!',
 	'!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!', '!',
@@ -105,15 +119,31 @@ extern fn kbd_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFra
 	let mut index = 0;
 
 	while in8(PORT_STATUS) & 1 != 0 {
-		match in8(PORT_DATA) {
-			sc if sc & (1 << 7) != 0 => {
-				logln!("0x{:X}: {} RELEASED", sc, SCANCODES_UK[sc as usize - 128]);
+		let sc = in8(PORT_DATA);
+		if sc & KEY_PRESSED == 0 {
+			let c = SCANCODES_US[sc as usize];
+			logln!("0x{:X}: {} PRESSED", sc, c);
+
+			match sc & KEY_CODE {
+				KEY_LSHIFT => { MODS.lock()[MOD_SHIFT] = true; },
+				KEY_LCTRL => { MODS.lock()[MOD_CTRL] = true; },
+				_ => {},
 			}
-			sc if sc & (1 << 7) == 0 => {
-				logln!("0x{:X}: {} PRESSED", sc, SCANCODES_UK[sc as usize]);
+
+			let irqlock = IrqLock::new();
+			CHAR_BUFFER.lock().push_back(c);
+			// Drop irqlock
+		} else {
+			logln!("0x{:X}: {} RELEASED", sc, SCANCODES_US[sc as usize - 128]);
+
+			match sc & KEY_CODE {
+				KEY_LSHIFT => { MODS.lock()[MOD_SHIFT] = false; },
+				KEY_LCTRL => { MODS.lock()[MOD_CTRL] = false; },
+				_ => {},
 			}
-			_ => {}
 		}
+
+		logln!("Modifier keys: {:?}", *MODS.lock());
 	}
 
 	pic::eoi(IRQ);
