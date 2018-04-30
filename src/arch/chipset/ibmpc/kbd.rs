@@ -49,8 +49,8 @@ const KEY_LCTRL: u8 = 0x1D;
 
 // TODO: Get rid of this hack, write a proper keyboard driver
 lazy_static! {
-	static ref CHAR_BUFFER: Mutex<VecDeque<char>> = Mutex::new(VecDeque::new());
-	static ref MODS: Mutex<[bool; 3]> = Mutex::new([false, false, false]);
+	pub static ref CHAR_BUFFER: Mutex<VecDeque<char>> = Mutex::new(VecDeque::new());
+	pub static ref MODS: Mutex<[bool; 3]> = Mutex::new([false, false, false]);
 }
 
 const MOD_SHIFT: usize = 0;
@@ -122,7 +122,7 @@ extern fn kbd_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFra
 		let sc = in8(PORT_DATA);
 		if sc & KEY_PRESSED == 0 {
 			let c = SCANCODES_US[sc as usize];
-			logln!("0x{:X}: {} PRESSED", sc, c);
+			//logln!("0x{:X}: {} PRESSED", sc, c);
 
 			match sc & KEY_CODE {
 				KEY_LSHIFT => { MODS.lock()[MOD_SHIFT] = true; },
@@ -134,7 +134,7 @@ extern fn kbd_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFra
 			CHAR_BUFFER.lock().push_back(c);
 			// Drop irqlock
 		} else {
-			logln!("0x{:X}: {} RELEASED", sc, SCANCODES_US[sc as usize - 128]);
+			//logln!("0x{:X}: {} RELEASED", sc, SCANCODES_US[sc as usize - 128]);
 
 			match sc & KEY_CODE {
 				KEY_LSHIFT => { MODS.lock()[MOD_SHIFT] = false; },
@@ -143,7 +143,7 @@ extern fn kbd_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFra
 			}
 		}
 
-		logln!("Modifier keys: {:?}", *MODS.lock());
+		//logln!("Modifier keys: {:?}", *MODS.lock());
 	}
 
 	pic::eoi(IRQ);

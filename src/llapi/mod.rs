@@ -23,6 +23,7 @@
 #[cfg(arch_llapi = "i386")] use self::i386 as selected;
 #[cfg(arch_llapi = "rpi2")] use self::rpi2 as selected;
 
+pub use self::selected::meta as meta;
 pub use self::selected::cpu as cpu;
 pub use self::selected::irq as irq;
 pub use self::selected::mem as mem;

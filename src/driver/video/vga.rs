@@ -15,15 +15,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use core::ptr::Unique;
-use volatile::Volatile;
-use spin::Mutex;
-
-use llapi::intrinsic::chipset::regions::VGA_TEXTMODE_RAM;
+use {
+	llapi::intrinsic::{
+		chipset::regions::VGA_TEXTMODE_RAM,
+		family::port::out8,
+	},
+	volatile::Volatile,
+	spin::Mutex,
+	core::ptr::Unique,
+};
 
 pub const COLS: usize = 80;
 pub const ROWS: usize = 25;
 pub const TAB_WIDTH: usize = 4;
+
+const PORT_CMD: u16 = 0x03D4;
+const PORT_DATA: u16 = 0x03D5;
 
 #[allow(dead_code)]
 #[derive(Debug, Copy, Clone)]
@@ -77,6 +84,15 @@ fn colors_to_fmt(fg: Color, bg: Color) -> u8 {
 	((bg as u8) << 4) | fg as u8
 }
 
+fn move_cursor(pos: u16) {
+	// Set lo byte
+	out8(PORT_CMD, 0x0F);
+	out8(PORT_DATA, pos as u8);
+	// Set hi byte
+	out8(PORT_CMD, 0x0E);
+	out8(PORT_DATA, (pos >> 8) as u8);
+}
+
 impl Entry {
 	fn empty(fg: Color, bg: Color) -> Entry {
 		Entry {
@@ -92,12 +108,24 @@ impl Writer {
 		self.fg_color = Color::White;
 		self.bg_color = Color::Black;
 		self.buffer = unsafe { Unique::new_unchecked(VGA_TEXTMODE_RAM as *mut _) };
+
+		enable_cursor();
+		move_cursor(self.cursor as u16);
 	}
 
 	fn write(&mut self, c: u8) {
 		match c {
 			b'\n' => self.cursor += COLS - (self.cursor % COLS),
 			b'\t' => self.cursor += TAB_WIDTH - (self.cursor % TAB_WIDTH),
+			b'\x08' => {
+				self.cursor -= 1;
+				let cursor = self.cursor;
+				let fmt = colors_to_fmt(self.fg_color, self.bg_color);
+				self.buffer()[cursor].write(Entry {
+					c: b' ',
+					fmt: fmt,
+				});
+			},
 			c => {
 				let cursor = self.cursor;
 				let fmt = colors_to_fmt(self.fg_color, self.bg_color);
@@ -113,6 +141,8 @@ impl Writer {
 			self.scroll(1);
 			self.cursor -= COLS
 		}
+
+		move_cursor(self.cursor as u16);
 	}
 
 	fn scroll(&mut self, lines: usize) {
@@ -144,4 +174,14 @@ pub fn init() {
 
 pub fn write_char(c: char) {
 	WRITER.lock().write(c as u8)
+}
+
+pub fn enable_cursor() {
+	out8(PORT_CMD, 0x0A);
+	out8(PORT_DATA, 0x00);
+}
+
+pub fn disable_cursor() {
+	out8(PORT_CMD, 0x0A);
+	out8(PORT_DATA, 0x3F);
 }

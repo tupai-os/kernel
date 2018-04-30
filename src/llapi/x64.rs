@@ -15,6 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+pub mod meta {
+	pub const VARIANT: &str = "x64";
+	pub const FAMILY: &str = "x86";
+	pub const ISA: &str = "amd64";
+	pub const CHIPSET: &str = "ibmpc";
+}
+
 pub mod cpu {
 	pub use arch::isa::amd64::halt;
 }

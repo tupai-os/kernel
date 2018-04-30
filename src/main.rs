@@ -44,6 +44,7 @@ extern crate cstr_core;
 extern crate alloc;
 
 #[macro_use] mod log;
+mod shell;
 
 mod llapi;
 mod arch;
@@ -74,6 +75,9 @@ pub extern fn kmain(args: &[&str]) {
 	let init = thread::create("init").unwrap();
 
 	logln!("Finished initiation");
+
+	llapi::irq::enable();
+	shell::main(args);
 
 	// Wait for something to happen
 	loop {

@@ -1,4 +1,4 @@
-// file : irqlock.rs
+// file : io.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,30 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::irq;
+use volatile::Volatile;
 
-// TODO: Seriously, this whole thing is crap. It should work more like Mutex<T>.
-
-pub struct IrqLock {
-	reenable: bool,
-}
-
-impl IrqLock {
-	pub fn new() -> IrqLock {
-		let nlock = IrqLock {
-			reenable: irq::enabled(),
-		};
-		irq::disable();
-		return nlock;
-	}
-}
-
-impl Drop for IrqLock {
-	fn drop(&mut self) {
-		if self.reenable {
-			irq::enable();
-		} else {
-			irq::disable();
-		}
+// TODO: Improve this
+pub fn wait(_cycles: usize) {
+	let mut i: usize = 0;
+	let iv = unsafe { &mut *(&mut i as *mut usize as *mut Volatile<usize>) };
+	while iv.read() < _cycles {
+		let old = iv.read();
+		iv.write(old + 1);
 	}
 }

@@ -15,6 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+pub mod meta {
+	pub const VARIANT: &str = "rpi2";
+	pub const FAMILY: &str = "arm";
+	pub const ISA: &str = "a32";
+	pub const CHIPSET: &str = "bcm2835";
+}
+
 pub mod cpu {
 	pub use arch::isa::a32::halt;
 }
