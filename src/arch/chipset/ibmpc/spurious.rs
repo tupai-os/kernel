@@ -33,6 +33,7 @@ pub fn init() {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn spurious_handler(frame: *mut isr::InterruptFrame) {
+extern fn spurious_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFrame {
 	// Do nothing
+	return frame;
 }

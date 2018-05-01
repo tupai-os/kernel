@@ -43,13 +43,15 @@ fn get_chr() -> char {
 }
 
 fn show_help(args: &[&str]) {
-	logln!("Available commands:");
+	logln!("Available commands");
+	logln!("------------------");
 	logln!("  help    Display this message");
 	logln!("  info    Show system info");
 }
 
 fn show_info(args: &[&str]) {
 	logln!("System Info");
+	logln!("-----------");
 	logln!("  LLAPI: {}", llapi::meta::VARIANT);
 	logln!("  Family: {}", llapi::meta::FAMILY);
 	logln!("  ISA: {}", llapi::meta::ISA);
@@ -57,12 +59,12 @@ fn show_info(args: &[&str]) {
 }
 
 pub fn main(args: &[&str]) {
-	logln!("Welcome to the kernel shell.");
+	logln!("\nWelcome to the kernel shell.");
 	logln!("Type 'help' for more info.");
 	loop {
 		log!("> ");
 
-		let mut input: String = String::new();
+		let mut input: String = String::with_capacity(256);
 		loop {
 			let c = get_chr();
 			match c {

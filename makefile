@@ -36,6 +36,8 @@ CARGO_BYPRODUCT = target
 
 TOOL_LINKER ?= ld
 
+BUILD_PROFILE = release
+
 # Non-configurable
 
 BUILD_DIRS = $(BUILD_ROOT)
@@ -53,7 +55,7 @@ SYMBOL_CMD = objdump --wide --syms $(KERNEL_ELF) | grep -P '^[0-9A-Fa-f]+\s.*\s[
 # Rules
 
 .PHONY: all
-all: exe
+all: exe symbols
 
 .PHONY: clean
 clean:
@@ -70,7 +72,6 @@ check:
 		TUPAI_TARGET=$(TARGET) \
 		$(TOOL_CARGO) \
 			check \
-			--release \
 			--target="$TUPAI_TARGET-tupai"
 
 .PHONY: exe
@@ -80,9 +81,9 @@ exe: $(BUILD_DIRS)
 		TUPAI_TARGET=$(TARGET) \
 		$(TOOL_CARGO) \
 			build \
-			--release \
+			--$(BUILD_PROFILE) \
 			--target="$(TARGET)-tupai"
-	@cp target/$(CARGO_TARGET)/release/tupai $(KERNEL_ELF)
+	@cp target/$(CARGO_TARGET)/$(BUILD_PROFILE)/tupai $(KERNEL_ELF)
 
 .PHONY: symbols
 symbols: exe

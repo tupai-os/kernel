@@ -1,4 +1,4 @@
-// file : lib.rs
+// file : main.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -37,7 +37,6 @@
 extern crate rlibc;
 extern crate volatile;
 extern crate spin;
-extern crate compiler_builtins;
 extern crate cstr_core;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate bitflags;
@@ -54,28 +53,31 @@ mod res;
 mod thread;
 mod process;
 mod driver;
+mod vdev;
 
 use mem::heap::Heap;
 #[global_allocator]
 pub static HEAP: Heap = Heap::empty();
 
-#[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
+#[no_mangle]
 pub extern fn kmain(args: &[&str]) {
 	logln!("Kernel booted with arguments: {:?}", args);
 
-	log::init();
+	log::init(); // Initiate logging
+	mem::init(); // Initiate memory structures
+	res::init(); // Initiate resources
+	driver::init(); // Initiate h/w drivers
+	vdev::init(); // Initiate virtual devices
 
-	mem::init();
-	res::init();
-
-	driver::init();
-
+	// Create init thread
+	// TODO: Make this spawn a process from initramfs
 	let init = thread::create("init").unwrap();
 
-	logln!("Finished initiation");
+	loginfo!("Kernel initiated, waiting for init...");
 
+	// TODO: Remove this later
 	llapi::irq::enable();
 	shell::main(args);
 
@@ -92,10 +94,10 @@ fn init_thread() -> i32 {
 	}
 }
 
+// Exception things we don't use
 #[lang = "eh_personality"]
 #[no_mangle]
 pub extern fn eh_personality() {}
-
 #[no_mangle]
 pub extern fn _Unwind_Resume() {}
 
@@ -103,7 +105,17 @@ pub extern fn _Unwind_Resume() {}
 #[no_mangle]
 pub extern fn panic_fmt(msg: core::fmt::Arguments, file: &'static str, line: u32, column: u32) -> !
 {
-	log!("\nPANIC: {} in {} on line {} at column {}", msg, file, line, column);
+	logln!("\nPANIC: {} in {} on line {} at column {}", msg, file, line, column);
+	loop {
+		llapi::irq::disable();
+		llapi::cpu::halt();
+	}
+}
+
+#[lang = "oom"]
+#[no_mangle]
+pub extern fn oom() {
+	logln!("PANIC: Out Of Memory");
 	loop {
 		llapi::irq::disable();
 		llapi::cpu::halt();

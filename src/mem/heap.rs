@@ -15,6 +15,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+use {
+	HEAP,
+	oom,
+	mem::wma,
+	util::math,
+	alloc::{
+		boxed::Box,
+		heap::{
+			GlobalAlloc,
+			AllocErr,
+			Layout,
+		},
+	},
+	core::{
+		slice::from_raw_parts_mut,
+		ptr::NonNull,
+		alloc::{
+			Opaque,
+		},
+	},
+};
+
 const BLOCK_SIZE_LOG2: usize = 5;
 const BLOCK_SIZE: usize = 1 << BLOCK_SIZE_LOG2;
 const BLOCK_COUNT: usize = 0x100000; // 0x20 * 0x100000 = 32M
@@ -46,7 +68,6 @@ impl Heap {
 	}
 
 	fn init(&mut self) {
-		use mem::wma;
 		self.map = wma::alloc_many::<MapEntry>(BLOCK_COUNT).as_ptr() as usize;
 		self.blocks = wma::alloc_many::<Block>(BLOCK_COUNT).as_ptr() as usize;
 
@@ -59,20 +80,18 @@ impl Heap {
 	}
 
 	fn get_map(&self) -> &'static mut [MapEntry] {
-		use core::slice::from_raw_parts_mut;
 		unsafe { from_raw_parts_mut(self.map as *mut MapEntry, BLOCK_COUNT) }
 	}
 
 	fn get_blocks(&self) -> &'static mut [Block] {
-		use core::slice::from_raw_parts_mut;
 		unsafe { from_raw_parts_mut(self.blocks as *mut Block, BLOCK_COUNT) }
 	}
 
-	fn index_to_ptr(&self, i: usize) -> *mut u8 {
-		(self.blocks + i * BLOCK_SIZE) as *mut u8
+	fn index_to_ptr(&self, i: usize) -> *mut Opaque {
+		(self.blocks + i * BLOCK_SIZE) as *mut Opaque
 	}
 
-	fn ptr_to_index(&self, ptr: *mut u8) -> Option<usize> {
+	fn ptr_to_index(&self, ptr: *mut Opaque) -> Option<usize> {
 		let ptr = ptr as usize - self.blocks;
 		if (ptr >> BLOCK_SIZE_LOG2) << BLOCK_SIZE_LOG2 != ptr {
 			None
@@ -97,12 +116,10 @@ impl Heap {
 	}
 }
 
-use alloc::heap::{Alloc, AllocErr, Layout};
-unsafe impl<'a> Alloc for &'a Heap {
-	unsafe fn alloc(&mut self, layout: Layout) -> Result<*mut u8, AllocErr> {
+unsafe impl GlobalAlloc for Heap {
+	unsafe fn alloc(&self, layout: Layout) -> *mut Opaque {
 		let map = self.get_map();
 
-		use util::math;
 		let n_blocks = math::align_up(layout.size(), BLOCK_SIZE_LOG2) >> BLOCK_SIZE_LOG2;
 
 		use core::cmp::min;
@@ -125,15 +142,13 @@ unsafe impl<'a> Alloc for &'a Heap {
 				for i in i + 1..min(map.len(), i + n_blocks) {
 					map[i] = MapEntry::Tail
 				}
-				return Ok(self.index_to_ptr(i))
+				return self.index_to_ptr(i) as *mut Opaque;
 			}
 		}
-		Err(AllocErr::Exhausted {
-			request: layout,
-		})
+		loop { oom(); } // TODO: Remove this hack, add noreturn to panic function
 	}
 
-	unsafe fn dealloc(&mut self, ptr: *mut u8, layout: Layout) {
+	unsafe fn dealloc(&self, ptr: *mut Opaque, layout: Layout) {
 		let map = self.get_map();
 
 		let i = self.ptr_to_index(ptr).expect("Attempted to dealloc block-unaligned pointer");
@@ -155,7 +170,6 @@ unsafe impl<'a> Alloc for &'a Heap {
 }
 
 pub fn init() {
-	use HEAP;
 	unsafe {
 		// I wish there was nicer syntax than this. I've not found it yet.
 		// Prepare for some wild casting
@@ -166,7 +180,6 @@ pub fn init() {
 	logok!("Initiated heap map at {:p}", HEAP.map as *const ());
 
 	// Test everything works
-	use alloc::boxed::Box;
 	let x = Box::new(1337);
 	if *x != 1337 {
 		panic!("Heap allocation test failed");
@@ -176,7 +189,6 @@ pub fn init() {
 #[allow(dead_code)]
 pub fn display(start: usize, n: usize) {
 	unsafe {
-		use HEAP;
 		let heap = &*((&HEAP) as *const Heap);
 		heap.display(start, n);
 	}

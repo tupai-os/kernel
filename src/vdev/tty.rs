@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : tty.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,42 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use {
-	process,
-	thread,
-	spin::Mutex,
-	alloc::{
-		boxed::Box,
-		Vec,
-		BTreeMap,
-	},
-};
-
-pub type Id = u64;
-
-pub enum Res {
-	Process(process::Process),
-	Thread(thread::Thread),
-}
-
-lazy_static! {
-	static ref IDS: Mutex<Id> = Mutex::new(0);
-	static ref RES: Mutex<BTreeMap<Id, Res>> = Mutex::new(BTreeMap::new());
-}
-
-pub fn create(res: Res) -> Id {
-	let nid = {
-		// TODO: Prevent ID overflow
-		let mut ids = IDS.lock();
-		*ids += 1;
-		*ids
-	};
-	RES.lock().insert(nid, res);
-	loginfo!("Created resource with Id {}", nid);
-	return nid;
-}
-
 pub fn init() {
-	RES.lock();
-	logok!("Resources initiated");
+	logok!("TTY initiated");
 }
