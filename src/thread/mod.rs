@@ -39,12 +39,10 @@ pub enum ThreadErr {}
 
 pub fn create(name: &str) -> Result<res::Id, ThreadErr> {
 	return Ok(
-		res::create(
-			res::Res::Thread(Thread {
-				id: 0,
-				name: string::String::from(name),
-			})
-		)
+		res::create(res::Res::Thread(Thread {
+			id: 0,
+			name: string::String::from(name),
+		}))
 	);
 }
 

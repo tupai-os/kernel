@@ -109,21 +109,24 @@
 	DUMMY_EXCEPTION 20 unimplemented
 	ERROR_EXCEPTION 30 unimplemented
 
-	.macro INTERRUPT name
+	.macro INTERRUPT n, name
 		.align 8
 		.global _\name\()_handler
 		_\name\()_handler:
+			push $EXCEPTION_DUMMY_ERROR // Dummy error
+			push $\n\() // Push interrupt vector
 			PUSH_REGS
 			mov %rsp, %rdi // Pass stack frame
 			.extern \name\()_handler
 			call \name\()_handler
 			mov %rax, %rsp // Swap out new stack frame
 			POP_REGS
+			add $16, %rsp // Remove error and ID from stack
 			iretq
 	.endm
 
-	INTERRUPT pit
-	INTERRUPT kbd
-	INTERRUPT com2
-	INTERRUPT com1
-	INTERRUPT spurious
+	INTERRUPT 0, pit
+	INTERRUPT 1, kbd
+	INTERRUPT 3, com2
+	INTERRUPT 4, com1
+	INTERRUPT 7, spurious
