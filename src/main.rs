@@ -105,6 +105,7 @@ pub extern fn _Unwind_Resume() {}
 #[no_mangle]
 pub extern fn panic_fmt(msg: core::fmt::Arguments, file: &'static str, line: u32, column: u32) -> !
 {
+	unsafe { log::force_unlock(); }
 	logln!("\nPANIC: {} in {} on line {} at column {}", msg, file, line, column);
 	loop {
 		llapi::irq::disable();
@@ -114,10 +115,6 @@ pub extern fn panic_fmt(msg: core::fmt::Arguments, file: &'static str, line: u32
 
 #[lang = "oom"]
 #[no_mangle]
-pub extern fn oom() {
-	logln!("PANIC: Out Of Memory");
-	loop {
-		llapi::irq::disable();
-		llapi::cpu::halt();
-	}
+pub extern fn oom() -> ! {
+	panic!("Out Of Memory");
 }

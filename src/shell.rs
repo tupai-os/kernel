@@ -16,8 +16,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use {
-	llapi::intrinsic::chipset::kbd,
-	llapi,
+	llapi::{
+		cpu,
+		meta,
+		intrinsic::chipset::kbd,
+	},
 	util::{
 		IrqLock,
 		io::wait,
@@ -38,7 +41,7 @@ fn get_chr() -> char {
 			Some(chr) => { return chr; },
 			_ => {},
 		}
-		wait(10000);
+		cpu::halt();
 	}
 }
 
@@ -52,10 +55,10 @@ fn show_help(args: &[&str]) {
 fn show_info(args: &[&str]) {
 	logln!("System Info");
 	logln!("-----------");
-	logln!("  LLAPI: {}", llapi::meta::VARIANT);
-	logln!("  Family: {}", llapi::meta::FAMILY);
-	logln!("  ISA: {}", llapi::meta::ISA);
-	logln!("  Chipset: {}", llapi::meta::CHIPSET);
+	logln!("  LLAPI: {}", meta::VARIANT);
+	logln!("  Family: {}", meta::FAMILY);
+	logln!("  ISA: {}", meta::ISA);
+	logln!("  Chipset: {}", meta::CHIPSET);
 }
 
 pub fn main(args: &[&str]) {

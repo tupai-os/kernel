@@ -145,7 +145,7 @@ unsafe impl GlobalAlloc for Heap {
 				return self.index_to_ptr(i) as *mut Opaque;
 			}
 		}
-		loop { oom(); } // TODO: Remove this hack, add noreturn to panic function
+		panic!("Out Of Memory");
 	}
 
 	unsafe fn dealloc(&self, ptr: *mut Opaque, layout: Layout) {

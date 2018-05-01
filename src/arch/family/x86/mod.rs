@@ -19,9 +19,7 @@ pub mod boot;
 pub mod port;
 pub mod exception;
 
-use llapi::intrinsic::chipset;
-
 pub fn init() {
 	exception::init();
-	chipset::init();
+	loginfo!("Initiated x86 architecture");
 }

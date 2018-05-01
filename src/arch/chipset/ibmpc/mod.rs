@@ -26,4 +26,6 @@ pub fn init() {
 	spurious::init();
 	pit::init();
 	kbd::init();
+
+	loginfo!("Initiated IBM-PC chipset architecture");
 }

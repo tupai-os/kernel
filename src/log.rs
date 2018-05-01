@@ -17,7 +17,13 @@
 
 #![allow(unused_macros)]
 
-use core::fmt;
+use {
+	core::fmt,
+	spin::{
+		Mutex,
+		Once,
+	},
+};
 
 #[cfg(log_driver = "serial_com")] use driver::serial::com as logger;
 #[cfg(log_driver = "video_vga")] use driver::video::vga as logger;
@@ -39,7 +45,6 @@ impl fmt::Write for Writer {
 	}
 }
 
-use spin::Mutex;
 static WRITER: Mutex<Writer> = Mutex::new(Writer {});
 
 pub fn log_args(args: fmt::Arguments) {
@@ -95,7 +100,11 @@ macro_rules! logfail {
 	});
 }
 
+static INIT: Once<()> = Once::new();
+
 pub fn init() {
-	logger::init();
-	logok!("Logging initiated");
+	INIT.call_once(|| {
+		logger::init();
+		logok!("Logging initiated");
+	});
 }

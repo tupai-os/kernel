@@ -23,8 +23,15 @@ pub mod mem;
 
 global_asm!(include_str!("isr.s"));
 
-use arch::family::x86;
-use arch::tags::multiboot;
+use {
+	kmain,
+	log,
+	llapi::intrinsic::{
+		family,
+		chipset,
+	},
+	arch::tags::multiboot,
+};
 
 pub fn irq_enable() {
 	unsafe { asm!("sti"); }
@@ -55,13 +62,19 @@ pub fn halt() {
 #[allow(dead_code)]
 #[linkage = "external"]
 pub extern fn kearly(tags: *const ()) {
-	use kmain;
+	log::init(); // Initiate early logging
 
+	// Core architecture initiation
 	gdt::init();
 	idt::init();
-	x86::init();
-	multiboot::parse(tags);
+	loginfo!("Initiated amd64 architecture");
 
-	let args = ["testing"];
+	// Initiate other LLAPI components
+	family::init();
+	chipset::init();
+
+	multiboot::parse(tags); // Parse tags
+
+	let args = ["these", "are", "test", "arguments"];
 	kmain(&args);
 }

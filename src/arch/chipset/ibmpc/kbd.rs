@@ -18,7 +18,10 @@
 
 use {
 	llapi::intrinsic::{
-		isa::{idt, isr},
+		isa::{
+			idt,
+			isr,
+		},
 		family::port::{
 			out8,
 			in8,
@@ -105,10 +108,12 @@ const SCANCODES_US: [char; 128] = [
 pub fn init() {
 	idt::set_handler(pic::REMAP_OFFSET + IRQ, _kbd_handler as idt::IsrPtr);
 	idt::reinstall();
-	logok!("Set keyboard irq handler");
+	logok!("Set keyboard interrupt handler");
 
 	pic::unmask(IRQ);
 	logok!("Unmasked keyboard interrupt");
+
+	loginfo!("Initiated keyboard");
 }
 
 #[no_mangle]
