@@ -69,6 +69,7 @@ pub struct Writer {
 }
 
 // TODO: Work out why static initialization doesn't work
+// TODO: Use lazy_static here
 static WRITER: Mutex<Writer> = Mutex::new(Writer {
 	cursor: 0,
 	fg_color: Color::White,

@@ -1,4 +1,4 @@
-// file : tty.rs
+// file : irqqueue.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,16 +15,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use util::IrqQueue;
+use util::IrqLock;
+use alloc::VecDeque;
+use core::cell::UnsafeCell;
+use spin::Mutex;
 
-lazy_static! {
-	pub static ref INPUT: IrqQueue<char> = IrqQueue::new();
+// TODO: Is this safe?
+
+pub struct IrqQueue<T> {
+	deque: Mutex<VecDeque<T>>,
 }
 
-pub fn init() {
-	logok!("TTY initiated");
-}
+impl<T: Copy> IrqQueue<T> {
+	pub fn new() -> IrqQueue<T> {
+		IrqQueue::<T> {
+			deque: Mutex::new(VecDeque::new()),
+		}
+	}
 
-pub fn input() -> &'static IrqQueue<char> {
-	unsafe { &INPUT }
+	pub fn write(&self, t: T) {
+		let irqlock = IrqLock::new();
+		self.deque.lock().push_front(t);
+	}
+
+	pub fn read(&self) -> Option<T> {
+		let irqlock = IrqLock::new();
+		return self.deque.lock().pop_back();
+	}
 }

@@ -19,12 +19,8 @@ use {
 	llapi::{
 		cpu,
 		meta,
-		intrinsic::chipset::kbd,
 	},
-	util::{
-		IrqLock,
-		io::wait,
-	},
+	vdev::tty,
 	alloc::{
 		String,
 		Vec,
@@ -33,11 +29,7 @@ use {
 
 fn get_chr() -> char {
 	loop {
-		let opt = {
-			let irqlock = IrqLock::new();
-			kbd::CHAR_BUFFER.lock().pop_front()
-		};
-		match opt {
+		match tty::input().read() {
 			Some(chr) => { return chr; },
 			_ => {},
 		}

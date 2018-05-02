@@ -28,6 +28,7 @@ use {
 		},
 	},
 	util::IrqLock,
+	vdev::tty,
 	spin::Mutex,
 	alloc::VecDeque,
 };
@@ -49,16 +50,16 @@ const KEY_PRESSED: u8 = 1 << 7;
 
 const KEY_LSHIFT: u8 = 0x2A;
 const KEY_LCTRL: u8 = 0x1D;
+const KEY_LALT: u8 = 0x38;
 
-// TODO: Get rid of this hack, write a proper keyboard driver
 lazy_static! {
-	pub static ref CHAR_BUFFER: Mutex<VecDeque<char>> = Mutex::new(VecDeque::new());
-	pub static ref MODS: Mutex<[bool; 3]> = Mutex::new([false, false, false]);
+	pub static ref MODS: Mutex<[bool; 4]> = Mutex::new([false, false, false, false]);
 }
 
 const MOD_SHIFT: usize = 0;
 const MOD_CTRL: usize = 1;
 const MOD_SUPER: usize = 2;
+const MOD_ALT: usize = 3;
 
 const SCANCODES_US: [char; 128] = [
 	'!', '\x1B', '1', '2', '3', '4', '5', '6', '7', '8',	// 9
@@ -120,30 +121,28 @@ pub fn init() {
 #[allow(dead_code)]
 #[linkage = "external"]
 extern fn kbd_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFrame {
-	let mut scancodes: [u8; 6];
-	let mut index = 0;
-
 	while in8(PORT_STATUS) & 1 != 0 {
 		let sc = in8(PORT_DATA);
 		if sc & KEY_PRESSED == 0 {
-			let c = SCANCODES_US[sc as usize];
+			let c = SCANCODES_US[(sc % 128) as usize];
 			//logln!("0x{:X}: {} PRESSED", sc, c);
 
 			match sc & KEY_CODE {
 				KEY_LSHIFT => { MODS.lock()[MOD_SHIFT] = true; },
 				KEY_LCTRL => { MODS.lock()[MOD_CTRL] = true; },
+				KEY_LALT => { MODS.lock()[MOD_ALT] = true; },
 				_ => {},
 			}
 
-			let irqlock = IrqLock::new();
-			CHAR_BUFFER.lock().push_back(c);
-			// Drop irqlock
+			// Write character to tty input buffer
+			tty::input().write(c);
 		} else {
 			//logln!("0x{:X}: {} RELEASED", sc, SCANCODES_US[sc as usize - 128]);
 
 			match sc & KEY_CODE {
 				KEY_LSHIFT => { MODS.lock()[MOD_SHIFT] = false; },
 				KEY_LCTRL => { MODS.lock()[MOD_CTRL] = false; },
+				KEY_LALT => { MODS.lock()[MOD_ALT] = false; },
 				_ => {},
 			}
 		}

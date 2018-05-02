@@ -20,8 +20,10 @@ pub mod mem;
 pub mod elf;
 pub mod math;
 pub mod irqlock;
+pub mod irqqueue;
 pub mod io;
 
 // Re-exports
 pub use self::irqlock::IrqLock as IrqLock;
+pub use self::irqqueue::IrqQueue as IrqQueue;
 pub use self::io::wait as wait;
