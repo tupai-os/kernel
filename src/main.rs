@@ -49,7 +49,6 @@ mod llapi;
 mod arch;
 mod mem;
 mod util;
-mod res;
 mod thread;
 mod process;
 mod driver;
@@ -67,21 +66,17 @@ pub extern fn kmain(args: &[&str]) {
 
 	log::init(); // Initiate logging
 	mem::init(); // Initiate memory structures
-	res::init(); // Initiate resources
+	process::init(); // Initiate processes
 	driver::init(); // Initiate h/w drivers
 	vdev::init(); // Initiate virtual devices
 
-	// Create init thread
+	// Create init process
 	// TODO: Make this spawn a process from initramfs
-	let init = process::Process::new("init").unwrap_or_else(|e| {
+	let init = process::new("init").unwrap_or_else(|e| {
 		panic!("Could not spawn init process: {:?}", e);
+	}).spawn_thread("main").unwrap_or_else(|e| {
+		panic!("Could not spawn init main thread: {:?}", e);
 	});
-
-	let init = thread::Thread::new("init").unwrap_or_else(|e| {
-		panic!("Could not spawn init: {:?}", e);
-	});
-
-	logln!("Init's name is {}", init.name().unwrap());
 
 	loginfo!("Kernel initiated, waiting for init...");
 

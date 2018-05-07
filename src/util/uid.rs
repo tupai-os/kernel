@@ -20,10 +20,12 @@ use spin::Mutex;
 use alloc::{
 	arc::Arc,
 	BTreeMap,
+	Vec,
 };
 
 pub type Uid = i64;
 
+// TODO: Make this IRQ-safe
 pub struct Tracker<T> {
 	items: Mutex<BTreeMap<Uid, Arc<T>>>,
 }
@@ -56,10 +58,20 @@ impl<T> Tracker<T> {
 		return (uid, arc);
 	}
 
+	pub fn emplace_with_uid(&self, uid: Uid, item: T) -> (Uid, Arc<T>) {
+		let arc = Arc::new(item);
+		self.items.lock().insert(uid, arc.clone());
+		return (uid, arc);
+	}
+
 	pub fn get(&self, uid: Uid) -> Option<Arc<T>> {
 		match self.items.lock().get(&uid) {
 			Some(arc) => Some(arc.clone()),
 			_ => None,
 		}
+	}
+
+	pub fn uids(&self) -> Vec<Uid> {
+		return self.items.lock().keys().cloned().collect();
 	}
 }

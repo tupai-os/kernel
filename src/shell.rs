@@ -21,7 +21,9 @@ use llapi::{
 };
 use vdev::tty;
 use mem::pfa;
+use process;
 use alloc::{
+	string::ToString,
 	String,
 	Vec,
 };
@@ -42,6 +44,7 @@ fn show_help(args: &[&str]) {
 	logln!("  help    Display this message");
 	logln!("  info    Show system info");
 	logln!("  mmap    Show physical memory map");
+	logln!("  proc    Show currently running process and threads");
 }
 
 fn show_info(args: &[&str]) {
@@ -57,6 +60,23 @@ fn show_mmap(args: &[&str]) {
 	logln!("Physical Memory Map");
 	logln!("------------------");
 	pfa::display();
+}
+
+fn show_proc(args: &[&str]) {
+	logln!("Process List");
+	logln!("------------");
+	for proc in process::list() {
+		logln!("Process (uid = {}, name = {})",
+			proc.uid(),
+			proc.name().unwrap_or("<none>".to_string())
+		);
+		for thread in proc.threads().unwrap() {
+			logln!("|-> Thread (uid = {}, name = {})",
+				thread.uid(),
+				thread.name().unwrap_or("<none>".to_string())
+			);
+		}
+	}
 }
 
 pub fn main(args: &[&str]) {
@@ -91,6 +111,7 @@ pub fn main(args: &[&str]) {
 			"help" => { show_help(args.as_slice()) },
 			"info" => { show_info(args.as_slice()) },
 			"mmap" => { show_mmap(args.as_slice()) },
+			"proc" => { show_proc(args.as_slice()) },
 			s => { logln!("Unknown command '{}'", s); },
 		}
 	}

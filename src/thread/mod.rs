@@ -15,36 +15,45 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use alloc::string::String;
 use util::uid::{Uid, Tracker};
+use process::ProcessHandle;
+use alloc::string::String;
 
 pub struct Thread {
-	pub name: String,
+	name: String,
+	proc: ProcessHandle,
 }
 
 lazy_static! {
 	static ref THREADS: Tracker<Thread> = Tracker::new();
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ThreadHandle {
 	uid: Uid,
 }
 
 #[derive(Debug)]
-pub enum ThreadErr {}
+pub enum ThreadErr {
+	NoParentProcess,
+}
 
-impl Thread {
-	pub fn new(name: &str) -> Result<ThreadHandle, ThreadErr> {
-		return Ok(ThreadHandle {
-			uid: THREADS.emplace(Thread {
-				name: String::from(name),
-			}).0
-		});
-	}
+pub fn new(proc: ProcessHandle, name: &str) -> Result<ThreadHandle, ThreadErr> {
+	return Ok(ThreadHandle {
+		uid: THREADS.emplace(Thread {
+			name: String::from(name),
+			proc: proc,
+		}).0
+	});
 }
 
 impl ThreadHandle {
+	pub const fn from_uid(uid: Uid) -> ThreadHandle {
+		ThreadHandle {
+			uid: uid,
+		}
+	}
+
 	pub fn uid(&self) -> Uid {
 		self.uid
 	}
