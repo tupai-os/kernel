@@ -73,7 +73,15 @@ pub extern fn kmain(args: &[&str]) {
 
 	// Create init thread
 	// TODO: Make this spawn a process from initramfs
-	let init = thread::create("init").unwrap();
+	let init = process::Process::new("init").unwrap_or_else(|e| {
+		panic!("Could not spawn init process: {:?}", e);
+	});
+
+	let init = thread::Thread::new("init").unwrap_or_else(|e| {
+		panic!("Could not spawn init: {:?}", e);
+	});
+
+	logln!("Init's name is {}", init.name().unwrap());
 
 	loginfo!("Kernel initiated, waiting for init...");
 

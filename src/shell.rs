@@ -15,16 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use {
-	llapi::{
-		cpu,
-		meta,
-	},
-	vdev::tty,
-	alloc::{
-		String,
-		Vec,
-	},
+use llapi::{
+	cpu,
+	meta,
+};
+use vdev::tty;
+use mem::pfa;
+use alloc::{
+	String,
+	Vec,
 };
 
 fn get_chr() -> char {
@@ -42,6 +41,7 @@ fn show_help(args: &[&str]) {
 	logln!("------------------");
 	logln!("  help    Display this message");
 	logln!("  info    Show system info");
+	logln!("  mmap    Show physical memory map");
 }
 
 fn show_info(args: &[&str]) {
@@ -51,6 +51,12 @@ fn show_info(args: &[&str]) {
 	logln!("  Family: {}", meta::FAMILY);
 	logln!("  ISA: {}", meta::ISA);
 	logln!("  Chipset: {}", meta::CHIPSET);
+}
+
+fn show_mmap(args: &[&str]) {
+	logln!("Physical Memory Map");
+	logln!("------------------");
+	pfa::display();
 }
 
 pub fn main(args: &[&str]) {
@@ -84,6 +90,7 @@ pub fn main(args: &[&str]) {
 		match args[0] {
 			"help" => { show_help(args.as_slice()) },
 			"info" => { show_info(args.as_slice()) },
+			"mmap" => { show_mmap(args.as_slice()) },
 			s => { logln!("Unknown command '{}'", s); },
 		}
 	}

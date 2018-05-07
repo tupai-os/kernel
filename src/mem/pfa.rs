@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use llapi::mem::PAGE_SIZE_KB_LOG2;
-use process;
+use process::ProcessHandle;
 
 bitflags! {
 	pub struct Flags: u32 {
@@ -34,17 +34,13 @@ bitflags! {
 const PROC_MAX: usize = (1 << 16);
 const PAGE_NUM: usize = (4 * 1024 * 1024) >> PAGE_SIZE_KB_LOG2; // 4G of pages
 
-const OWNER_INVALID: process::Id = 0;
-const OWNER_FREE: process::Id = 1;
-const OWNER_KERNEL: process::Id = 2;
-
-pub const ENTRY_INVALID: PageEntry = PageEntry::new(0, Flags::NONE);
-pub const ENTRY_FREE_RAM: PageEntry = PageEntry::new(0, Flags::RAM);
+pub const ENTRY_INVALID: PageEntry = PageEntry::new(ProcessHandle::invalid(), Flags::NONE);
+pub const ENTRY_FREE_RAM: PageEntry = PageEntry::new(ProcessHandle::free(), Flags::RAM);
 
 #[repr(C)]
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct PageEntry {
-	owner: process::Id,
+	proc: ProcessHandle,
 	flags: Flags,
 }
 
@@ -53,9 +49,9 @@ struct PageMap {
 }
 
 impl PageEntry {
-	pub const fn new(owner: process::Id, flags: Flags) -> PageEntry {
+	pub const fn new(proc: ProcessHandle, flags: Flags) -> PageEntry {
 		PageEntry {
-			owner: owner,
+			proc: proc,
 			flags: flags,
 		}
 	}
@@ -92,15 +88,17 @@ impl PageMap {
 				centry = self.entries[i];
 
 				use alloc::string::ToString;
-				let owner_name = match process::get(centry.owner) {
-					Some(o) => o.name,
-					None => "<none>".to_string(),
-				};
+				let proc_name = centry.proc.name().unwrap_or("<none>".to_string());
 
-				logln!("[0x{:0>18X}] => {:<8} owner = {} flags = 0b{:0>8b}", i << (PAGE_SIZE_KB_LOG2 + 10), owner_name, centry.owner, centry.flags)
+				logln!("[0x{:0>18X}] => {:<8} owner = {} flags = 0b{:0>8b}",
+					i << (PAGE_SIZE_KB_LOG2 + 10),
+					proc_name,
+					centry.proc.uid(),
+					centry.flags
+				);
 			}
 		}
-		logln!("[0x{:0>18X}] <unmapped>", self.entries.len() << (PAGE_SIZE_KB_LOG2 + 10))
+		logln!("[0x{:0>18X}] <unmapped>", self.entries.len() << (PAGE_SIZE_KB_LOG2 + 10));
 	}
 }
 

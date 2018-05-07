@@ -15,52 +15,62 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod process;
+use alloc::string::String;
+use util::uid::{Uid, Tracker};
 
-pub use self::process::{Id, ID_MAX, Process};
-use spin::Mutex;
-use alloc::btree_map::BTreeMap;
+pub struct Process {
+	pub name: String,
+}
 
 lazy_static! {
-	static ref PROCS: Mutex<BTreeMap<Id, Process>> = Mutex::new(BTreeMap::new());
+	static ref PROCESSES: Tracker<Process> = Tracker::new();
 }
 
-bitflags! {
-	pub struct Flags: u8 {
-		const KERNEL = 0b0001;
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub struct ProcessHandle {
+	uid: Uid,
+}
+
+#[derive(Debug)]
+pub enum ProcessErr {}
+
+impl Process {
+	pub fn new(name: &str) -> Result<ProcessHandle, ProcessErr> {
+		return Ok(ProcessHandle {
+			uid: PROCESSES.emplace(Process {
+				name: String::from(name),
+			}).0
+		});
 	}
 }
 
-static ID_COUNTER: Mutex<Id> = Mutex::new(0);
-
-fn get_new_id() -> Id {
-	let mut id_counter = ID_COUNTER.lock();
-	let id = *id_counter + 1;
-	*id_counter = id;
-	if id > ID_MAX {
-		panic!("Ran out of process identifiers");
-	} else {
-		id
+impl ProcessHandle {
+	pub const fn invalid() -> ProcessHandle {
+		ProcessHandle {
+			uid: -2,
+		}
 	}
-}
 
-pub fn create(name: &str, flags: Flags) -> Option<Id> {
-	let new_id = get_new_id();
-
-	PROCS.lock().insert(new_id, Process::new(new_id, name));
-
-	logln!("Created process '{}' with id {}", name, new_id);
-	Some(new_id)
-}
-
-pub fn get<'a>(id: Id) -> Option<Process> {
-	let id = id;
-	match PROCS.lock().get_mut(&id) {
-		Some(p) => Some(p.clone()),
-		None => None
+	pub const fn free() -> ProcessHandle {
+		ProcessHandle {
+			uid: -1,
+		}
 	}
-}
 
-pub fn init() {
-	logok!("Initiated processes");
+	pub const fn kernel() -> ProcessHandle {
+		ProcessHandle {
+			uid: 0,
+		}
+	}
+
+	pub fn uid(&self) -> Uid {
+		self.uid
+	}
+
+	pub fn name(&self) -> Option<String> {
+		match PROCESSES.get(self.uid) {
+			Some(t) => Some(t.name.clone()),
+			_ => None,
+		}
+	}
 }

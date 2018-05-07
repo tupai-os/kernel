@@ -34,12 +34,12 @@ impl<T: Copy> IrqQueue<T> {
 	}
 
 	pub fn write(&self, t: T) {
-		let irqlock = IrqLock::new();
+		let _lock = IrqLock::new();
 		self.deque.lock().push_front(t);
 	}
 
 	pub fn read(&self) -> Option<T> {
-		let irqlock = IrqLock::new();
+		let _lock = IrqLock::new();
 		return self.deque.lock().pop_back();
 	}
 }

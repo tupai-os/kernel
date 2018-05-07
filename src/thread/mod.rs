@@ -15,72 +15,44 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use {
-	res,
-	alloc::string,
-};
+use alloc::string::String;
+use util::uid::{Uid, Tracker};
 
 pub struct Thread {
-	pub id: res::Id,
-	pub name: string::String,
+	pub name: String,
 }
 
-impl Thread {
-	pub fn new(name: &str) -> Thread {
-		Thread {
-			id: 0,
-			name: string::String::from(name),
-		}
-	}
+lazy_static! {
+	static ref THREADS: Tracker<Thread> = Tracker::new();
+}
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub struct ThreadHandle {
+	uid: Uid,
 }
 
 #[derive(Debug)]
 pub enum ThreadErr {}
 
-pub fn create(name: &str) -> Result<res::Id, ThreadErr> {
-	return Ok(
-		res::create(res::Res::Thread(Thread {
-			id: 0,
-			name: string::String::from(name),
-		}))
-	);
+impl Thread {
+	pub fn new(name: &str) -> Result<ThreadHandle, ThreadErr> {
+		return Ok(ThreadHandle {
+			uid: THREADS.emplace(Thread {
+				name: String::from(name),
+			}).0
+		});
+	}
 }
 
-// pub mod thread;
+impl ThreadHandle {
+	pub fn uid(&self) -> Uid {
+		self.uid
+	}
 
-// pub use self::thread::{Id, ID_MAX, Thread, Stack};
-// use spin::Mutex;
-// use alloc::{boxed::Box, Vec, BTreeMap};
-
-// lazy_static! {
-//	 static ref THREADS: Mutex<BTreeMap<Id, Thread>> = Mutex::new(BTreeMap::new());
-// }
-
-// static ID_COUNTER: Mutex<Id> = Mutex::new(0);
-
-// fn get_new_id() -> Id {
-//	 let mut id_counter = ID_COUNTER.lock();
-//	 let id = *id_counter + 1;
-//	 *id_counter = id;
-//	 if id > ID_MAX {
-//		 panic!("Ran out of thread identifiers");
-//	 } else {
-//		 id
-//	 }
-// }
-
-// pub fn create(name: &str, entry: fn() -> i32) -> Option<Id> {
-//	 let new_id = get_new_id();
-
-//	 let stack: Stack = Box::new(Vec::with_capacity(1024));
-
-//	 THREADS.lock().insert(new_id, Thread::new(new_id, name, entry, stack));
-
-//	 logln!("Created thread '{}' with id {}", name, new_id);
-//	 Some(new_id)
-// }
-
-// pub fn init() {
-//	 THREADS.lock();
-//	 logok!("Threads initiated");
-// }
+	pub fn name(&self) -> Option<String> {
+		match THREADS.get(self.uid) {
+			Some(t) => Some(t.name.clone()),
+			_ => None,
+		}
+	}
+}
