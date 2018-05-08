@@ -39,7 +39,7 @@ impl ThreadHandle {
 	pub fn name(&self) -> Option<String> {
 		match THREADS.get(self.uid) {
 			Some(t) => Some(t.lock().name.clone()),
-			_ => None,
+			None => None,
 		}
 	}
 

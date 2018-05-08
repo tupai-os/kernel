@@ -26,7 +26,7 @@ use core::ptr::Unique;
 
 lazy_static! {
 	static ref TASK_QUEUE: IrqLock<VecDeque<Weak<IrqLock<Thread>>>> = IrqLock::new(VecDeque::new());
-	static ref CURRENT_TASK: IrqLock<Weak<IrqLock<Thread>>> = IrqLock::new(Weak::default());
+	static ref CURRENT_TASK: Weak<IrqLock<Thread>> = Weak::default();
 }
 
 pub fn preempt(frame: *mut irq::StackFrame) -> *mut irq::StackFrame {
@@ -41,7 +41,7 @@ pub fn preempt(frame: *mut irq::StackFrame) -> *mut irq::StackFrame {
 
 	let frame = match CURRENT_TASK.lock().upgrade() {
 		Some(ct) => ct.lock().stack.frame.as_ptr(),
-		_ => panic!("Encountered invalid thread"),
+		None => panic!("Encountered invalid thread"),
 	};
 
 	return frame;
@@ -53,6 +53,6 @@ pub fn schedule(th: ThreadHandle) -> bool {
 			TASK_QUEUE.lock().push_front(Arc::downgrade(&t));
 			true
 		},
-		_ => false,
+		None => false,
 	}
 }

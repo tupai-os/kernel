@@ -61,21 +61,21 @@ impl ProcessHandle {
 	pub fn name(&self) -> Option<String> {
 		match PROCESSES.get(self.uid) {
 			Some(p) => Some(p.lock().name.clone()),
-			_ => None,
+			None => None,
 		}
 	}
 
 	pub fn threads(&self) -> Option<Vec<ThreadHandle>> {
 		match PROCESSES.get(self.uid) {
 			Some(p) => Some(p.lock().threads.iter().cloned().collect()),
-			_ => None,
+			None => None,
 		}
 	}
 
 	pub fn valid(&self) -> bool {
 		return match PROCESSES.get(self.uid) {
 			Some(_) => true,
-			_ => false,
+			None => false,
 		};
 	}
 
