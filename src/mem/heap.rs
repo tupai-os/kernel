@@ -15,25 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use {
-	HEAP,
-	oom,
-	mem::wma,
-	util::math,
-	alloc::{
-		boxed::Box,
-		heap::{
-			GlobalAlloc,
-			AllocErr,
-			Layout,
-		},
+use HEAP;
+use mem::wma;
+use util::math;
+use alloc::{
+	boxed::Box,
+	heap::{
+		GlobalAlloc,
+		Layout,
 	},
-	core::{
-		slice::from_raw_parts_mut,
-		ptr::NonNull,
-		alloc::{
-			Opaque,
-		},
+};
+use core::{
+	slice::from_raw_parts_mut,
+	alloc::{
+		Opaque,
 	},
 };
 
@@ -46,12 +41,22 @@ pub struct Block {
 	_unused: [u8; BLOCK_SIZE],
 }
 
-#[repr(u8)]
+// #[repr(u8)]
+// #[derive(Copy, Clone, Eq, PartialEq)]
+// enum MapEntry { // We choose some weird bit patterns here for error detection
+//  Free = 170, // 10101010
+//  Head = 85,  // 01010101
+//  Tail = 51,  // 00110011
+// }
+
+#[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
-enum MapEntry { // We choose some weird bit pattersn here for error detection
-	Free = 170, // 10101010
-	Head = 85,  // 01010101
-	Tail = 51,  // 00110011
+struct MapEntry(u8);
+impl MapEntry {
+	// We choose some weird bit patterns here for error detection
+	const FREE: MapEntry = MapEntry(170); // 10101010
+	const HEAD: MapEntry = MapEntry(85); // 01010101
+	const TAIL: MapEntry = MapEntry(51); // 00110011
 }
 
 pub struct Heap {
@@ -75,7 +80,7 @@ impl Heap {
 
 		// Free all entries
 		for entry in map.iter_mut() {
-			*entry = MapEntry::Free;
+			*entry = MapEntry::FREE;
 		}
 	}
 
@@ -106,9 +111,9 @@ impl Heap {
 		for i in start..start + n {
 			log!(""); // TODO: Work out why this line is needed to prevent an invalid op exception
 			match map[i] {
-				MapEntry::Free => log!("-"),
-				MapEntry::Head => log!("H"),
-				MapEntry::Tail => log!("T"),
+				MapEntry::FREE => log!("-"),
+				MapEntry::HEAD => log!("H"),
+				MapEntry::TAIL => log!("T"),
 				_ => log!("!"),
 			}
 		}
@@ -131,16 +136,16 @@ unsafe impl GlobalAlloc for Heap {
 			}
 
 			for j in i..min(map.len(), i + n_blocks) {
-				if map[j] != MapEntry::Free {
+				if map[j] != MapEntry::FREE {
 					found = false;
 					break
 				}
 			}
 
 			if found {
-				map[i] = MapEntry::Head;
+				map[i] = MapEntry::HEAD;
 				for i in i + 1..min(map.len(), i + n_blocks) {
-					map[i] = MapEntry::Tail
+					map[i] = MapEntry::TAIL
 				}
 				return self.index_to_ptr(i) as *mut Opaque;
 			}
@@ -148,22 +153,22 @@ unsafe impl GlobalAlloc for Heap {
 		panic!("Out Of Memory");
 	}
 
-	unsafe fn dealloc(&self, ptr: *mut Opaque, layout: Layout) {
+	unsafe fn dealloc(&self, ptr: *mut Opaque, _layout: Layout) {
 		let map = self.get_map();
 
 		let i = self.ptr_to_index(ptr).expect("Attempted to dealloc block-unaligned pointer");
 
-		if map[i] != MapEntry::Head {
+		if map[i] != MapEntry::HEAD {
 			panic!("Attempted to dealloc unallocated pointer");
 		}
 
-		map[i] = MapEntry::Free;
+		map[i] = MapEntry::FREE;
 
 		for i in i + 1..map.len() {
 			match map[i] {
-				MapEntry::Tail => map[i] = MapEntry::Free,
-				MapEntry::Head |MapEntry::Free => break,
-				_ => panic!("Error found in kernel heap"),
+				MapEntry::TAIL => map[i] = MapEntry::FREE,
+				MapEntry::HEAD |MapEntry::FREE => break,
+				_ => panic!("Heap corruption detected"),
 			}
 		}
 	}

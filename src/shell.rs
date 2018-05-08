@@ -38,7 +38,7 @@ fn get_chr() -> char {
 	}
 }
 
-fn show_help(args: &[&str]) {
+fn show_help(_args: &[&str]) {
 	logln!("Available commands");
 	logln!("------------------");
 	logln!("  help    Display this message");
@@ -47,7 +47,7 @@ fn show_help(args: &[&str]) {
 	logln!("  proc    Show currently running process and threads");
 }
 
-fn show_info(args: &[&str]) {
+fn show_info(_args: &[&str]) {
 	logln!("System Info");
 	logln!("-----------");
 	logln!("  LLAPI: {}", meta::VARIANT);
@@ -56,13 +56,13 @@ fn show_info(args: &[&str]) {
 	logln!("  Chipset: {}", meta::CHIPSET);
 }
 
-fn show_mmap(args: &[&str]) {
+fn show_mmap(_args: &[&str]) {
 	logln!("Physical Memory Map");
 	logln!("------------------");
 	pfa::display();
 }
 
-fn show_proc(args: &[&str]) {
+fn show_proc(_args: &[&str]) {
 	logln!("Process List");
 	logln!("------------");
 	for proc in process::list() {
@@ -79,7 +79,7 @@ fn show_proc(args: &[&str]) {
 	}
 }
 
-pub fn main(args: &[&str]) {
+pub fn main(_args: &[&str]) {
 	logln!("\nWelcome to the kernel shell.");
 	logln!("Type 'help' for more info.");
 	loop {

@@ -16,22 +16,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use {
-	llapi::intrinsic::{
-		isa::{
-			idt,
-			isr,
-		},
-		family::port::{
-			out8,
-			in8,
-		},
+// TODO: Move this to src/driver?
+
+use llapi::intrinsic::{
+	isa::{
+		idt,
+		isr,
 	},
-	util::IrqLock,
-	vdev::tty,
-	spin::Mutex,
-	alloc::VecDeque,
+	family::port::in8,
 };
+use vdev::tty;
+use spin::Mutex;
 
 use super::pic;
 

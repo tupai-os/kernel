@@ -29,6 +29,7 @@
 #![feature(allocator_api)]
 #![feature(allocator_internals)]
 #![feature(global_asm)]
+#![feature(repr_transparent)]
 
 // Disable these later
 #![allow(dead_code)]
@@ -77,6 +78,7 @@ pub extern fn kmain(args: &[&str]) {
 	}).spawn_thread("main").unwrap_or_else(|e| {
 		panic!("Could not spawn init main thread: {:?}", e);
 	});
+	logok!("Spawned init process with uid {}", init.uid());
 
 	loginfo!("Kernel initiated, waiting for init...");
 

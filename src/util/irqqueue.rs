@@ -17,7 +17,6 @@
 
 use util::IrqLock;
 use alloc::VecDeque;
-use core::cell::UnsafeCell;
 use spin::Mutex;
 
 // TODO: Is this safe?

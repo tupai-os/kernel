@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use core::fmt;
-use super::idt;
 
 #[allow(dead_code)]
 #[repr(C, packed)]

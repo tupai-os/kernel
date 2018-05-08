@@ -26,5 +26,5 @@ pub fn init() {
 }
 
 pub fn input() -> &'static IrqQueue<char> {
-	unsafe { &INPUT }
+	&INPUT
 }

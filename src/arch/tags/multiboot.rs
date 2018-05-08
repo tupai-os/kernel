@@ -179,7 +179,7 @@ use util::math::align_up;
 impl TagIterator {
 	fn from(ptr: *const ()) -> TagIterator {
 		use core::mem;
-		let fixed_tag = unsafe { &*(ptr as *const FixedTag) };
+		let _fixed_tag = unsafe { &*(ptr as *const FixedTag) };
 		TagIterator {
 			ptr: align_up(ptr as usize + mem::size_of::<FixedTag>(), 3),
 		}
@@ -216,8 +216,7 @@ impl fmt::Display for Tag {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		use cstr_core::CStr;
 		match self {
-			&Tag::BasicTag(t) => write!(f, "Basic tag"),
-			&Tag::MemoryTag(t) => unsafe { write!(f, "Memory tag (lower = {}, upper = {})", t.lower, t.upper) },
+			&Tag::BasicTag(_t) => write!(f, "Basic tag"),
 			&Tag::BootCommandTag(t) => unsafe { write!(f,
 				"Boot command tag (command = \"{}\")",
 				CStr::from_ptr(&t.command).to_str().unwrap(),
