@@ -17,28 +17,93 @@
 
 use llapi::irq;
 
-// TODO: Seriously, this whole thing is crap. It should work more like Mutex<T>.
+// // TODO: Seriously, this whole thing is crap. It should work more like Mutex<T>.
 
-pub struct IrqLock {
-	reenable: bool,
+// pub struct IrqLock {
+//	 reenable: bool,
+// }
+
+// impl IrqLock {
+//	 pub fn new() -> IrqLock {
+//		 let nlock = IrqLock {
+//			 reenable: irq::enabled(),
+//		 };
+//		 irq::disable();
+//		 return nlock;
+//	 }
+// }
+
+// impl Drop for IrqLock {
+//	 fn drop(&mut self) {
+//		 if self.reenable {
+//			 irq::enable();
+//		 } else {
+//			 irq::disable();
+//		 }
+//	 }
+// }
+
+use core::{
+	cell::UnsafeCell,
+	marker::Sync,
+	ops::{Drop, Deref, DerefMut},
+	default::Default,
+};
+
+pub struct IrqLock<T: ?Sized> {
+	data: UnsafeCell<T>,
 }
 
-impl IrqLock {
-	pub fn new() -> IrqLock {
-		let nlock = IrqLock {
-			reenable: irq::enabled(),
-		};
-		irq::disable();
-		return nlock;
+pub struct IrqLockGuard<'a, T: ?Sized + 'a> {
+	reenable: bool,
+	data: &'a mut T,
+}
+
+unsafe impl<T: ?Sized + Send> Sync for IrqLock<T> {}
+unsafe impl<T: ?Sized + Send> Send for IrqLock<T> {}
+
+impl<T> IrqLock<T> {
+	pub const fn new(data: T) -> IrqLock<T> {
+		IrqLock {
+			data: UnsafeCell::new(data),
+		}
 	}
 }
 
-impl Drop for IrqLock {
+impl<T: ?Sized> IrqLock<T> {
+	pub fn lock(&self) -> IrqLockGuard<T> {
+		let guard = IrqLockGuard {
+			reenable: irq::enabled(),
+			data: unsafe { &mut *self.data.get() },
+		};
+		irq::disable();
+		return guard;
+	}
+}
+
+impl<T: ?Sized + Default> Default for IrqLock<T> {
+	fn default() -> IrqLock<T> {
+		IrqLock::new(Default::default())
+	}
+}
+
+impl<'a, T: ?Sized> Deref for IrqLockGuard<'a, T> {
+	type Target = T;
+	fn deref<'b>(&'b self) -> &'b T {
+		&*self.data
+	}
+}
+
+impl<'a, T: ?Sized> DerefMut for IrqLockGuard<'a, T> {
+	fn deref_mut<'b>(&'b mut self) -> &'b mut T {
+		&mut *self.data
+	}
+}
+
+impl<'a, T: ?Sized> Drop for IrqLockGuard<'a, T> {
 	fn drop(&mut self) {
 		if self.reenable {
 			irq::enable();
-		} else {
-			irq::disable();
 		}
 	}
 }

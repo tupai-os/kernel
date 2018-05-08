@@ -34,22 +34,22 @@ use alloc::{
 pub struct Process {
 	name: String,
 	mmap: Arc<PageMap>,
-	threads: Mutex<BTreeSet<ThreadHandle>>, // TODO: Make this IRQ-safe
+	threads: BTreeSet<ThreadHandle>,
 }
 
 lazy_static! {
-	static ref PROCESSES: Tracker<Process> = Tracker::new();
+	static ref PROCESSES: Tracker<Mutex<Process>> = Tracker::new();
 }
 
 pub fn init() {
 	// Create kernel process
 	PROCESSES.emplace_with_uid(
 		ProcessHandle::kernel().uid(),
-		Process {
+		Mutex::new(Process {
 			name: String::from("kernel"),
 			mmap: Arc::new(PageMap::new()),
-			threads: Mutex::new(BTreeSet::new()),
-		}
+			threads: BTreeSet::new(),
+		})
 	);
 }
 
@@ -67,10 +67,10 @@ pub enum ProcessErr {}
 
 pub fn new(name: &str) -> Result<ProcessHandle, ProcessErr> {
 	return Ok(ProcessHandle::from_uid(
-		PROCESSES.emplace(Process {
+		PROCESSES.emplace(Mutex::new(Process {
 			name: String::from(name),
 			mmap: Arc::new(PageMap::new()),
-			threads: Mutex::new(BTreeSet::new()),
-		}).0
+			threads: BTreeSet::new(),
+		})).0
 	));
 }

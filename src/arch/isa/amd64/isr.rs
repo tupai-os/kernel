@@ -52,7 +52,7 @@ impl StackFrame {
 			rbp: stack as u64,
 			rip: entry as u64,
 			cs: gdt::KERNEL_CODE_SELECTOR as u64,
-			rflags: 0x286,
+			rflags: 0x200, // Interrupts enabled
 			rsp: stack as u64,
 			ss: gdt::KERNEL_DATA_SELECTOR as u64,
 			..Default::default()

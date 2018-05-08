@@ -16,23 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use {
-	llapi::intrinsic::{
-		family::port::{
-			out8,
-			in8,
-		},
-		chipset::pic,
-		isa::{
-			idt,
-			isr,
-		},
-	},
-	spin::{
-		Mutex,
-		Once,
-	},
+use llapi::intrinsic::{
+	family::port::{out8, in8},
+	chipset::pic,
+	isa::{idt, isr}
 };
+use spin::{Mutex, Once};
 
 const IRQ_COM1: usize = 4;
 const IRQ_COM2: usize = 3;
@@ -42,6 +31,7 @@ extern {
 	fn _com2_handler();
 }
 
+// TODO: Why are we using a mutex here? Needs better locking
 static LOCK: Mutex<u32> = Mutex::new(0);
 static INIT: Once<()> = Once::new();
 
@@ -87,6 +77,8 @@ pub fn init() {
 	});
 }
 
+// TODO: These interrupt handlers contain potential deadlocks!
+
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
@@ -120,7 +112,7 @@ pub fn read() -> u8 {
 // TODO: Use a trait to wrap tty stuff
 pub fn write_char(c: char) {
 	if c == '\n' {
-		write(b'\r')
+		write(b'\r');
 	}
 	write(c as u8);
 }

@@ -24,11 +24,12 @@ pub use self::handle::ThreadHandle as ThreadHandle;
 pub use self::preempt::preempt as preempt;
 pub use self::stack::Stack as Stack;
 
-use llapi::irq;
-use util::uid::Tracker;
+use util::{
+	uid::Tracker,
+	IrqLock,
+};
 use process::ProcessHandle;
 use alloc::string::String;
-use spin::Mutex;
 
 pub struct Thread {
 	name: String,
@@ -37,7 +38,7 @@ pub struct Thread {
 }
 
 lazy_static! {
-	static ref THREADS: Tracker<Mutex<Thread>> = Tracker::new();
+	static ref THREADS: Tracker<IrqLock<Thread>> = Tracker::new();
 }
 
 #[derive(Debug)]
@@ -50,7 +51,7 @@ pub fn new(proc: ProcessHandle, name: &str, entry: fn()) -> Result<ThreadHandle,
 		return Err(ThreadErr::NoParentProcess);
 	}
 	return Ok(ThreadHandle::from_uid(
-		THREADS.emplace(Mutex::new(Thread {
+		THREADS.emplace(IrqLock::new(Thread {
 			name: String::from(name),
 			proc: proc,
 			// TODO: Specify this better?

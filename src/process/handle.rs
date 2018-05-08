@@ -60,14 +60,14 @@ impl ProcessHandle {
 
 	pub fn name(&self) -> Option<String> {
 		match PROCESSES.get(self.uid) {
-			Some(p) => Some(p.name.clone()),
+			Some(p) => Some(p.lock().name.clone()),
 			_ => None,
 		}
 	}
 
 	pub fn threads(&self) -> Option<Vec<ThreadHandle>> {
 		match PROCESSES.get(self.uid) {
-			Some(p) => Some(p.threads.lock().iter().cloned().collect()),
+			Some(p) => Some(p.lock().threads.iter().cloned().collect()),
 			_ => None,
 		}
 	}
@@ -87,7 +87,7 @@ impl ProcessHandle {
 		let th = thread::new(*self, name, entry);
 		return match th {
 			Ok(th) => {
-				proc.threads.lock().insert(th);
+				proc.lock().threads.insert(th);
 				th.schedule();
 				Ok(th)
 			},

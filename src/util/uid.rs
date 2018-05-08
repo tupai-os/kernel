@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use util::IrqLock;
-use spin::Mutex;
 use alloc::{
 	arc::Arc,
 	BTreeMap,
@@ -26,16 +25,14 @@ use alloc::{
 pub type Uid = i64;
 
 pub struct Tracker<T> {
-	// TODO: Make this IRQ-safe
-	items: Mutex<BTreeMap<Uid, Arc<T>>>,
+	items: IrqLock<BTreeMap<Uid, Arc<T>>>,
 }
 
 lazy_static! {
-	static ref UID_COUNT: Mutex<Uid> = Mutex::new(0);
+	static ref UID_COUNT: IrqLock<Uid> = IrqLock::new(0);
 }
 
 pub fn new_uid() -> Uid {
-	let _lock = IrqLock::new();
 	return {
 		// TODO: Prevent ID overflow
 		let mut uid_count = UID_COUNT.lock();
@@ -47,7 +44,7 @@ pub fn new_uid() -> Uid {
 impl<T> Tracker<T> {
 	pub fn new() -> Tracker<T> {
 		Tracker::<T> {
-			items: Mutex::new(BTreeMap::new()),
+			items: IrqLock::new(BTreeMap::new()),
 		}
 	}
 

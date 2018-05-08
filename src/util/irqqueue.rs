@@ -17,28 +17,23 @@
 
 use util::IrqLock;
 use alloc::VecDeque;
-use spin::Mutex;
-
-// TODO: Is this safe?
 
 pub struct IrqQueue<T> {
-	deque: Mutex<VecDeque<T>>,
+	deque: IrqLock<VecDeque<T>>,
 }
 
 impl<T: Copy> IrqQueue<T> {
 	pub fn new() -> IrqQueue<T> {
 		IrqQueue::<T> {
-			deque: Mutex::new(VecDeque::new()),
+			deque: IrqLock::new(VecDeque::new()),
 		}
 	}
 
 	pub fn write(&self, t: T) {
-		let _lock = IrqLock::new();
 		self.deque.lock().push_front(t);
 	}
 
 	pub fn read(&self) -> Option<T> {
-		let _lock = IrqLock::new();
 		return self.deque.lock().pop_back();
 	}
 }

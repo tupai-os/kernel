@@ -79,7 +79,7 @@ fn show_proc(_args: &[&str]) {
 	}
 }
 
-pub fn main(_args: &[&str]) {
+pub fn main() {
 	logln!("\nWelcome to the kernel shell.");
 	logln!("Type 'help' for more info.");
 	loop {

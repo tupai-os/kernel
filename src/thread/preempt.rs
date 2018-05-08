@@ -17,7 +17,7 @@
 
 use super::{THREADS, Thread, ThreadHandle};
 use llapi::irq;
-use spin::Mutex;
+use util::IrqLock;
 use alloc::{
 	arc::{Arc, Weak},
 	VecDeque,
@@ -26,8 +26,8 @@ use core::ptr::Unique;
 
 lazy_static! {
 	// TODO: Use IRQ lock here (for both internal and external mutex)
-	static ref TASK_QUEUE: Mutex<VecDeque<Weak<Mutex<Thread>>>> = Mutex::new(VecDeque::new());
-	static ref CURRENT_TASK: Mutex<Weak<Mutex<Thread>>> = Mutex::new(Weak::default());
+	static ref TASK_QUEUE: IrqLock<VecDeque<Weak<IrqLock<Thread>>>> = IrqLock::new(VecDeque::new());
+	static ref CURRENT_TASK: IrqLock<Weak<IrqLock<Thread>>> = IrqLock::new(Weak::default());
 }
 
 pub fn preempt(frame: *mut irq::StackFrame) -> *mut irq::StackFrame {
