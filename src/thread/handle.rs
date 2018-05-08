@@ -1,4 +1,4 @@
-// file : x64.rs
+// file : handle.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,33 +15,35 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod meta {
-	pub const VARIANT: &str = "x64";
-	pub const FAMILY: &str = "x86";
-	pub const ISA: &str = "amd64";
-	pub const CHIPSET: &str = "ibmpc";
+use super::THREADS;
+use super::preempt;
+use util::uid::Uid;
+use alloc::string::String;
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ThreadHandle {
+	uid: Uid,
 }
 
-pub mod cpu {
-	pub use arch::isa::amd64::halt;
-}
+impl ThreadHandle {
+	pub const fn from_uid(uid: Uid) -> ThreadHandle {
+		ThreadHandle {
+			uid: uid,
+		}
+	}
 
-pub mod irq {
-	pub use arch::isa::amd64::irq_enable as enable;
-	pub use arch::isa::amd64::irq_disable as disable;
-	pub use arch::isa::amd64::irq_enabled as enabled;
+	pub fn uid(&self) -> Uid {
+		self.uid
+	}
 
-	pub use arch::isa::amd64::isr::StackFrame;
-}
+	pub fn name(&self) -> Option<String> {
+		match THREADS.get(self.uid) {
+			Some(t) => Some(t.lock().name.clone()),
+			_ => None,
+		}
+	}
 
-pub mod mem {
-	pub use arch::isa::amd64::mem::PAGE_SIZE_KB_LOG2;
-	pub use arch::isa::amd64::mem::VMEMORY_OFFSET;
-	pub use arch::isa::amd64::mem::PageMap;
-}
-
-pub mod intrinsic {
-	pub use arch::isa::amd64 as isa;
-	pub use arch::family::x86 as family;
-	pub use arch::chipset::ibmpc as chipset;
+	pub fn schedule(&self) {
+		preempt::schedule(*self);
+	}
 }

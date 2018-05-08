@@ -16,13 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use {
-	llapi::intrinsic::{
-		isa::{idt, isr},
-		family::port::out8,
-	},
-	spin::Mutex,
+use llapi::intrinsic::{
+	isa::{idt, isr},
+	family::port::out8,
 };
+use thread::preempt;
+use spin::Mutex;
 
 use super::pic;
 
@@ -65,9 +64,10 @@ pub fn set_rate(rate: u32) {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn pit_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFrame {
-	//log!("!");
+extern fn pit_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
+	// Preempt the next task
+	let new_frame = preempt(frame);
 
 	pic::eoi(IRQ);
-	return frame;
+	return new_frame;
 }

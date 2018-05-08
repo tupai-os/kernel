@@ -15,12 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+use super::gdt;
 use core::fmt;
 
 #[allow(dead_code)]
 #[repr(C, packed)]
 #[derive(Copy, Clone, Default)]
-pub struct InterruptFrame {
+pub struct StackFrame {
 	rbp: u64,
 	r15: u64,
 	r14: u64,
@@ -45,12 +46,15 @@ pub struct InterruptFrame {
 	ss: u64,
 }
 
-impl InterruptFrame {
-	pub fn new(entry: usize, stack: usize) -> InterruptFrame {
-		InterruptFrame {
+impl StackFrame {
+	pub fn new(entry: usize, stack: usize) -> StackFrame {
+		StackFrame {
 			rbp: stack as u64,
 			rip: entry as u64,
+			cs: gdt::KERNEL_CODE_SELECTOR as u64,
+			rflags: 0x286,
 			rsp: stack as u64,
+			ss: gdt::KERNEL_DATA_SELECTOR as u64,
 			..Default::default()
 		}
 	}
@@ -58,7 +62,7 @@ impl InterruptFrame {
 	fn get_instruction_ptr(&self) -> u64 { self.rip }
 }
 
-impl fmt::Display for InterruptFrame {
+impl fmt::Display for StackFrame {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		unsafe {
 			write!(f,

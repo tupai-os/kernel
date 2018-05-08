@@ -72,15 +72,23 @@ impl ProcessHandle {
 		}
 	}
 
-	pub fn spawn_thread(&mut self, name: &str) -> Result<ThreadHandle, ThreadErr> {
+	pub fn valid(&self) -> bool {
+		return match PROCESSES.get(self.uid) {
+			Some(_) => true,
+			_ => false,
+		};
+	}
+
+	pub fn spawn_thread(&self, name: &str, entry: fn()) -> Result<ThreadHandle, ThreadErr> {
 		let proc = match PROCESSES.get(self.uid) {
 			Some(p) => p,
 			_ => return Err(ThreadErr::NoParentProcess),
 		};
-		let th = thread::new(*self, name);
+		let th = thread::new(*self, name, entry);
 		return match th {
 			Ok(th) => {
 				proc.threads.lock().insert(th);
+				th.schedule();
 				Ok(th)
 			},
 			Err(e) => Err(e),

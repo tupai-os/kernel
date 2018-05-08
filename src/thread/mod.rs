@@ -15,22 +15,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use util::uid::{Uid, Tracker};
+mod handle;
+mod preempt;
+mod stack;
+
+// Reexports
+pub use self::handle::ThreadHandle as ThreadHandle;
+pub use self::preempt::preempt as preempt;
+pub use self::stack::Stack as Stack;
+
+use llapi::irq;
+use util::uid::Tracker;
 use process::ProcessHandle;
 use alloc::string::String;
+use spin::Mutex;
 
 pub struct Thread {
 	name: String,
 	proc: ProcessHandle,
+	stack: Stack,
 }
 
 lazy_static! {
-	static ref THREADS: Tracker<Thread> = Tracker::new();
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ThreadHandle {
-	uid: Uid,
+	static ref THREADS: Tracker<Mutex<Thread>> = Tracker::new();
 }
 
 #[derive(Debug)]
@@ -38,30 +45,16 @@ pub enum ThreadErr {
 	NoParentProcess,
 }
 
-pub fn new(proc: ProcessHandle, name: &str) -> Result<ThreadHandle, ThreadErr> {
-	return Ok(ThreadHandle {
-		uid: THREADS.emplace(Thread {
+pub fn new(proc: ProcessHandle, name: &str, entry: fn()) -> Result<ThreadHandle, ThreadErr> {
+	if !proc.valid() {
+		return Err(ThreadErr::NoParentProcess);
+	}
+	return Ok(ThreadHandle::from_uid(
+		THREADS.emplace(Mutex::new(Thread {
 			name: String::from(name),
 			proc: proc,
-		}).0
-	});
-}
-
-impl ThreadHandle {
-	pub const fn from_uid(uid: Uid) -> ThreadHandle {
-		ThreadHandle {
-			uid: uid,
-		}
-	}
-
-	pub fn uid(&self) -> Uid {
-		self.uid
-	}
-
-	pub fn name(&self) -> Option<String> {
-		match THREADS.get(self.uid) {
-			Some(t) => Some(t.name.clone()),
-			_ => None,
-		}
-	}
+			// TODO: Specify this better?
+			stack: Stack::new(4096, entry as *const () as usize),
+		})).0
+	));
 }

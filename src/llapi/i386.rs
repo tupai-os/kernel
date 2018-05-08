@@ -31,7 +31,7 @@ pub mod irq {
 	pub use arch::isa::ia32::irq_disable as disable;
 	pub use arch::isa::ia32::irq_enabled as enabled;
 
-	pub use arch::isa::ia32::isr::InterruptFrame;
+	pub use arch::isa::ia32::isr::StackFrame;
 }
 
 pub mod mem {

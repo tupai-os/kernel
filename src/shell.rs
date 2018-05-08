@@ -44,7 +44,7 @@ fn show_help(_args: &[&str]) {
 	logln!("  help    Display this message");
 	logln!("  info    Show system info");
 	logln!("  mmap    Show physical memory map");
-	logln!("  proc    Show currently running process and threads");
+	logln!("  proc    Show process and threads");
 }
 
 fn show_info(_args: &[&str]) {

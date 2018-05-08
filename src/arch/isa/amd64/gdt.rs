@@ -20,7 +20,10 @@ use spin::Mutex;
 
 const SIZE: usize = 5;
 
-pub const CODE_SELECTOR: usize = size_of::<Entry>() * 1;
+pub const KERNEL_CODE_SELECTOR: usize = size_of::<Entry>() * 1;
+pub const KERNEL_DATA_SELECTOR: usize = size_of::<Entry>() * 2;
+pub const USER_CODE_SELECTOR: usize = size_of::<Entry>() * 3;
+pub const USER_DATA_SELECTOR: usize = size_of::<Entry>() * 4;
 
 #[allow(dead_code)]
 #[repr(u8)]

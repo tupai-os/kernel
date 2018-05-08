@@ -115,7 +115,7 @@ pub fn init() {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn kbd_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFrame {
+extern fn kbd_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
 	while in8(PORT_STATUS) & 1 != 0 {
 		let sc = in8(PORT_DATA);
 		if sc & KEY_PRESSED == 0 {

@@ -90,7 +90,7 @@ pub fn init() {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn com1_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFrame {
+extern fn com1_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
 	logln!("COM1 INPUT: {}", read() as char);
 	pic::eoi(IRQ_COM1);
 	return frame;
@@ -99,7 +99,7 @@ extern fn com1_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFr
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn com2_handler(frame: *mut isr::InterruptFrame) -> *mut isr::InterruptFrame {
+extern fn com2_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
 	logln!("COM2 INPUT");
 	pic::eoi(IRQ_COM2);
 	return frame;

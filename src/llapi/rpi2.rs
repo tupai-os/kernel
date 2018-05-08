@@ -30,7 +30,7 @@ pub mod irq {
 	pub use arch::isa::a32::enable_irqs as enable;
 	pub use arch::isa::a32::disable_irqs as disable;
 
-	pub use arch::isa::a32::isr::InterruptFrame;
+	pub use arch::isa::a32::isr::StackFrame;
 }
 
 pub mod mem {

@@ -25,8 +25,8 @@ use alloc::{
 
 pub type Uid = i64;
 
-// TODO: Make this IRQ-safe
 pub struct Tracker<T> {
+	// TODO: Make this IRQ-safe
 	items: Mutex<BTreeMap<Uid, Arc<T>>>,
 }
 

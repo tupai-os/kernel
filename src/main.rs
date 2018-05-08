@@ -75,7 +75,12 @@ pub extern fn kmain(args: &[&str]) {
 	// TODO: Make this spawn a process from initramfs
 	let init = process::new("init").unwrap_or_else(|e| {
 		panic!("Could not spawn init process: {:?}", e);
-	}).spawn_thread("main").unwrap_or_else(|e| {
+	});
+
+	init.spawn_thread("main", init_thread0).unwrap_or_else(|e| {
+		panic!("Could not spawn init main thread: {:?}", e);
+	});
+	init.spawn_thread("main", init_thread1).unwrap_or_else(|e| {
 		panic!("Could not spawn init main thread: {:?}", e);
 	});
 	logok!("Spawned init process with uid {}", init.uid());
@@ -83,8 +88,8 @@ pub extern fn kmain(args: &[&str]) {
 	loginfo!("Kernel initiated, waiting for init...");
 
 	// TODO: Remove this later
-	llapi::irq::enable();
-	shell::main(args);
+	//llapi::irq::enable();
+	//shell::main(args);
 
 	// Wait for something to happen
 	loop {
@@ -93,9 +98,17 @@ pub extern fn kmain(args: &[&str]) {
 	}
 }
 
-fn init_thread() -> i32 {
+fn init_thread0() {
 	loop {
-		logln!("Hello!");
+		log!("Hello! ");
+		util::io::wait(1000000);
+	}
+}
+
+fn init_thread1() {
+	loop {
+		log!("Hi! ");
+		util::io::wait(1000000);
 	}
 }
 

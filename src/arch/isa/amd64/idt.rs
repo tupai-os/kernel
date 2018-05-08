@@ -93,7 +93,7 @@ impl Entry {
 			base_mid: (isr_addr >> 16) as u16 & 0xFFFF,
 			base_hi: (isr_addr >> 32) as u32 & 0xFFFFFFFF,
 
-			selector: gdt::CODE_SELECTOR as u16,
+			selector: gdt::KERNEL_CODE_SELECTOR as u16,
 
 			attributes:
 				Attribute::IntGate as u8 |
