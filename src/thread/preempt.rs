@@ -25,7 +25,6 @@ use alloc::{
 use core::ptr::Unique;
 
 lazy_static! {
-	// TODO: Use IRQ lock here (for both internal and external mutex)
 	static ref TASK_QUEUE: IrqLock<VecDeque<Weak<IrqLock<Thread>>>> = IrqLock::new(VecDeque::new());
 	static ref CURRENT_TASK: IrqLock<Weak<IrqLock<Thread>>> = IrqLock::new(Weak::default());
 }
