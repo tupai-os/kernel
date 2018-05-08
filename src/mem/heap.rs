@@ -41,14 +41,6 @@ pub struct Block {
 	_unused: [u8; BLOCK_SIZE],
 }
 
-// #[repr(u8)]
-// #[derive(Copy, Clone, Eq, PartialEq)]
-// enum MapEntry { // We choose some weird bit patterns here for error detection
-//  Free = 170, // 10101010
-//  Head = 85,  // 01010101
-//  Tail = 51,  // 00110011
-// }
-
 #[repr(transparent)]
 #[derive(Copy, Clone, Eq, PartialEq)]
 struct MapEntry(u8);

@@ -24,17 +24,10 @@ build = "build-config.rs"
 
 [profile.dev]
 panic = "abort"
-rustc_args = "-g --omit=obj,link"
+#rustc_args = "-g --omit=obj,link"
 
 [profile.release]
 panic = "abort"
-
-[features]
-# Driver features
-	# Serial
-	driver_serial_com = []
-	# Video
-	driver_video_vga = []
 
 [dependencies]
 rlibc = "1.0.0"
