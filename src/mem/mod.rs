@@ -32,7 +32,7 @@ pub fn init(boot_data: &BootData) {
 	pfa::init();
 	heap::init();
 
-	pfa::set_range(0, kb_to_page(boot_data.mem_ram as usize), pfa::ENTRY_FREE_RAM).unwrap_or_else(|e|{
+	pfa::set_range(0, kb_to_page(align_up(boot_data.mem_ram as usize, PAGE_SIZE_KB_LOG2)), pfa::ENTRY_FREE_RAM).unwrap_or_else(|e|{
 		panic!("Could not reserve available RAM from {:X}K to {:X}K ({:?})", 0, boot_data.mem_ram, e);
 	});
 	logok!("Reserved available RAM from {:X}K to {:X}K", 0, boot_data.mem_ram);
