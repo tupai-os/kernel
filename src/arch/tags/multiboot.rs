@@ -18,7 +18,6 @@
 use super::{BootData, Module, Args};
 use util::math::align_up;
 use cstr_core::CStr;
-use arrayvec::ArrayVec;
 use core::mem;
 
 struct TagIterator {

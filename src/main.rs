@@ -54,6 +54,7 @@ mod util;
 mod thread;
 mod process;
 mod driver;
+mod vfs;
 mod vdev;
 
 use mem::heap::Heap;
@@ -66,11 +67,12 @@ pub static HEAP: Heap = Heap::empty();
 pub extern fn kmain(boot_data: &arch::tags::BootData) {
 	loginfo!("Kernel booted with arguments: {:?}", boot_data.args);
 
-	log::init(); // Initiate logging
-	mem::init(boot_data); // Initiate memory structures
-	process::init(); // Initiate processes
-	driver::init(); // Initiate h/w drivers
-	vdev::init(); // Initiate virtual devices
+	log::init();
+	mem::init(boot_data);
+	process::init();
+	vfs::init();
+	driver::init();
+	vdev::init();
 
 	// Create init process
 	// TODO: Make this spawn a process from initramfs
@@ -79,6 +81,7 @@ pub extern fn kmain(boot_data: &arch::tags::BootData) {
 	});
 	logok!("Created init process with uid {}", init.uid());
 
+	// Create init thread
 	let init_main = init.spawn_thread("main", shell::main).unwrap_or_else(|e| {
 		panic!("Could not spawn init main thread: {:?}", e);
 	});

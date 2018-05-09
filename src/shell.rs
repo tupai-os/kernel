@@ -22,6 +22,7 @@ use llapi::{
 use vdev::tty;
 use mem::pfa;
 use process;
+use vfs;
 use alloc::{
 	string::ToString,
 	String,
@@ -45,6 +46,7 @@ fn show_help(_args: &[&str]) {
 	logln!("  info    Show system info");
 	logln!("  mmap    Show physical memory map");
 	logln!("  proc    Show process and threads");
+	logln!("  tree    Show filesystem tree");
 }
 
 fn show_info(_args: &[&str]) {
@@ -58,7 +60,7 @@ fn show_info(_args: &[&str]) {
 
 fn show_mmap(_args: &[&str]) {
 	logln!("Physical Memory Map");
-	logln!("------------------");
+	logln!("-------------------");
 	pfa::display();
 }
 
@@ -77,6 +79,12 @@ fn show_proc(_args: &[&str]) {
 			);
 		}
 	}
+}
+
+fn show_tree(_args: &[&str]) {
+	logln!("Filesystem Tree");
+	logln!("---------------");
+	vfs::display();
 }
 
 pub fn main() {
@@ -112,6 +120,7 @@ pub fn main() {
 			"info" => { show_info(args.as_slice()) },
 			"mmap" => { show_mmap(args.as_slice()) },
 			"proc" => { show_proc(args.as_slice()) },
+			"tree" => { show_tree(args.as_slice()) },
 			s => { logln!("Unknown command '{}'", s); },
 		}
 	}
