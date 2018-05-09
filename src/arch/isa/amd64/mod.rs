@@ -73,8 +73,7 @@ pub extern fn kearly(tags: *const ()) {
 	family::init();
 	chipset::init();
 
-	multiboot::parse(tags); // Parse tags
+	let boot_data = multiboot::parse(tags); // Parse tags
 
-	let args = ["these", "are", "test", "arguments"];
-	kmain(&args);
+	kmain(&boot_data);
 }

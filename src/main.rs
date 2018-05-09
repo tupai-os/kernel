@@ -41,6 +41,7 @@ extern crate spin;
 extern crate cstr_core;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate bitflags;
+extern crate arrayvec;
 extern crate alloc;
 
 #[macro_use] mod log;
@@ -62,11 +63,11 @@ pub static HEAP: Heap = Heap::empty();
 #[allow(dead_code)]
 #[linkage = "external"]
 #[no_mangle]
-pub extern fn kmain(args: &[&str]) {
-	logln!("Kernel booted with arguments: {:?}", args);
+pub extern fn kmain(boot_data: &arch::tags::BootData) {
+	loginfo!("Kernel booted with arguments: {:?}", boot_data.args);
 
 	log::init(); // Initiate logging
-	mem::init(); // Initiate memory structures
+	mem::init(boot_data); // Initiate memory structures
 	process::init(); // Initiate processes
 	driver::init(); // Initiate h/w drivers
 	vdev::init(); // Initiate virtual devices

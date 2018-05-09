@@ -39,3 +39,8 @@ bitflags = "1.0.1"
 [dependencies.lazy_static]
 version = "1.0.0"
 features = ["spin_no_std"]
+
+[dependencies.arrayvec]
+version = "0.4.7"
+default-features = false
+features = []

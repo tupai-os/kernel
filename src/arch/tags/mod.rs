@@ -17,3 +17,18 @@
 
 #[cfg(arch_tags = "multiboot")] pub mod multiboot;
 #[cfg(arch_tags = "atags")]     pub mod atags;
+
+use arrayvec::ArrayVec;
+use core::default::Default;
+
+#[derive(Default)]
+pub struct BootData {
+	pub args: ArrayVec<[&'static str; 256]>, // Maximum of 256 kernel args
+	pub mem_ram: usize,
+}
+
+impl BootData {
+	pub fn empty() -> BootData {
+		return Default::default();
+	}
+}

@@ -42,7 +42,6 @@ BUILD_PROFILE = release
 
 BUILD_DIRS = $(BUILD_ROOT)
 
-# Find all assembly
 DIR_FAMILY = $(SRC_ROOT)/src/arch/$(CFG_arch_base)
 DIR_ARCH = $(DIR_FAMILY)/$(CFG_arch_isa)
 

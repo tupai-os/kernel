@@ -19,9 +19,17 @@ pub mod wma;
 pub mod pfa;
 pub mod heap;
 
-pub fn init() {
+use arch::tags::BootData;
+
+pub fn init(boot_data: &BootData) {
 	wma::init();
 	pfa::init();
 	heap::init();
+
+	pfa::set_range_kb(0, boot_data.mem_ram as usize, pfa::ENTRY_FREE_RAM).unwrap_or_else(|e|{
+		panic!("Could not reserve available RAM from {:X}K to {:X}K ({:?})", 0, boot_data.mem_ram, e);
+	});
+	logok!("Reserved available RAM");
+
 	logok!("Initiated memory management");
 }
