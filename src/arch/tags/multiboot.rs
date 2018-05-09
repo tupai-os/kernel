@@ -304,7 +304,7 @@ pub fn parse(tags: *const ()) -> BootData {
 				data.modules.try_push(Module::new(
 					t.mod_start as usize,
 					(t.mod_end - t.mod_start) as usize,
-					cmd_str,
+					cmd_str.split_terminator(' ').collect::<Args>(),
 				)).unwrap_or_else(|e|{
 					panic!("Too many boot modules! ({:?})", e);
 				});
