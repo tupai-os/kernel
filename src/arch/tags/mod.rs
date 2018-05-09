@@ -26,22 +26,22 @@ type Args = ArrayVec<[&'static str; 64]>; // Max 64 args
 pub struct Module {
 	pub start: usize,
 	pub end: usize,
-	pub args: &'static str,
+	pub cmd: &'static str,
 }
 
 #[derive(Default)]
 pub struct BootData {
 	pub args: Args,
 	pub mem_ram: usize,
-	pub modules: ArrayVec<[Module; 8]>, // Max 8 modules
+	pub modules: ArrayVec<[Module; 4]>, // Max 4 modules
 }
 
 impl Module {
-	pub fn new(start: usize, end: usize, args: &'static str) -> Module {
+	pub fn new(start: usize, end: usize, cmd: &'static str) -> Module {
 		Module {
 			start: start,
 			end: end,
-			args: args,
+			cmd: cmd,
 		}
 	}
 }

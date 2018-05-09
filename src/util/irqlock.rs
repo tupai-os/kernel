@@ -59,8 +59,22 @@ pub struct IrqLockGuard<'a, T: ?Sized + 'a> {
 	data: &'a mut T,
 }
 
+pub struct IrqLockTmp {
+	reenable: bool,
+}
+
 unsafe impl<T: ?Sized + Send> Sync for IrqLock<T> {}
 unsafe impl<T: ?Sized + Send> Send for IrqLock<T> {}
+
+impl IrqLock<()> {
+	pub fn temporary() -> IrqLockTmp {
+		let tmp = IrqLockTmp {
+			reenable: irq::enabled(),
+		};
+		irq::disable();
+		return tmp;
+	}
+}
 
 impl<T> IrqLock<T> {
 	pub const fn new(data: T) -> IrqLock<T> {
@@ -81,6 +95,22 @@ impl<T: ?Sized> IrqLock<T> {
 	}
 }
 
+impl<'a, T: ?Sized> Drop for IrqLockGuard<'a, T> {
+	fn drop(&mut self) {
+		if self.reenable {
+			irq::enable();
+		}
+	}
+}
+
+impl Drop for IrqLockTmp {
+	fn drop(&mut self) {
+		if self.reenable {
+			irq::enable();
+		}
+	}
+}
+
 impl<T: ?Sized + Default> Default for IrqLock<T> {
 	fn default() -> IrqLock<T> {
 		IrqLock::new(Default::default())
@@ -97,13 +127,5 @@ impl<'a, T: ?Sized> Deref for IrqLockGuard<'a, T> {
 impl<'a, T: ?Sized> DerefMut for IrqLockGuard<'a, T> {
 	fn deref_mut<'b>(&'b mut self) -> &'b mut T {
 		&mut *self.data
-	}
-}
-
-impl<'a, T: ?Sized> Drop for IrqLockGuard<'a, T> {
-	fn drop(&mut self) {
-		if self.reenable {
-			irq::enable();
-		}
 	}
 }

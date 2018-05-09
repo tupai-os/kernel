@@ -15,15 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use {
-	llapi::intrinsic::{
-		chipset::regions::VGA_TEXTMODE_RAM,
-		family::port::out8,
-	},
-	volatile::Volatile,
-	spin::Mutex,
-	core::ptr::Unique,
+use llapi::intrinsic::{
+	chipset::regions::VGA_TEXTMODE_RAM,
+	family::port::out8,
 };
+use volatile::Volatile;
+use spin::{Mutex, Once};
+use core::ptr::Unique;
 
 pub const COLS: usize = 80;
 pub const ROWS: usize = 25;
@@ -163,7 +161,6 @@ impl Writer {
 	}
 }
 
-use spin::Once;
 static INIT: Once<()> = Once::new();
 
 pub fn init() {

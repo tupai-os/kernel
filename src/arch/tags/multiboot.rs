@@ -296,15 +296,15 @@ pub fn parse(tags: *const ()) -> BootData {
 		match tag {
 			Tag::MemoryTag(t) => data.mem_ram = 1024 + t.upper as usize,
 			Tag::BootCommandTag(t) => {
-				let args_str = unsafe { CStr::from_ptr(&t.command).to_str().unwrap_or("") };
-				data.args.extend(args_str.split(' ').collect::<Args>());
+				let cmd_str = unsafe { CStr::from_ptr(&t.command).to_str().unwrap_or("") };
+				data.args.extend(cmd_str.split_terminator(' ').collect::<Args>());
 			},
 			Tag::ModuleTag(t) => {
-				let args_str = unsafe { CStr::from_ptr(&t.command).to_str().unwrap_or("") };
+				let cmd_str = unsafe { CStr::from_ptr(&t.command).to_str().unwrap_or("") };
 				data.modules.try_push(Module::new(
 					t.mod_start as usize,
 					(t.mod_end - t.mod_start) as usize,
-					args_str,
+					cmd_str,
 				)).unwrap_or_else(|e|{
 					panic!("Too many boot modules! ({:?})", e);
 				});

@@ -17,7 +17,8 @@
 
 use HEAP;
 use mem::wma;
-use util::math;
+use spin::Once;
+use util::{math, IrqLock};
 use alloc::{
 	boxed::Box,
 	heap::{
@@ -115,6 +116,9 @@ impl Heap {
 
 unsafe impl GlobalAlloc for Heap {
 	unsafe fn alloc(&self, layout: Layout) -> *mut Opaque {
+		let _lock = IrqLock::temporary(); // Lock this operation from IRQ interruption
+		if let None = INIT.try() { panic!("Heap use before initiating"); }
+
 		let map = self.get_map();
 
 		let n_blocks = math::align_up(layout.size(), BLOCK_SIZE_LOG2) >> BLOCK_SIZE_LOG2;
@@ -146,6 +150,9 @@ unsafe impl GlobalAlloc for Heap {
 	}
 
 	unsafe fn dealloc(&self, ptr: *mut Opaque, _layout: Layout) {
+		let _lock = IrqLock::temporary(); // Lock this operation from IRQ interruption
+		if let None = INIT.try() { panic!("Heap use before initiating"); }
+
 		let map = self.get_map();
 
 		let i = self.ptr_to_index(ptr).expect("Attempted to dealloc block-unaligned pointer");
@@ -166,15 +173,20 @@ unsafe impl GlobalAlloc for Heap {
 	}
 }
 
+static INIT: Once<()> = Once::new();
+
 pub fn init() {
-	unsafe {
-		// I wish there was nicer syntax than this. I've not found it yet.
-		// Prepare for some wild casting
-		let heap = &mut *((&HEAP) as *const Heap as usize as *mut Heap);
-		heap.init();
-	}
-	logok!("Initiated heap blocks at {:p} with {} blocks", HEAP.blocks as *const (), BLOCK_COUNT);
-	logok!("Initiated heap map at {:p}", HEAP.map as *const ());
+	INIT.call_once(||{
+		unsafe {
+			// I wish there was nicer syntax than this. I've not found it yet.
+			// Prepare for some wild casting
+			// TODO: Serious, wtf. This needs cleaning.
+			let heap = &mut *((&HEAP) as *const Heap as usize as *mut Heap);
+			heap.init();
+		}
+		logok!("Initiated heap blocks at {:p} with {} blocks", HEAP.blocks as *const (), BLOCK_COUNT);
+		logok!("Initiated heap map at {:p}", HEAP.map as *const ());
+	});
 
 	// Test everything works
 	let x = Box::new(1337);
