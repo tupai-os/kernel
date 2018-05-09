@@ -36,6 +36,7 @@ pub mod irq {
 
 pub mod mem {
 	pub use arch::isa::amd64::mem::PAGE_SIZE_KB_LOG2;
+	pub use arch::isa::amd64::mem::PAGE_SIZE_LOG2;
 	pub use arch::isa::amd64::mem::VMEMORY_OFFSET;
 	pub use arch::isa::amd64::mem::PageMap;
 }

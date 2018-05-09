@@ -34,7 +34,7 @@ use core::{
 
 const BLOCK_SIZE_LOG2: usize = 5;
 const BLOCK_SIZE: usize = 1 << BLOCK_SIZE_LOG2;
-const BLOCK_COUNT: usize = 0x100000; // 0x20 * 0x100000 = 32M
+const BLOCK_COUNT: usize = 0x80000; // 0x20 * 0x80000 = 16M
 
 #[repr(packed, C)]
 pub struct Block {

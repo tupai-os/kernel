@@ -25,10 +25,10 @@ pub fn align_up(x: usize, log2: usize) -> usize {
 	(x + (1 << log2) - 1) & (!0 << log2)
 }
 
-pub fn addr_to_page_index(addr: usize) -> usize {
+pub fn addr_to_page(addr: usize) -> usize {
 	addr >> (PAGE_SIZE_KB_LOG2 + 10)
 }
 
-pub fn kb_to_page_index(kb: usize) -> usize {
+pub fn kb_to_page(kb: usize) -> usize {
 	kb >> PAGE_SIZE_KB_LOG2
 }

@@ -124,25 +124,18 @@ pub enum AllocErr {
 	OutOfRange,
 }
 
-pub fn set_range_kb(start_kb: usize, end_kb: usize, entry: PageEntry) -> Result<(), AllocErr> {
-	use util::math::kb_to_page_index;
-	let start_index = kb_to_page_index(start_kb);
-	let size = kb_to_page_index(end_kb - start_kb);
+pub fn set_range(start: usize, end: usize, entry: PageEntry) -> Result<(), AllocErr> {
+	let size = end - start;
 
 	let mut map = MAP.lock();
 	for i in 0..size {
-		match map.set_entry(start_index + i, entry) {
+		match map.set_entry(start + i, entry) {
 			Ok(()) => {},
 			Err(()) => return Err(AllocErr::OutOfRange),
 		}
 	}
 
 	Ok(())
-}
-
-pub fn set_range(start: usize, end: usize, entry: PageEntry) -> Result<(), AllocErr> {
-	use util::math::align_up;
-	set_range_kb(start >> 10, align_up(end, 10) >> 10, entry)
 }
 
 #[allow(dead_code)]

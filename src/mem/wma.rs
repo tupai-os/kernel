@@ -28,11 +28,11 @@ pub fn alloc_one<T>() -> &'static mut T {
 	let alloc_size = mem::size_of::<T>();
 
 	if cend + alloc_size > elf::wma_bounds().end {
-		panic!("Attempted to allocate past bounds of WMA")
+		panic!("Attempted to allocate past bounds of WMA");
 	}
 
 	*END.lock() = cend + alloc_size; // Increment watermark
-	unsafe { &mut *(cend as *mut T) }
+	return unsafe { &mut *(cend as *mut T) };
 }
 
 pub fn alloc_many<T>(n: usize) -> &'static mut [T] {
@@ -41,11 +41,11 @@ pub fn alloc_many<T>(n: usize) -> &'static mut [T] {
 	let alloc_size = mem::size_of::<T>() * n;
 
 	if cend + alloc_size > elf::wma_bounds().end {
-		panic!("Attempted to allocate past bounds of WMA")
+		panic!("Attempted to allocate past bounds of WMA: {} entries of size {}", n, mem::size_of::<T>());
 	}
 
 	*END.lock() = cend + alloc_size; // Increment watermark
-	unsafe { slice::from_raw_parts_mut(cend as *mut _, n) }
+	return unsafe { slice::from_raw_parts_mut(cend as *mut _, n) };
 }
 
 use spin::Once;

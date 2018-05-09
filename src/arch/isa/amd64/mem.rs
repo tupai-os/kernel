@@ -16,7 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // Invariant constants
-pub const PAGE_SIZE_KB_LOG2: usize = 4;
+pub const PAGE_SIZE_KB_LOG2: usize = 2;
+pub const PAGE_SIZE_LOG2: usize = 10 + PAGE_SIZE_KB_LOG2;
 
 // Variant constants
 pub const VMEMORY_OFFSET: usize = 0xFFFFFFFF80000000;
