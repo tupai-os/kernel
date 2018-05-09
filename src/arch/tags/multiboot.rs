@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use super::BootData;
+use super::{BootData, Module, Args};
 use util::math::align_up;
 use cstr_core::CStr;
 use arrayvec::ArrayVec;
@@ -297,7 +297,17 @@ pub fn parse(tags: *const ()) -> BootData {
 			Tag::MemoryTag(t) => data.mem_ram = 1024 + t.upper as usize,
 			Tag::BootCommandTag(t) => {
 				let args_str = unsafe { CStr::from_ptr(&t.command).to_str().unwrap_or("") };
-				data.args = args_str.split(' ').collect::<ArrayVec<_>>();
+				data.args.extend(args_str.split(' ').collect::<Args>());
+			},
+			Tag::ModuleTag(t) => {
+				let args_str = unsafe { CStr::from_ptr(&t.command).to_str().unwrap_or("") };
+				data.modules.try_push(Module::new(
+					t.mod_start as usize,
+					(t.mod_end - t.mod_start) as usize,
+					args_str,
+				)).unwrap_or_else(|e|{
+					panic!("Too many boot modules! ({:?})", e);
+				});
 			},
 			_ => {}
 		}

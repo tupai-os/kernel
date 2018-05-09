@@ -37,7 +37,9 @@ pub fn init(boot_data: &BootData) {
 	});
 	logok!("Reserved available RAM from {:X}K to {:X}K", 0, boot_data.mem_ram);
 
-	pfa::set_range(0, addr_to_page(align_up(kernel_bounds().end, PAGE_SIZE_LOG2)),
+	pfa::set_range(
+		0,
+		addr_to_page(align_up(kernel_bounds().end, PAGE_SIZE_LOG2)),
 		pfa::PageEntry::new(
 			ProcessHandle::kernel(),
 			pfa::Flags::RAM | pfa::Flags::USED | pfa::Flags::STATIC // Used, immovable RAM

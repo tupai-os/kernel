@@ -21,10 +21,29 @@
 use arrayvec::ArrayVec;
 use core::default::Default;
 
+type Args = ArrayVec<[&'static str; 64]>; // Max 64 args
+
+pub struct Module {
+	pub start: usize,
+	pub end: usize,
+	pub args: &'static str,
+}
+
 #[derive(Default)]
 pub struct BootData {
-	pub args: ArrayVec<[&'static str; 256]>, // Maximum of 256 kernel args
+	pub args: Args,
 	pub mem_ram: usize,
+	pub modules: ArrayVec<[Module; 8]>, // Max 8 modules
+}
+
+impl Module {
+	pub fn new(start: usize, end: usize, args: &'static str) -> Module {
+		Module {
+			start: start,
+			end: end,
+			args: args,
+		}
+	}
 }
 
 impl BootData {
