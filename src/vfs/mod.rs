@@ -25,6 +25,8 @@ pub use self::node::NodeRef as NodeRef;
 // * IMPORTANT: Filesystem operations are not IRQ-safe *
 // *****************************************************
 
+use arch::tags::BootData;
+use util::Tar;
 use fs::{FS, FsRef, RamFs};
 use spin::Mutex;
 
@@ -32,15 +34,25 @@ lazy_static! {
 	static ref ROOTFS: Mutex<FsRef> = Mutex::new(RamFs::new("rootfs"));
 }
 
-pub fn init() {
+pub fn init(boot_data: &BootData) {
+	for module in &boot_data.modules {
+		logln!("Module: (args = {:?})", module.args);
+
+		let tar = unsafe { Tar::from(module.start) };
+		for file in tar {
+			logln!("File (name = {})", file.name());
+		}
+	}
+
 	{
 		let rootfs = ROOTFS.lock();
 		let root = rootfs.lock().root();
-		let _bin = root.lock().add_child("bin", &Node::new()).unwrap();
-		let _dev = root.lock().add_child("dev", &Node::new()).unwrap();
-		let _lib = root.lock().add_child("lib", &Node::new()).unwrap();
-		let home = root.lock().add_child("home", &Node::new()).unwrap();
-		let _test = home.lock().add_child("test", &Node::new()).unwrap();
+		let _bin = root.lock().add("bin", &Node::new());
+		let _dev = root.lock().add("dev", &Node::new());
+		let _lib = root.lock().add("lib", &Node::new());
+		let home = root.lock().add("home", &Node::new());
+		let _test = home.lock().add("test", &Node::new());
+		let _sys = root.lock().add("sys", &Node::new());
 	}
 
 	logok!("VFS initiated");

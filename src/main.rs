@@ -71,8 +71,8 @@ pub extern fn kmain(boot_data: &arch::tags::BootData) {
 	log::init();
 	mem::init(boot_data);
 	process::init();
-	vfs::init();
 	fs::init();
+	vfs::init(boot_data);
 	driver::init();
 	vdev::init();
 

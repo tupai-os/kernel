@@ -43,14 +43,13 @@ impl<'a> Node {
 		})).1;
 	}
 
-	pub fn add_child(&mut self, name: &str, child: &Arc<Mutex<Node>>) -> Option<NodeRef> {
-		return match self.children().get(name) {
-			Some(_) => None,
-			None => {
-				self.children_mut().insert(String::from(name), child.clone());
-				Some(child.clone())
-			}
+	pub fn add(&mut self, name: &str, child: &Arc<Mutex<Node>>) -> NodeRef {
+		match self.children().get(name) {
+			Some(n) => return n.clone(),
+			None => {}
 		}
+		self.children_mut().insert(String::from(name), child.clone());
+		return child.clone()
 	}
 
 	pub fn mount(&mut self, fs: FsRef) {
