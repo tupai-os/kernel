@@ -17,7 +17,7 @@
 
 use util::IrqLock;
 use alloc::{
-	arc::Arc,
+	arc::{Arc, Weak},
 	BTreeMap,
 	Vec,
 };
@@ -26,6 +26,11 @@ pub type Uid = i64;
 
 pub struct Tracker<T> {
 	items: IrqLock<BTreeMap<Uid, Arc<T>>>,
+}
+
+// TODO: Code duplication? Do something about this
+pub struct WeakTracker<T> {
+	items: IrqLock<BTreeMap<Uid, Weak<T>>>,
 }
 
 lazy_static! {
@@ -41,7 +46,7 @@ pub fn new_uid() -> Uid {
 	};
 }
 
-impl<T> Tracker<T> {
+impl<'a, T> Tracker<T> {
 	pub fn new() -> Tracker<T> {
 		Tracker::<T> {
 			items: IrqLock::new(BTreeMap::new()),
@@ -70,5 +75,45 @@ impl<T> Tracker<T> {
 
 	pub fn uids(&self) -> Vec<Uid> {
 		return self.items.lock().keys().cloned().collect();
+	}
+
+	pub fn items(&'a self) -> &'a IrqLock<BTreeMap<Uid, Arc<T>>> {
+		&self.items
+	}
+}
+
+impl<'a, T> WeakTracker<T> {
+	pub fn new() -> WeakTracker<T> {
+		WeakTracker::<T> {
+			items: IrqLock::new(BTreeMap::new()),
+		}
+	}
+
+	pub fn emplace(&self, item: T) -> (Uid, Arc<T>) {
+		let uid = new_uid();
+		let arc = Arc::new(item);
+		self.items.lock().insert(uid, Arc::downgrade(&arc));
+		return (uid, arc);
+	}
+
+	pub fn emplace_with_uid(&self, uid: Uid, item: T) -> (Uid, Arc<T>) {
+		let arc = Arc::new(item);
+		self.items.lock().insert(uid, Arc::downgrade(&arc));
+		return (uid, arc);
+	}
+
+	pub fn get(&self, uid: Uid) -> Option<Arc<T>> {
+		match self.items.lock().get(&uid) {
+			Some(arc) => arc.upgrade(),
+			_ => None,
+		}
+	}
+
+	pub fn uids(&self) -> Vec<Uid> {
+		return self.items.lock().keys().cloned().collect();
+	}
+
+	pub fn items(&'a self) -> &'a IrqLock<BTreeMap<Uid, Weak<T>>> {
+		&self.items
 	}
 }

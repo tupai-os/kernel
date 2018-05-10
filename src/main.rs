@@ -55,6 +55,7 @@ mod thread;
 mod process;
 mod driver;
 mod vfs;
+mod fs;
 mod vdev;
 
 use mem::heap::Heap;
@@ -71,6 +72,7 @@ pub extern fn kmain(boot_data: &arch::tags::BootData) {
 	mem::init(boot_data);
 	process::init();
 	vfs::init();
+	fs::init();
 	driver::init();
 	vdev::init();
 

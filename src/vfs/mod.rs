@@ -16,36 +16,37 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 mod node;
-mod fs;
 
 // Reexports
 pub use self::node::Node as Node;
+pub use self::node::NodeRef as NodeRef;
 
 // *****************************************************
 // * IMPORTANT: Filesystem operations are not IRQ-safe *
 // *****************************************************
 
+use fs::{FS, FsRef, RamFs};
 use spin::Mutex;
-use alloc::arc::Arc;
 
 lazy_static! {
-	static ref ROOT: Mutex<Arc<Mutex<Node>>> = Mutex::new(Node::new());
+	static ref ROOTFS: Mutex<FsRef> = Mutex::new(RamFs::new("rootfs"));
 }
 
 pub fn init() {
 	{
-		let root = ROOT.lock();
-		let bin = root.lock().add_child("bin", &Node::new()).unwrap();
-		let dev = root.lock().add_child("dev", &Node::new()).unwrap();
-		let lib = root.lock().add_child("lib", &Node::new()).unwrap();
+		let rootfs = ROOTFS.lock();
+		let root = rootfs.lock().root();
+		let _bin = root.lock().add_child("bin", &Node::new()).unwrap();
+		let _dev = root.lock().add_child("dev", &Node::new()).unwrap();
+		let _lib = root.lock().add_child("lib", &Node::new()).unwrap();
 		let home = root.lock().add_child("home", &Node::new()).unwrap();
-		let test = home.lock().add_child("test", &Node::new()).unwrap();
+		let _test = home.lock().add_child("test", &Node::new()).unwrap();
 	}
 
 	logok!("VFS initiated");
 }
 
-fn display_node(node: &Arc<Mutex<Node>>, name: &str, depth: usize) {
+fn display_node(node: &NodeRef, name: &str, depth: usize) {
 	logln!("{}", name);
 
 	for (name, node) in node.lock().children().iter() {
@@ -59,5 +60,11 @@ fn display_node(node: &Arc<Mutex<Node>>, name: &str, depth: usize) {
 }
 
 pub fn display() {
-	display_node(&ROOT.lock().clone(), "/", 0);
+	let rootfs = ROOTFS.lock();
+	display_node(&rootfs.lock().root().clone(), "/", 0);
+
+	logln!("Filesystems:");
+	for (uid, item) in FS.items().lock().iter() {
+		logln!("Filesystem (uid = {}, name = {})", uid, item.lock().name());
+	}
 }

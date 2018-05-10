@@ -1,4 +1,4 @@
-// file : fs.rs
+// file : ramfs.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,6 +15,34 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub trait Filesystem {
-	fn new() -> Self;
+use super::{Fs, FsRef, FS};
+use vfs::{Node, NodeRef};
+use spin::Mutex;
+use alloc::{
+	String,
+	boxed::Box
+};
+
+pub struct RamFs {
+	name: String,
+	root: NodeRef,
+}
+
+impl RamFs {
+	pub fn new(name: &str) -> FsRef {
+		return FS.emplace(Mutex::new(Box::new(RamFs {
+			name: String::from(name),
+			root: Node::new(),
+		}))).1;
+	}
+}
+
+impl Fs for RamFs {
+	fn name(&self) -> String {
+		self.name.clone()
+	}
+
+	fn root(&self) -> NodeRef {
+		self.root.clone()
+	}
 }

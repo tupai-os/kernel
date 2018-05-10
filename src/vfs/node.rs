@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use util::uid::{Tracker};
+use fs::FsRef;
+use util::uid::WeakTracker;
 use spin::Mutex;
 use alloc::{
 	arc::Arc,
@@ -24,31 +25,43 @@ use alloc::{
 };
 
 pub struct Node {
-	children: BTreeMap<String, Arc<Mutex<Node>>>,
+	mount: Option<FsRef>,
+	children: BTreeMap<String, NodeRef>,
 }
 
+pub type NodeRef = Arc<Mutex<Node>>;
+
 lazy_static! {
-	static ref NODES: Tracker<Mutex<Node>> = Tracker::new();
+	static ref NODES: WeakTracker<Mutex<Node>> = WeakTracker::new();
 }
 
 impl<'a> Node {
-	pub fn new() -> Arc<Mutex<Node>> {
+	pub fn new() -> NodeRef {
 		return NODES.emplace(Mutex::new(Node {
+			mount: None,
 			children: BTreeMap::new(),
 		})).1;
 	}
 
-	pub fn add_child(&mut self, name: &str, child: &Arc<Mutex<Node>>) -> Option<Arc<Mutex<Node>>> {
-		return match self.children.get(name) {
+	pub fn add_child(&mut self, name: &str, child: &Arc<Mutex<Node>>) -> Option<NodeRef> {
+		return match self.children().get(name) {
 			Some(_) => None,
 			None => {
-				self.children.insert(String::from(name), child.clone());
+				self.children_mut().insert(String::from(name), child.clone());
 				Some(child.clone())
 			}
 		}
 	}
 
-	pub fn children(&'a self) -> &'a BTreeMap<String, Arc<Mutex<Node>>> {
+	pub fn mount(&mut self, fs: FsRef) {
+		self.mount = Some(fs);
+	}
+
+	pub fn children(&'a self) -> &'a BTreeMap<String, NodeRef> {
 		&self.children
+	}
+
+	pub fn children_mut(&'a mut self) -> &'a mut BTreeMap<String, NodeRef> {
+		&mut self.children
 	}
 }
