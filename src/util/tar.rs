@@ -17,21 +17,22 @@
 
 use util::math::align_up;
 use alloc::String;
+use core::slice;
 
+#[derive(Copy, Clone)]
 pub struct Tar {
 	start: *const File,
 }
 
 pub struct File {
-	pub filename: [u8; 100],
+	filename: [u8; 100],
 	filemode: [u8; 8],
 	user: [u8; 8],
 	group: [u8; 8],
 	size: [u8; 12],
-	last_change: [u8; 8],
+	last_change: [u8; 12],
 	checksum: [u8; 8],
 	filetype: u8,
-	linked_filename: [u8; 100],
 }
 
 pub struct Iter {
@@ -61,10 +62,11 @@ impl Iterator for Iter {
 	type Item = &'static File;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		let offset = align_up(512 + self.file.size(), 512);
-		let file = match self.file.filename[0] {
-			b'\0' => None,
-			_ => Some(self.file),
+		let offset = align_up(512 + self.file.size(), 9);
+		let file = if self.file.valid() {
+			Some(self.file)
+		} else {
+			None
 		};
 		self.file = unsafe { &*((self.file as *const File as usize + offset) as *const File) };
 		return file;
@@ -73,7 +75,6 @@ impl Iterator for Iter {
 
 impl File {
 	// TODO: Verify this works with the tar standard in ALL CASES
-	// TODO: Remove the unwraps
 	pub fn size(&'static self) -> usize {
 		let mut s = String::new();
 		for c in self.size.iter() {
@@ -85,6 +86,10 @@ impl File {
 		return usize::from_str_radix(&s, 8).unwrap_or(0); // <-- TODO: Should we be doing this?
 	}
 
+	fn valid(&'static self) -> bool {
+		self.filename[0] != 0
+	}
+
 	pub fn name(&'static self) -> String {
 		let mut s = String::new();
 		for c in self.filename.iter() {
@@ -94,5 +99,9 @@ impl File {
 			};
 		}
 		return s;
+	}
+
+	pub fn data(&'static self) -> &[u8] {
+		unsafe { slice::from_raw_parts((self as *const File as usize + 512) as *const u8, self.size()) }
 	}
 }

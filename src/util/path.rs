@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : path.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,31 +15,35 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-mod ramfs;
-
-// Reexports
-pub use self::ramfs::RamFs as RamFs;
-
-use vfs::NodeRef;
-use util::uid::Tracker;
-use spin::Mutex;
 use alloc::{
+	vec,
+	Vec,
 	String,
-	arc::Arc,
-	boxed::Box,
 };
 
-pub trait Fs: Send {
-	fn name(&self) -> String;
-	fn root(&self) -> NodeRef;
+pub struct Path {
+	parts: Vec<String>,
 }
 
-pub type FsRef = Arc<Mutex<Box<Fs>>>;
+impl Path {
+	pub fn new() -> Path {
+		Path {
+			parts: Vec::new(),
+		}
+	}
 
-lazy_static! {
-	pub static ref FS: Tracker<Mutex<Box<Fs>>> = Tracker::new();
+	pub fn from(path: &str) -> Path {
+		Path {
+			parts: path.split_terminator("/").map(|s| String::from(s)).collect(),
+		}
+	}
 }
 
-pub fn init() {
-	logok!("Initiated filesystems");
+impl IntoIterator for Path {
+	type Item = String;
+	type IntoIter = vec::IntoIter<Self::Item>;
+
+	fn into_iter(self) -> Self::IntoIter {
+		self.parts.into_iter()
+	}
 }

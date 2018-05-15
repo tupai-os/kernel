@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use super::{Fs, FsRef, FS};
+use util::{Tar, Path};
 use vfs::{Node, NodeRef};
 use spin::Mutex;
 use alloc::{
@@ -34,6 +35,40 @@ impl RamFs {
 			name: String::from(name),
 			root: Node::new(),
 		}))).1;
+	}
+
+	pub fn from_tar(name: &str, tar: Tar) -> FsRef {
+		let fs = FS.emplace(Mutex::new(Box::new(RamFs {
+			name: String::from(name),
+			root: Node::new(),
+		}))).1;
+
+		for file in tar {
+			let fs = fs.lock();
+
+			if file.size() < 100 {
+				logln!("Data in file {} ({} bytes):\n {}", file.name(), file.size(), String::from_utf8_lossy(file.data()));
+			}
+
+			let mut node = fs.root();
+			for part in Path::from(&file.name()) {
+				// This syntax is pretty shitty. We do it to avoid deadlocks.
+				let nnode;
+				let val = match node.lock().get(&part) {
+					Some(n) => Some(n.clone()),
+					None => None,
+				};
+				if let Some(n) = val {
+					nnode = n.clone();
+				} else {
+					nnode = node.lock().add(&part, &Node::new());
+				}
+
+				node = nnode;
+			}
+		}
+
+		return fs;
 	}
 }
 

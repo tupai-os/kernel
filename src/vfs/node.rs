@@ -36,6 +36,7 @@ lazy_static! {
 }
 
 impl<'a> Node {
+	/// Create a new node, returning a corresponding NodeRef
 	pub fn new() -> NodeRef {
 		return NODES.emplace(Mutex::new(Node {
 			mount: None,
@@ -43,23 +44,39 @@ impl<'a> Node {
 		})).1;
 	}
 
+	/// Follow a NodeRef through to its mount location
+	pub fn follow(node: NodeRef) -> NodeRef {
+		match node.lock().mount {
+			Some(ref fs) => fs.lock().root(),
+			None => node.clone(),
+		}
+	}
+
+	/// Add a NodeRef to the node
 	pub fn add(&mut self, name: &str, child: &Arc<Mutex<Node>>) -> NodeRef {
-		match self.children().get(name) {
+		match self.get(name) {
 			Some(n) => return n.clone(),
-			None => {}
+			None => {},
 		}
 		self.children_mut().insert(String::from(name), child.clone());
 		return child.clone()
 	}
 
+	pub fn get(&'a self, name: &str) -> Option<&'a NodeRef> {
+		self.children().get(name)
+	}
+
+	/// Mount a filesystem on this node
 	pub fn mount(&mut self, fs: FsRef) {
 		self.mount = Some(fs);
 	}
 
+	/// Return an iterable map to the node's children, with their respective names as the keys
 	pub fn children(&'a self) -> &'a BTreeMap<String, NodeRef> {
 		&self.children
 	}
 
+	/// Return a mutable iterable map to the node's children, with their respective names as the keys
 	pub fn children_mut(&'a mut self) -> &'a mut BTreeMap<String, NodeRef> {
 		&mut self.children
 	}
