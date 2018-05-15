@@ -21,11 +21,19 @@ pub mod spurious;
 pub mod pit;
 pub mod kbd;
 
-pub fn init() {
-	pic::init();
-	spurious::init();
-	pit::init();
-	kbd::init();
+use super::Chipset;
 
-	loginfo!("Initiated IBM-PC chipset architecture");
+pub struct IbmPc {}
+
+impl Chipset for IbmPc {
+	fn init() {
+		pic::init();
+		spurious::init();
+		pit::init();
+		kbd::init();
+
+		loginfo!("Initiated IBM PC chipset architecture");
+	}
+
+	fn name() -> &'static str { "IBM PC" }
 }

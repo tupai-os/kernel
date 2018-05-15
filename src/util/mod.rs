@@ -24,8 +24,10 @@ pub mod irqqueue;
 pub mod io;
 pub mod uid;
 pub mod tar;
+pub mod path;
 
 // Re-exports
 pub use self::irqlock::IrqLock as IrqLock;
 pub use self::irqqueue::IrqQueue as IrqQueue;
 pub use self::tar::Tar as Tar;
+pub use self::path::Path as Path;

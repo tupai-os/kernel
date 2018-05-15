@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : mem.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,19 +15,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod boot;
-pub mod port;
-pub mod exception;
+// Invariant constants
+pub const PAGE_SIZE_KB_LOG2: usize = 2;
+pub const PAGE_SIZE_LOG2: usize = 10 + PAGE_SIZE_KB_LOG2;
 
-use super::Family;
+// Variant constants
+pub const VMEMORY_OFFSET: usize = 0xFFFFFFFF80000000;
 
-pub struct X86 {}
+pub struct PageMap {
+	// Nothing yet
+}
 
-impl Family for X86 {
-	fn init() {
-		exception::init();
-		loginfo!("Initiated x86 architecture");
+impl PageMap {
+	pub fn new() -> PageMap {
+		PageMap {}
 	}
-
-	fn name() -> &'static str { "x86" }
 }

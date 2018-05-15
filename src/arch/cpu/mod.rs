@@ -15,19 +15,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod boot;
-pub mod port;
-pub mod exception;
+#[cfg(arch_cpu = "amd64")] mod amd64;
+#[cfg(arch_cpu = "ia32")]  mod ia32;
+#[cfg(arch_cpu = "a32")]   mod a32;
+#[cfg(arch_cpu = "a64")]   mod a64;
 
-use super::Family;
+#[cfg(arch_cpu = "amd64")] pub use amd64::Amd64 as Amd64;
+#[cfg(arch_cpu = "ia32")]  pub use ia32::Ia32 as Ia32;
+#[cfg(arch_cpu = "a32")]   pub use a32::A32 as A32;
+#[cfg(arch_cpu = "a64")]   pub use a64::A64 as A64;
 
-pub struct X86 {}
+pub trait Cpu {
+	#[allow(non_camel_case_types)]
+	type irq: Irq;
 
-impl Family for X86 {
-	fn init() {
-		exception::init();
-		loginfo!("Initiated x86 architecture");
-	}
+	fn name() -> &'static str;
+}
 
-	fn name() -> &'static str { "x86" }
+pub trait Irq {
+	fn enable();
+	fn disable();
+	fn is_enabled() -> bool;
 }

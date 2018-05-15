@@ -15,5 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(arch_chipset = "ibmpc")]   pub mod ibmpc;
-#[cfg(arch_chipset = "bcm2835")] pub mod bcm2835;
+#[cfg(arch_chipset = "ibmpc")]   mod ibmpc;
+#[cfg(arch_chipset = "bcm2835")] mod bcm2835;
+
+#[cfg(arch_chipset = "ibmpc")]   pub use ibmpc::IbmPc as IbmPc;
+#[cfg(arch_chipset = "bcm2835")] pub use bcm2835::Bcm2835 as Bcm2835;
+
+pub trait Chipset {
+	fn init();
+
+	fn name() -> &'static str;
+}

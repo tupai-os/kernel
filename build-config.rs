@@ -32,7 +32,7 @@ fn main() {
 			write_cfg("arch_llapi", "x64");
 
 			write_cfg("arch_family", "x86");
-			write_cfg("arch_isa", "amd64");
+			write_cfg("arch_cpu", "amd64");
 			write_cfg("arch_chipset", "ibmpc");
 			write_cfg("arch_tags", "multiboot");
 
@@ -44,7 +44,7 @@ fn main() {
 			write_cfg("arch_llapi", "i386");
 
 			write_cfg("arch_family", "x86");
-			write_cfg("arch_isa", "ia32");
+			write_cfg("arch_cpu", "ia32");
 			write_cfg("arch_chipset", "ibmpc");
 			write_cfg("arch_tags", "multiboot");
 
@@ -56,7 +56,7 @@ fn main() {
 			write_cfg("arch_llapi", "rpi2");
 
 			write_cfg("arch_family", "arm");
-			write_cfg("arch_isa", "a32");
+			write_cfg("arch_cpu", "a32");
 			write_cfg("arch_chipset", "bcm2835");
 			write_cfg("arch_tags", "atags");
 

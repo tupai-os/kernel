@@ -62,6 +62,9 @@ use mem::heap::Heap;
 #[global_allocator]
 pub static HEAP: Heap = Heap::empty();
 
+#[allow(non_snake_case)]
+pub use llapi::Selected as LLAPI;
+
 #[allow(dead_code)]
 #[linkage = "external"]
 #[no_mangle]
@@ -87,6 +90,7 @@ pub extern fn kmain(boot_data: &arch::tags::BootData) {
 	let init_main = init.spawn_thread("main", shell::main).unwrap_or_else(|e| {
 		panic!("Could not spawn init main thread: {:?}", e);
 	});
+
 	logok!("Spawned init thread with uid {}", init_main.uid());
 
 	loginfo!("Kernel initiated, waiting for init...");

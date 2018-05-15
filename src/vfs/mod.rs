@@ -31,28 +31,19 @@ use fs::{FS, FsRef, RamFs};
 use spin::Mutex;
 
 lazy_static! {
-	static ref ROOTFS: Mutex<FsRef> = Mutex::new(RamFs::new("rootfs"));
+	static ref ROOTFS: Mutex<Option<FsRef>> = Mutex::new(None);
 }
 
 pub fn init(boot_data: &BootData) {
 	for module in &boot_data.modules {
-		logln!("Module: (args = {:?})", module.args);
+		loginfo!("Handling module: (args = {:?})", module.args);
 
 		let tar = unsafe { Tar::from(module.start) };
-		for file in tar {
-			logln!("File (name = {})", file.name());
-		}
-	}
 
-	{
-		let rootfs = ROOTFS.lock();
-		let root = rootfs.lock().root();
-		let _bin = root.lock().add("bin", &Node::new());
-		let _dev = root.lock().add("dev", &Node::new());
-		let _lib = root.lock().add("lib", &Node::new());
-		let home = root.lock().add("home", &Node::new());
-		let _test = home.lock().add("test", &Node::new());
-		let _sys = root.lock().add("sys", &Node::new());
+		// We found the rootfs
+		if module.args.contains(&"rootfs") {
+			*ROOTFS.lock() = Some(RamFs::from_tar("rootfs", tar));
+		}
 	}
 
 	logok!("VFS initiated");
@@ -72,8 +63,10 @@ fn display_node(node: &NodeRef, name: &str, depth: usize) {
 }
 
 pub fn display() {
-	let rootfs = ROOTFS.lock();
-	display_node(&rootfs.lock().root().clone(), "/", 0);
+	match *ROOTFS.lock() {
+		Some(ref rootfs) => display_node(&rootfs.lock().root().clone(), "/", 0),
+		None => panic!("No root filesystem"),
+	}
 
 	logln!("Filesystems:");
 	for (uid, item) in FS.items().lock().iter() {

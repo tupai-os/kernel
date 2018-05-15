@@ -19,12 +19,23 @@
 #[cfg(arch_llapi = "i386")] mod i386;
 #[cfg(arch_llapi = "rpi2")] mod rpi2;
 
-#[cfg(arch_llapi = "x64")]  use self::x64  as selected;
-#[cfg(arch_llapi = "i386")] use self::i386 as selected;
-#[cfg(arch_llapi = "rpi2")] use self::rpi2 as selected;
+#[cfg(arch_llapi = "x64")]  pub use self::x64::x64  as Selected;
+#[cfg(arch_llapi = "i386")] pub use self::i386::i386 as Selected;
+#[cfg(arch_llapi = "rpi2")] pub use self::rpi2::rpi2 as Selected;
 
-pub use self::selected::meta as meta;
-pub use self::selected::cpu as cpu;
-pub use self::selected::irq as irq;
-pub use self::selected::mem as mem;
-pub use self::selected::intrinsic as intrinsic;
+use arch::{
+	family::Family,
+	cpu::Cpu,
+	chipset::Chipset,
+};
+
+pub trait Llapi {
+	#[allow(non_camel_case_types)]
+	type family: Trait; // Family;
+	#[allow(non_camel_case_types)]
+	type cpu: Trait; // Cpu;
+	#[allow(non_camel_case_types)]
+	type chipset: Trait; // Chipset;
+
+	fn name() -> &'static str;
+}

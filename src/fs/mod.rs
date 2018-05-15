@@ -29,7 +29,7 @@ use alloc::{
 	boxed::Box,
 };
 
-pub trait Fs: Send  {
+pub trait Fs: Send {
 	fn name(&self) -> String;
 	fn root(&self) -> NodeRef;
 }

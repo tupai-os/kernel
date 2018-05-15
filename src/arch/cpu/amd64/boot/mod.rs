@@ -1,3 +1,4 @@
+
 // file : mod.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
@@ -15,19 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod boot;
-pub mod port;
-pub mod exception;
-
-use super::Family;
-
-pub struct X86 {}
-
-impl Family for X86 {
-	fn init() {
-		exception::init();
-		loginfo!("Initiated x86 architecture");
-	}
-
-	fn name() -> &'static str { "x86" }
-}
+global_asm!(include_str!("check.s"));
+global_asm!(include_str!("high.s"));
+global_asm!(include_str!("paging.s"));
+global_asm!(include_str!("paging64.s"));
+global_asm!(include_str!("vga.s"));
+global_asm!(include_str!("start.s"));

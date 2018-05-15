@@ -21,6 +21,8 @@ pub mod idt;
 pub mod isr;
 pub mod mem;
 
+use super;
+
 global_asm!(include_str!("isr.s"));
 
 use {
@@ -32,31 +34,6 @@ use {
 	},
 	arch::tags::multiboot,
 };
-
-pub fn irq_enable() {
-	unsafe { asm!("sti"); }
-}
-
-pub fn irq_disable() {
-	unsafe { asm!("cli"); }
-}
-
-pub fn irq_enabled() -> bool {
-	let val: u64;
-	unsafe {
-		asm!(
-			"pushfq
-			pop %rax"
-			:"={rax}"(val)
-			::: "volatile"
-		);
-	}
-	return (val & (1 << 9)) != 0;
-}
-
-pub fn halt() {
-	unsafe { asm!("hlt"); }
-}
 
 #[no_mangle]
 #[allow(dead_code)]
@@ -76,4 +53,43 @@ pub extern fn kearly(tags: *const ()) {
 	let boot_data = multiboot::parse(tags); // Parse tags
 
 	kmain(&boot_data);
+}
+
+#[allow(non_camel_case_types)]
+pub struct amd64 {}
+
+impl super::Cpu for amd64 {
+	type irq = Irq;
+
+	fn name() -> &'static str { "amd64" }
+}
+
+#[allow(non_camel_case_types)]
+pub struct irq {}
+
+impl super::Irq for irq {
+	fn enable() {
+		unsafe { asm!("sti"); }
+	}
+
+	fn disable() {
+		unsafe { asm!("cli"); }
+	}
+
+	fn await() {
+		unsafe { asm!("hlt") }
+	}
+
+	fn is_enabled() -> bool {
+		let val: u64;
+		unsafe {
+			asm!(
+				"pushfq
+				pop %rax"
+				:"={rax}"(val)
+				::: "volatile"
+			);
+		}
+		return (val & (1 << 9)) != 0;
+	}
 }

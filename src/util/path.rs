@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : path.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,19 +15,35 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod boot;
-pub mod port;
-pub mod exception;
+use alloc::{
+	vec,
+	Vec,
+	String,
+};
 
-use super::Family;
+pub struct Path {
+	parts: Vec<String>,
+}
 
-pub struct X86 {}
-
-impl Family for X86 {
-	fn init() {
-		exception::init();
-		loginfo!("Initiated x86 architecture");
+impl Path {
+	pub fn new() -> Path {
+		Path {
+			parts: Vec::new(),
+		}
 	}
 
-	fn name() -> &'static str { "x86" }
+	pub fn from(path: &str) -> Path {
+		Path {
+			parts: path.split_terminator("/").map(|s| String::from(s)).collect(),
+		}
+	}
+}
+
+impl IntoIterator for Path {
+	type Item = String;
+	type IntoIter = vec::IntoIter<Self::Item>;
+
+	fn into_iter(self) -> Self::IntoIter {
+		self.parts.into_iter()
+	}
 }

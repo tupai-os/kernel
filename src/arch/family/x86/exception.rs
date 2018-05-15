@@ -15,9 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::intrinsic::isa::idt;
-use llapi::intrinsic::isa::isr;
-use llapi::cpu;
+use LLAPI::cpu::intrinsic::idt;
+use LLAPI::cpu::intrinsic::isr;
+use LLAPI::cpu;
 
 extern {
 	fn _exception_handler0();
