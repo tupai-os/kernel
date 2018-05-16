@@ -15,9 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::intrinsic::isa::idt;
-use llapi::intrinsic::isa::isr;
-use llapi::cpu;
+use llapi::cpu::intrinsic::idt;
+use llapi::cpu::irq::StackFrame;
 
 extern {
 	fn _exception_handler0();
@@ -77,7 +76,7 @@ pub enum Exception {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn divzero_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
+extern fn divzero_handler(frame: *mut StackFrame) -> *mut StackFrame {
 	exception_panic(Exception::DivZero, unsafe { &*frame });
 	return frame;
 }
@@ -85,7 +84,7 @@ extern fn divzero_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn debug_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
+extern fn debug_handler(frame: *mut StackFrame) -> *mut StackFrame {
 	exception_panic(Exception::Debug, unsafe { &*frame });
 	return frame;
 }
@@ -93,7 +92,7 @@ extern fn debug_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn segnotpresent_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
+extern fn segnotpresent_handler(frame: *mut StackFrame) -> *mut StackFrame {
 	exception_panic(Exception::SegNotPresent, unsafe { &*frame });
 	return frame;
 }
@@ -101,7 +100,7 @@ extern fn segnotpresent_handler(frame: *mut isr::StackFrame) -> *mut isr::StackF
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn gprotectionfault_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
+extern fn gprotectionfault_handler(frame: *mut StackFrame) -> *mut StackFrame {
 	exception_panic(Exception::GProtectionFault, unsafe { &*frame });
 	return frame;
 }
@@ -109,7 +108,7 @@ extern fn gprotectionfault_handler(frame: *mut isr::StackFrame) -> *mut isr::Sta
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn pagefault_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
+extern fn pagefault_handler(frame: *mut StackFrame) -> *mut StackFrame {
 	exception_panic(Exception::PageFault, unsafe { &*frame });
 	return frame;
 }
@@ -117,26 +116,21 @@ extern fn pagefault_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn unimplemented_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
+extern fn unimplemented_handler(frame: *mut StackFrame) -> *mut StackFrame {
 	logln!("Unimplemented exception occured");
 	logln!("Machine state:\n{}", unsafe { &*frame });
 	return frame;
 }
 
-fn exception_panic(ex: Exception, frame: &isr::StackFrame) {
-	logln!("'{}' exception occured", match ex {
+fn exception_panic(ex: Exception, frame: &StackFrame) {
+	panic!("'{}' exception occured\nMachine state:\n{}", match ex {
 		Exception::DivZero => "Divide by Zero",
 		Exception::Debug => "Debug",
 		Exception::SegNotPresent => "Segment Not Present",
 		Exception::GProtectionFault => "General Protection Fault",
 		Exception::PageFault => "Page Fault",
 		_ => "Unimplemented",
-	});
-	logln!("Machine state:\n{}", frame);
-
-	loop {
-		cpu::halt();
-	}
+	}, frame);
 }
 
 pub fn init() {

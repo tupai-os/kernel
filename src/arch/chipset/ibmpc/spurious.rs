@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::intrinsic::isa::{idt, isr};
+use llapi::cpu::intrinsic::idt;
+use llapi::cpu::irq::StackFrame;
 use super::pic;
 
 const IRQ: usize = 7;
@@ -33,7 +34,7 @@ pub fn init() {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn spurious_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
+extern fn spurious_handler(frame: *mut StackFrame) -> *mut StackFrame {
 	// Do nothing
 	return frame;
 }

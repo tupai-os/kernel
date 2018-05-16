@@ -15,5 +15,4 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(arch_family = "x86")] pub mod x86;
-#[cfg(arch_family = "arm")] pub mod arm;
+pub mod x86;

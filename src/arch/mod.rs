@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod isa;
+pub mod cpu;
 pub mod family;
 pub mod chipset;
-pub mod tags;
+pub mod bootcfg;

@@ -48,7 +48,7 @@ extern crate alloc;
 mod shell;
 
 mod llapi;
-#[path = "arch_/mod.rs"] mod arch;
+mod arch;
 mod mem;
 mod util;
 mod thread;

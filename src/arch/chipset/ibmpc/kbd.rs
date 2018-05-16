@@ -18,13 +18,9 @@
 
 // TODO: Move this to src/driver?
 
-use llapi::intrinsic::{
-	isa::{
-		idt,
-		isr,
-	},
-	family::port::in8,
-};
+use llapi::cpu::intrinsic::idt;
+use llapi::cpu::irq::StackFrame;
+use llapi::family::intrinsic::port::in8;
 use vdev::tty;
 use spin::Mutex;
 
@@ -115,7 +111,7 @@ pub fn init() {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn kbd_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
+extern fn kbd_handler(frame: *mut StackFrame) -> *mut StackFrame {
 	while in8(PORT_STATUS) & 1 != 0 {
 		let sc = in8(PORT_DATA);
 		if sc & KEY_PRESSED == 0 {

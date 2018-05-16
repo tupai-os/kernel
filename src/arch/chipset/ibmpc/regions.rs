@@ -15,6 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::mem::VMEMORY_OFFSET;
+use llapi::cpu::paging::VIRTUAL_OFFSET;
 
-pub const VGA_TEXTMODE_RAM: usize = VMEMORY_OFFSET + 0xB8000;
+pub const VGA_TEXTMODE_RAM: usize = VIRTUAL_OFFSET + 0xB8000;

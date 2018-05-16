@@ -15,13 +15,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod regions;
+pub mod intrinsic {
+	pub use super::{pic, pit, kbd, regions};
+}
+
+// TODO: Make these private
 pub mod pic;
-pub mod spurious;
 pub mod pit;
 pub mod kbd;
+mod spurious;
+pub mod regions;
 
-pub fn init() {
+use util::bootcfg::BootCfg;
+
+pub const fn name() -> &'static str { "IBM PC" }
+
+pub fn init(_bootcfg: &BootCfg) {
 	pic::init();
 	spurious::init();
 	pit::init();

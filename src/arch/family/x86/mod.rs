@@ -15,11 +15,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod boot;
+// Publicly visible API
+pub mod intrinsic {
+	pub use super::{port, exception};
+}
+
+// TODO: Make these private
+mod boot;
 pub mod port;
 pub mod exception;
 
-pub fn init() {
+use util::bootcfg::BootCfg;
+
+pub const fn name() -> &'static str { "x86" }
+
+pub fn init(_bootcfg: &BootCfg) {
 	exception::init();
 	loginfo!("Initiated x86 architecture");
 }
