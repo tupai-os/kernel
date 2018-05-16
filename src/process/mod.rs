@@ -24,7 +24,7 @@ pub use self::handle::ProcessHandle as ProcessHandle;
 // * IMPORTANT: Process operations are not IRQ-safe *
 // *****************************************************
 
-use llapi::mem::PageMap;
+use llapi::cpu::paging::PageMap;
 use util::uid::Tracker;
 use thread::{ThreadHandle};
 use spin::Mutex;

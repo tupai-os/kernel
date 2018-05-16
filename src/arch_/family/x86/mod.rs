@@ -15,21 +15,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[macro_use]
-pub mod mem;
-pub mod elf;
-pub mod math;
-pub mod irqlock;
-pub mod irqqueue;
-pub mod io;
-pub mod uid;
-pub mod tar;
-pub mod path;
-pub mod contract;
-pub mod bootcfg;
+// Publicly visible API
+pub mod intrinsic {
+	pub use super::{port, exception};
+}
 
-// Re-exports
-pub use self::irqlock::IrqLock as IrqLock;
-pub use self::irqqueue::IrqQueue as IrqQueue;
-pub use self::tar::Tar as Tar;
-pub use self::path::Path as Path;
+// TODO: Make these private
+mod boot;
+pub mod port;
+pub mod exception;
+
+use util::bootcfg::BootCfg;
+
+pub const fn name() -> &'static str { "x86" }
+
+pub fn init(_bootcfg: &BootCfg) {
+	exception::init();
+	loginfo!("Initiated x86 architecture");
+}

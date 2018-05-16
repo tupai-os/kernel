@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use super::{THREADS, Thread, ThreadHandle};
-use llapi::irq;
+use llapi::cpu::irq;
 use util::IrqLock;
 use spin::Mutex;
 use alloc::{

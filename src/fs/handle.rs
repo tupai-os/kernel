@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : handle.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,21 +15,45 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[macro_use]
-pub mod mem;
-pub mod elf;
-pub mod math;
-pub mod irqlock;
-pub mod irqqueue;
-pub mod io;
-pub mod uid;
-pub mod tar;
-pub mod path;
-pub mod contract;
-pub mod bootcfg;
+use super::FS;
+use vfs::NodeRef;
+use util::uid::Uid;
+use alloc::string::String;
 
-// Re-exports
-pub use self::irqlock::IrqLock as IrqLock;
-pub use self::irqqueue::IrqQueue as IrqQueue;
-pub use self::tar::Tar as Tar;
-pub use self::path::Path as Path;
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct FsHandle {
+	uid: Uid,
+}
+
+impl FsHandle {
+	pub const fn from_uid(uid: Uid) -> FsHandle {
+		FsHandle {
+			uid: uid,
+		}
+	}
+
+	pub fn uid(&self) -> Uid {
+		self.uid
+	}
+
+	pub fn name(&self) -> Option<String> {
+		match FS.get(self.uid) {
+			Some(f) => Some(f.lock().name()),
+			None => None,
+		}
+	}
+
+	pub fn root(&self) -> Option<NodeRef> {
+		match FS.get(self.uid) {
+			Some(f) => Some(f.lock().root()),
+			None => None,
+		}
+	}
+
+	pub fn valid(&self) -> bool {
+		return match FS.get(self.uid) {
+			Some(_) => true,
+			None => false,
+		};
+	}
+}

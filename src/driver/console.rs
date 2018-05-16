@@ -1,4 +1,4 @@
-// file : vga.rs
+// file : console.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,10 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::intrinsic::{
-	chipset::regions::VGA_TEXTMODE_RAM,
-	family::port::out8,
+use llapi::{
+	chipset::intrinsic::regions::VGA_TEXTMODE_RAM,
+	family::intrinsic::port::out8,
 };
+use driver::{Desc, CharIFace};
 use volatile::Volatile;
 use spin::{Mutex, Once};
 use core::ptr::Unique;
@@ -78,6 +79,16 @@ static WRITER: Mutex<Writer> = Mutex::new(Writer {
 extern {
 	fn _vga_boot_cursor() -> usize;
 }
+
+// Driver interface
+
+pub const DESC: Desc = Desc {
+	entry: init,
+	char_iface: Some(CharIFace{
+		write_char: write_char,
+	}),
+	console_iface: None,
+};
 
 fn colors_to_fmt(fg: Color, bg: Color) -> u8 {
 	((bg as u8) << 4) | fg as u8
@@ -166,7 +177,7 @@ static INIT: Once<()> = Once::new();
 pub fn init() {
 	INIT.call_once(|| {
 		WRITER.lock().init();
-		logok!("Initiated VGA driver");
+		logok!("Initiated console driver");
 	});
 }
 

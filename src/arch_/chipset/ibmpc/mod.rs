@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : chipset.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,21 +15,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[macro_use]
-pub mod mem;
-pub mod elf;
-pub mod math;
-pub mod irqlock;
-pub mod irqqueue;
-pub mod io;
-pub mod uid;
-pub mod tar;
-pub mod path;
-pub mod contract;
-pub mod bootcfg;
+pub mod intrinsic {
+	pub use super::{pic, pit, kbd, regions};
+}
 
-// Re-exports
-pub use self::irqlock::IrqLock as IrqLock;
-pub use self::irqqueue::IrqQueue as IrqQueue;
-pub use self::tar::Tar as Tar;
-pub use self::path::Path as Path;
+// TODO: Make these private
+pub mod pic;
+pub mod pit;
+pub mod kbd;
+mod spurious;
+pub mod regions;
+
+use util::bootcfg::BootCfg;
+
+pub const fn name() -> &'static str { "IBM PC" }
+
+pub fn init(_bootcfg: &BootCfg) {
+	pic::init();
+	spurious::init();
+	pit::init();
+	kbd::init();
+
+	loginfo!("Initiated IBM-PC chipset architecture");
+}

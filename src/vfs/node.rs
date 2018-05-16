@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use fs::FsRef;
+use fs::FsHandle;
 use util::uid::WeakTracker;
 use spin::Mutex;
 use alloc::{
@@ -25,7 +25,7 @@ use alloc::{
 };
 
 pub struct Node {
-	mount: Option<FsRef>,
+	mount: Option<FsHandle>,
 	children: BTreeMap<String, NodeRef>,
 }
 
@@ -47,7 +47,8 @@ impl<'a> Node {
 	/// Follow a NodeRef through to its mount location
 	pub fn follow(node: NodeRef) -> NodeRef {
 		match node.lock().mount {
-			Some(ref fs) => fs.lock().root(),
+			// TODO: Remove unwraps
+			Some(ref fs) => fs.root().unwrap(),
 			None => node.clone(),
 		}
 	}
@@ -67,7 +68,7 @@ impl<'a> Node {
 	}
 
 	/// Mount a filesystem on this node
-	pub fn mount(&mut self, fs: FsRef) {
+	pub fn mount(&mut self, fs: FsHandle) {
 		self.mount = Some(fs);
 	}
 

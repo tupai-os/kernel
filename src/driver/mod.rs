@@ -15,12 +15,42 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod tags;
-pub mod video;
-pub mod serial;
+pub mod com;
+//pub mod uart;
+pub mod console;
+//pub mod bcm2835;
+
+pub struct CharIFace {
+	write_char: fn(c: char)
+}
+
+pub struct ConsoleIFace {
+	write_char: fn(c: char),
+	clear: fn(),
+	cursor_to: fn(x: u16, y: u16),
+	set_color: fn(fg: u8, bg: u8),
+	reset_color: fn(),
+	enable_cursor: fn(),
+	disable_cursor: fn(),
+}
+
+pub struct Desc {
+	pub entry: fn(),
+	pub char_iface: Option<CharIFace>,
+	pub console_iface: Option<ConsoleIFace>,
+}
+
+use llapi::driver;
+
+impl CharIFace {
+	pub fn write_char(&self, c: char) {
+		(self.write_char)(c)
+	}
+}
 
 pub fn init() {
-	// Initiate each driver subsystem
-	serial::init();
-	video::init();
+	// Initiate each boot driver
+	for driver_desc in driver::ON_BOOT.iter() {
+		(driver_desc.entry)();
+	}
 }

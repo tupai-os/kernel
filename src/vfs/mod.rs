@@ -25,17 +25,17 @@ pub use self::node::NodeRef as NodeRef;
 // * IMPORTANT: Filesystem operations are not IRQ-safe *
 // *****************************************************
 
-use arch::tags::BootData;
+use util::bootcfg::BootCfg;
 use util::Tar;
-use fs::{FS, FsRef, RamFs};
+use fs::{FS, FsHandle, RamFs};
 use spin::Mutex;
 
 lazy_static! {
-	static ref ROOTFS: Mutex<Option<FsRef>> = Mutex::new(None);
+	static ref ROOTFS: Mutex<Option<FsHandle>> = Mutex::new(None);
 }
 
-pub fn init(boot_data: &BootData) {
-	for module in &boot_data.modules {
+pub fn init(bootcfg: &BootCfg) {
+	for module in &bootcfg.modules {
 		loginfo!("Handling module: (args = {:?})", module.args);
 
 		let tar = unsafe { Tar::from(module.start) };
@@ -52,6 +52,11 @@ logok!("VFS initiated");
 fn display_node(node: &NodeRef, name: &str, depth: usize) {
 	logln!("{}", name);
 
+	if depth > 32 {
+		logln!("Maximum recursion depth reached");
+		return;
+	}
+
 	for (name, node) in node.lock().children().iter() {
 		log!("|-");
 		for _i in 0..depth {
@@ -63,8 +68,9 @@ fn display_node(node: &NodeRef, name: &str, depth: usize) {
 }
 
 pub fn display() {
+	// TODO: Remove unwraps
 	match *ROOTFS.lock() {
-		Some(ref rootfs) => display_node(&rootfs.lock().root().clone(), "/", 0),
+		Some(ref rootfs) => display_node(&rootfs.root().unwrap().clone(), "/", 0),
 		None => panic!("No root filesystem"),
 	}
 

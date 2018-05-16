@@ -16,11 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::intrinsic::{
-	family::port::{out8, in8},
-	chipset::pic,
-	isa::{idt, isr}
+use llapi::{
+	family::intrinsic::port::{out8, in8},
+	chipset::intrinsic::pic,
+	cpu::irq::StackFrame,
+	cpu::intrinsic::idt,
 };
+use driver::{Desc, CharIFace};
 use spin::{Mutex, Once};
 
 const IRQ_COM1: usize = 4;
@@ -39,6 +41,18 @@ const PORT_COM1: u16 = 0x03F8;
 const PORT_COM2: u16 = 0x02F8;
 const PORT_COM3: u16 = 0x03E8;
 const PORT_COM4: u16 = 0x02E8;
+
+// Driver interface
+
+// Driver interface
+
+pub const DESC: Desc = Desc {
+	entry: init,
+	char_iface: Some(CharIFace{
+		write_char: write_char,
+	}),
+	console_iface: None,
+};
 
 pub fn init() {
 	INIT.call_once(|| {
@@ -82,7 +96,7 @@ pub fn init() {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn com1_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
+extern fn com1_handler(frame: *mut StackFrame) -> *mut StackFrame {
 	logln!("COM1 INPUT: {}", read() as char);
 	pic::eoi(IRQ_COM1);
 	return frame;
@@ -91,7 +105,7 @@ extern fn com1_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
 #[no_mangle]
 #[allow(dead_code)]
 #[linkage = "external"]
-extern fn com2_handler(frame: *mut isr::StackFrame) -> *mut isr::StackFrame {
+extern fn com2_handler(frame: *mut StackFrame) -> *mut StackFrame {
 	logln!("COM2 INPUT");
 	pic::eoi(IRQ_COM2);
 	return frame;

@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::irq;
+use llapi::cpu::irq;
 use util::math::align_up;
 use alloc::Vec;
 use core::{

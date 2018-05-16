@@ -15,13 +15,27 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(driver_serial_com = "true")]
-pub mod com;
+// Publicly visible API
+pub mod irq;
+pub mod paging;
 
-#[cfg(driver_serial_uart = "true")]
-pub mod uart;
+pub mod intrinsic {
+	pub use super::{gdt, idt};
+}
 
-pub fn init() {
-	#[cfg(driver_serial_com = "true")] { com::init(); }
-	#[cfg(driver_serial_uart = "true")] { uart::init(); }
+// TODO: Make these private
+mod boot;
+pub mod gdt;
+pub mod idt;
+pub mod isr;
+
+global_asm!(include_str!("isr.s"));
+
+use util::bootcfg::BootCfg;
+
+pub const fn name() -> &'static str { "amd64" }
+
+pub fn init(_bootcfg: &BootCfg) {
+	gdt::init();
+	idt::init();
 }

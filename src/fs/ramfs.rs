@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use super::{Fs, FsRef, FS};
+use super::{Fs, FsHandle, FS};
 use util::{Tar, Path};
 use vfs::{Node, NodeRef};
 use spin::Mutex;
@@ -30,27 +30,22 @@ pub struct RamFs {
 }
 
 impl RamFs {
-	pub fn new(name: &str) -> FsRef {
-		return FS.emplace(Mutex::new(Box::new(RamFs {
+	pub fn new(name: &str) -> FsHandle {
+		return FsHandle::from_uid(FS.emplace(Mutex::new(Box::new(RamFs {
 			name: String::from(name),
 			root: Node::new(),
-		}))).1;
+		}))).0);
 	}
 
-	pub fn from_tar(name: &str, tar: Tar) -> FsRef {
-		let fs = FS.emplace(Mutex::new(Box::new(RamFs {
-			name: String::from(name),
-			root: Node::new(),
-		}))).1;
+	pub fn from_tar(name: &str, tar: Tar) -> FsHandle {
+		let fs = RamFs::new(name);
 
 		for file in tar {
-			let fs = fs.lock();
-
 			if file.size() < 100 {
 				logln!("Data in file {} ({} bytes):\n {}", file.name(), file.size(), String::from_utf8_lossy(file.data()));
 			}
 
-			let mut node = fs.root();
+			let mut node = fs.root().unwrap();
 			for part in Path::from(&file.name()) {
 				// This syntax is pretty shitty. We do it to avoid deadlocks.
 				let nnode;

@@ -23,8 +23,49 @@
 #[cfg(arch_llapi = "i386")] use self::i386 as selected;
 #[cfg(arch_llapi = "rpi2")] use self::rpi2 as selected;
 
-pub use self::selected::meta as meta;
-pub use self::selected::cpu as cpu;
-pub use self::selected::irq as irq;
-pub use self::selected::mem as mem;
-pub use self::selected::intrinsic as intrinsic;
+pub use self::selected::*;
+
+// Contract checking
+// TODO: Remove this when/if Rust gains some kind of contract assurance
+
+use util::contract::ensure_same;
+use util::bootcfg::BootCfg;
+
+#[allow(dead_code)]
+fn ensure_contract() {
+	// LLAPI
+	{
+		ensure_same::<fn() -> &'static str>(name);
+	}
+
+	// Family
+	{
+		ensure_same::<fn() -> &'static str>(family::name);
+		ensure_same::<fn(bootcfg: &BootCfg)>(family::init);
+	}
+
+	// CPU
+	{
+		ensure_same::<fn() -> &'static str>(cpu::name);
+		ensure_same::<fn(bootcfg: &BootCfg)>(cpu::init);
+
+		// IRQ
+		{
+			ensure_same::<fn()>(cpu::irq::enable);
+			ensure_same::<fn()>(cpu::irq::disable);
+			ensure_same::<fn()>(cpu::irq::await);
+			ensure_same::<fn() -> bool>(cpu::irq::is_enabled);
+		}
+	}
+
+	// Chipset
+	{
+		ensure_same::<fn() -> &'static str>(chipset::name);
+		ensure_same::<fn(bootcfg: &BootCfg)>(chipset::init);
+	}
+
+	// BootCfg
+	{
+		ensure_same::<fn() -> &'static str>(bootcfg::name);
+	}
+}

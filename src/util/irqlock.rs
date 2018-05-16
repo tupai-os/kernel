@@ -15,33 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::irq;
-
-// // TODO: Seriously, this whole thing is crap. It should work more like Mutex<T>.
-
-// pub struct IrqLock {
-//	 reenable: bool,
-// }
-
-// impl IrqLock {
-//	 pub fn new() -> IrqLock {
-//		 let nlock = IrqLock {
-//			 reenable: irq::enabled(),
-//		 };
-//		 irq::disable();
-//		 return nlock;
-//	 }
-// }
-
-// impl Drop for IrqLock {
-//	 fn drop(&mut self) {
-//		 if self.reenable {
-//			 irq::enable();
-//		 } else {
-//			 irq::disable();
-//		 }
-//	 }
-// }
+use llapi::cpu::irq;
 
 use core::{
 	cell::UnsafeCell,
@@ -69,7 +43,7 @@ unsafe impl<T: ?Sized + Send> Send for IrqLock<T> {}
 impl IrqLock<()> {
 	pub fn temporary() -> IrqLockTmp {
 		let tmp = IrqLockTmp {
-			reenable: irq::enabled(),
+			reenable: irq::is_enabled(),
 		};
 		irq::disable();
 		return tmp;
@@ -87,7 +61,7 @@ impl<T> IrqLock<T> {
 impl<T: ?Sized> IrqLock<T> {
 	pub fn lock(&self) -> IrqLockGuard<T> {
 		let guard = IrqLockGuard {
-			reenable: irq::enabled(),
+			reenable: irq::is_enabled(),
 			data: unsafe { &mut *self.data.get() },
 		};
 		irq::disable();

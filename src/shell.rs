@@ -15,10 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::{
-	cpu,
-	meta,
-};
+use llapi;
 use vdev::tty;
 use mem::pfa;
 use process;
@@ -35,7 +32,7 @@ fn get_chr() -> char {
 			Some(chr) => { return chr; },
 			_ => {},
 		}
-		cpu::halt();
+		llapi::cpu::irq::await();
 	}
 }
 
@@ -52,10 +49,10 @@ fn show_help(_args: &[&str]) {
 fn show_info(_args: &[&str]) {
 	logln!("System Info");
 	logln!("-----------");
-	logln!("  LLAPI: {}", meta::VARIANT);
-	logln!("  Family: {}", meta::FAMILY);
-	logln!("  ISA: {}", meta::ISA);
-	logln!("  Chipset: {}", meta::CHIPSET);
+	logln!("  LLAPI: {}", llapi::name());
+	logln!("  Family: {}", llapi::family::name());
+	logln!("  CPU: {}", llapi::cpu::name());
+	logln!("  Chipset: {}", llapi::chipset::name());
 }
 
 fn show_mmap(_args: &[&str]) {

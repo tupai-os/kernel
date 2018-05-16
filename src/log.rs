@@ -25,14 +25,16 @@ use {
 	},
 };
 
-#[cfg(log_driver = "serial_com")] use driver::serial::com as logger;
-#[cfg(log_driver = "video_vga")] use driver::video::vga as logger;
+use llapi::driver::LOG;
 
 struct Writer {}
 
 impl Writer {
 	fn write(&self, c: char) {
-		logger::write_char(c);
+		match LOG.char_iface {
+			Some(ref cif) => cif.write_char(c),
+			None => panic!("Invalid logging interface"),
+		}
 	}
 }
 
@@ -104,7 +106,6 @@ static INIT: Once<()> = Once::new();
 
 pub fn init() {
 	INIT.call_once(|| {
-		logger::init();
 		logok!("Logging initiated");
 	});
 }

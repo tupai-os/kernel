@@ -1,4 +1,3 @@
-
 // file : multiboot.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
@@ -16,9 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use spin::Once;
-
-static INIT: Once<()> = Once::new();
+use util::bootcfg::{BootCfg, Module, Args};
+use util::math::align_up;
+use cstr_core::CStr;
+use core::mem;
 
 struct TagIterator {
 	ptr: usize,
@@ -175,15 +175,11 @@ enum Tag {
 	Efi64TableTag(&'static Efi64TableTag),
 }
 
-use util::math;
-
 impl TagIterator {
 	fn from(ptr: *const ()) -> TagIterator {
-		use core::mem;
-		let fixed_tag = unsafe { &*(ptr as *const FixedTag) };
-		use arch::base;
+		let _fixed_tag = unsafe { &*(ptr as *const FixedTag) };
 		TagIterator {
-			ptr: math::align_up(ptr as usize + mem::size_of::<FixedTag>(), 3),
+			ptr: align_up(ptr as usize + mem::size_of::<FixedTag>(), 3),
 		}
 	}
 }
@@ -193,8 +189,8 @@ impl Iterator for TagIterator {
 
 	fn next(&mut self) -> Option<Tag> {
 		let basic_tag = unsafe { &*(self.ptr as *const BasicTag) };
-		self.ptr = math::align_up(self.ptr + basic_tag.size as usize, 3); // Increment pointer
-		match basic_tag.kind {
+
+		let tag = match basic_tag.kind {
 			0  => None,
 			1  => Some(Tag::BootCommandTag(unsafe { &*(self.ptr as *const BootCommandTag) })),
 			2  => Some(Tag::BootloaderNameTag(unsafe { &*(self.ptr as *const BootloaderNameTag) })),
@@ -209,55 +205,56 @@ impl Iterator for TagIterator {
 			11 => Some(Tag::Efi32TableTag(unsafe { &*(self.ptr as *const Efi32TableTag) })),
 			12 => Some(Tag::Efi64TableTag(unsafe { &*(self.ptr as *const Efi64TableTag) })),
 			_  => Some(Tag::BasicTag(unsafe { &*(self.ptr as *const BasicTag) })),
-		}
+		};
+
+		self.ptr = align_up(self.ptr + basic_tag.size as usize, 3); // Increment pointer
+		return tag;
 	}
 }
 
 use core::fmt;
 impl fmt::Display for Tag {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		use cstr_core::CStr;
 		match self {
-			&Tag::BasicTag(t) => write!(f, "Basic tag"),
-			&Tag::MemoryTag(t) => write!(f, "Memory tag (lower = {}, upper = {})", t.lower, t.upper),
-			&Tag::BootCommandTag(t) => write!(f,
+			&Tag::BasicTag(_t) => write!(f, "Basic tag"),
+			&Tag::BootCommandTag(t) => unsafe { write!(f,
 				"Boot command tag (command = \"{}\")",
-				unsafe { CStr::from_ptr(&t.command) }.to_str().unwrap(),
-			),
-			&Tag::BootloaderNameTag(t) => write!(f,
+				CStr::from_ptr(&t.command).to_str().unwrap_or(""),
+			) },
+			&Tag::BootloaderNameTag(t) => unsafe { write!(f,
 				"Bootloader name tag (name = \"{}\")",
-				unsafe { CStr::from_ptr(&t.name) }.to_str().unwrap(),
-			),
-			&Tag::ModuleTag(t) => write!(f,
+				CStr::from_ptr(&t.name).to_str().unwrap_or("<none>"),
+			) },
+			&Tag::ModuleTag(t) => unsafe { write!(f,
 				"Module tag (mod_start = {}, mod_end = {}, command = \"{}\")",
 				t.mod_start,
 				t.mod_end,
-				unsafe { CStr::from_ptr(&t.command) }.to_str().unwrap(),
-			),
-			&Tag::MemoryMapTag(t) => write!(f,
+				CStr::from_ptr(&t.command).to_str().unwrap(),
+			) },
+			&Tag::MemoryMapTag(t) => unsafe { write!(f,
 				"Memory map tag (entry_size = {}, entry_version = {})",
 				t.entry_size,
 				t.entry_version,
-			),
-			&Tag::BiosDeviceTag(t) => write!(f,
+			) },
+			&Tag::BiosDeviceTag(t) => unsafe { write!(f,
 				"BIOS device tag (biosdev = {}, partition = {}, sub_partition = {})",
 				t.biosdev,
 				t.partition,
 				t.sub_partition,
-			),
-			&Tag::MemoryTag(t) => write!(f,
+			) },
+			&Tag::MemoryTag(t) => unsafe { write!(f,
 				"Memory tag (lower = {}, upper = {})",
 				t.lower,
 				t.upper,
-			),
-			&Tag::VbeTag(t) => write!(f,
+			) },
+			&Tag::VbeTag(t) => unsafe { write!(f,
 				"VBE tag (mode = {}, interface_seg = {}, interface_off = {}, interface_len = {})",
 				t.mode,
 				t.interface_seg,
 				t.interface_off,
 				t.interface_len,
-			),
-			&Tag::FramebufferTag(t) => write!(f,
+			) },
+			&Tag::FramebufferTag(t) => unsafe { write!(f,
 				"Framebuffer tag (addr = 0x{:X}, pitch = {}, width = {}, height = {}, bpp = {}, type = {})",
 				t.addr,
 				t.pitch,
@@ -265,14 +262,14 @@ impl fmt::Display for Tag {
 				t.height,
 				t.bpp,
 				t._type,
-			),
-			&Tag::ElfSymbolsTag(t) => write!(f,
+			) },
+			&Tag::ElfSymbolsTag(t) => unsafe { write!(f,
 				"ELF symbols tag (num = {}, entsize = {}, shndx = {})",
 				t.num,
 				t.entsize,
 				t.shndx,
-			),
-			&Tag::ApmTableTag(t) => write!(f,
+			) },
+			&Tag::ApmTableTag(t) => unsafe { write!(f,
 				"APM table tag (version = {}, cseg = {}, offset = {}, cseg_16 = {}, dseg = {}, flags = {}, cseg_len = {}, cseg_16_len = {}, dseg_len = {})",
 				t.version,
 				t.cseg,
@@ -283,32 +280,40 @@ impl fmt::Display for Tag {
 				t.cseg_len,
 				t.cseg_16_len,
 				t.dseg_len,
-			),
+			) },
 			_ => write!(f, "Unknown tag"),
 		}
 	}
 }
 
-pub fn init(tags: *const ()) {
-	INIT.call_once(|| {
-		loginfo!("Parsing Multiboot tags at 0x{:X}...", tags as usize);
+pub const fn name() -> &'static str { "Multiboot" }
 
-		let mut tag_count = 0;
-		for tag in TagIterator::from(tags) {
-			//logln!("|--> {}", tag);
-			match tag {
-				Tag::MemoryTag(t) => {
-					use mem::pfa;
-					pfa::set_range_kb(1024, t.upper as usize, pfa::ENTRY_FREE_RAM) // 1M to XK
-						.expect_err("Could not reserve free RAM");
-					logok!("Reserved memory")
-				}
-				_ => {}
-			}
+pub fn parse(tags: *const ()) -> BootCfg {
+	loginfo!("Parsing Multiboot tags at 0x{:X}...", tags as usize);
 
-			tag_count += 1;
+	let mut data = BootCfg::empty();
+	for tag in TagIterator::from(tags) {
+		logln!("|--> {}", tag);
+		match tag {
+			Tag::MemoryTag(t) => data.mem_ram = 1024 + t.upper as usize,
+			Tag::BootCommandTag(t) => {
+				let cmd_str = unsafe { CStr::from_ptr(&t.command).to_str().unwrap_or("") };
+				data.args.extend(cmd_str.split_terminator(' ').collect::<Args>());
+			},
+			Tag::ModuleTag(t) => {
+				let cmd_str = unsafe { CStr::from_ptr(&t.command).to_str().unwrap_or("") };
+				data.modules.try_push(Module::new(
+					t.mod_start as usize,
+					(t.mod_end - t.mod_start) as usize,
+					cmd_str.split_terminator(' ').collect::<Args>(),
+				)).unwrap_or_else(|e|{
+					panic!("Too many boot modules! ({:?})", e);
+				});
+			},
+			_ => {}
 		}
+	}
 
-		logok!("Parsed {} Multiboot tags", tag_count);
-	});
+	logok!("Parsed Multiboot tags");
+	return data;
 }

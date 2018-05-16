@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : multiboot.s
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,30 +15,41 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-mod handle;
-mod ramfs;
+.extern _start.boot
 
-// Reexports
-pub use self::handle::FsHandle as FsHandle;
-pub use self::ramfs::RamFs as RamFs;
+.set MB_MAGIC, 0xE85250D6
+.set MB_ARCH,  0
+.set MB_SIZE,  (_mb_end - _mb_start)
+.set MB_CHECKSUM, (0 - (MB_MAGIC + MB_ARCH + MB_SIZE))
 
-use vfs::NodeRef;
-use util::uid::Tracker;
-use spin::Mutex;
-use alloc::{
-	String,
-	boxed::Box,
-};
+.section .rodata.multiboot
+	.align 4
+	_mb_start:
+			.align 4
+		.long MB_MAGIC
+		.long MB_ARCH
+		.long MB_SIZE
+		.long MB_CHECKSUM
 
-pub trait Fs: Send {
-	fn name(&self) -> String;
-	fn root(&self) -> NodeRef;
-}
+		// Entry address tag
+		.align 8
+		.word 3            // Type
+		.word 0            // Flags
+		.long 12           // Size
+		.long _start.boot // Entry address
 
-lazy_static! {
-	pub static ref FS: Tracker<Mutex<Box<Fs>>> = Tracker::new();
-}
+		// Framebuffer tag
+		//.align 8
+		//.word 5   // Type
+		//.word 0   // Flags
+		//.long 20  // Size
+		//.long 640 // Width
+		//.long 480 // Height
+		//.long 32  // BPP
 
-pub fn init() {
-	logok!("Initiated filesystems");
-}
+		// End tag
+		.align 8
+		.word 0 // Type
+		.word 0 // Flags
+		.long 8 // Size
+	_mb_end:

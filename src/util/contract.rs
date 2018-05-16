@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : contract.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,21 +15,4 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[macro_use]
-pub mod mem;
-pub mod elf;
-pub mod math;
-pub mod irqlock;
-pub mod irqqueue;
-pub mod io;
-pub mod uid;
-pub mod tar;
-pub mod path;
-pub mod contract;
-pub mod bootcfg;
-
-// Re-exports
-pub use self::irqlock::IrqLock as IrqLock;
-pub use self::irqqueue::IrqQueue as IrqQueue;
-pub use self::tar::Tar as Tar;
-pub use self::path::Path as Path;
+pub fn ensure_same<T>(_r: T) {}

@@ -15,34 +15,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod meta {
-	pub const VARIANT: &str = "x64";
-	pub const FAMILY: &str = "x86";
-	pub const ISA: &str = "amd64";
-	pub const CHIPSET: &str = "ibmpc";
+pub use arch::cpu::amd64         as cpu;
+pub use arch::family::x86        as family;
+pub use arch::chipset::ibmpc     as chipset;
+pub use arch::bootcfg::multiboot as bootcfg;
+
+pub mod driver {
+	use driver;
+
+	pub const ON_BOOT: [&'static driver::Desc; 2] = [
+		&driver::com::DESC,
+		&driver::console::DESC,
+	];
+
+	pub const LOG: &'static driver::Desc = &driver::console::DESC;
 }
 
-pub mod cpu {
-	pub use arch::isa::amd64::halt;
-}
-
-pub mod irq {
-	pub use arch::isa::amd64::irq_enable as enable;
-	pub use arch::isa::amd64::irq_disable as disable;
-	pub use arch::isa::amd64::irq_enabled as enabled;
-
-	pub use arch::isa::amd64::isr::StackFrame;
-}
-
-pub mod mem {
-	pub use arch::isa::amd64::mem::PAGE_SIZE_KB_LOG2;
-	pub use arch::isa::amd64::mem::PAGE_SIZE_LOG2;
-	pub use arch::isa::amd64::mem::VMEMORY_OFFSET;
-	pub use arch::isa::amd64::mem::PageMap;
-}
-
-pub mod intrinsic {
-	pub use arch::isa::amd64 as isa;
-	pub use arch::family::x86 as family;
-	pub use arch::chipset::ibmpc as chipset;
-}
+pub const fn name() -> &'static str { "x64" }

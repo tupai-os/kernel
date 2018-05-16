@@ -19,27 +19,27 @@ pub mod wma;
 pub mod pfa;
 pub mod heap;
 
-use llapi::mem::{PAGE_SIZE_KB_LOG2, PAGE_SIZE_LOG2};
-use arch::tags::BootData;
+use llapi::cpu::paging::{PAGE_KB_LOG2, PAGE_B_LOG2};
+use util::bootcfg::BootCfg;
 use util::{
 	elf::kernel_bounds,
 	math::{kb_to_page, addr_to_page, align_up},
 };
 use process::ProcessHandle;
 
-pub fn init(boot_data: &BootData) {
+pub fn init(bootcfg: &BootCfg) {
 	wma::init();
 	pfa::init();
 	heap::init();
 
-	pfa::set_range(0, kb_to_page(align_up(boot_data.mem_ram as usize, PAGE_SIZE_KB_LOG2)), pfa::ENTRY_FREE_RAM).unwrap_or_else(|e|{
-		panic!("Could not reserve available RAM from {:X}K to {:X}K ({:?})", 0, boot_data.mem_ram, e);
+	pfa::set_range(0, kb_to_page(align_up(bootcfg.mem_ram as usize, PAGE_KB_LOG2)), pfa::ENTRY_FREE_RAM).unwrap_or_else(|e|{
+		panic!("Could not reserve available RAM from {:X}K to {:X}K ({:?})", 0, bootcfg.mem_ram, e);
 	});
-	logok!("Reserved available RAM from {:X}K to {:X}K", 0, boot_data.mem_ram);
+	logok!("Reserved available RAM from {:X}K to {:X}K", 0, bootcfg.mem_ram);
 
 	pfa::set_range(
 		0,
-		addr_to_page(align_up(kernel_bounds().end, PAGE_SIZE_LOG2)),
+		addr_to_page(align_up(kernel_bounds().end, PAGE_B_LOG2)),
 		pfa::PageEntry::new(
 			ProcessHandle::kernel(),
 			pfa::Flags::RAM | pfa::Flags::USED | pfa::Flags::STATIC // Used, immovable RAM
@@ -47,7 +47,7 @@ pub fn init(boot_data: &BootData) {
 	).unwrap_or_else(|e|{
 		panic!("Could not reserve kernel memory from {:X}K to {:X}K ({:?})",
 			0,
-			addr_to_page(align_up(kernel_bounds().end, PAGE_SIZE_LOG2)),
+			addr_to_page(align_up(kernel_bounds().end, PAGE_B_LOG2)),
 			e
 		);
 	});

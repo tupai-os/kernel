@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::mem::PAGE_SIZE_KB_LOG2;
+use llapi::cpu::paging::PAGE_KB_LOG2;
 
 pub fn align_down(x: usize, log2: usize) -> usize {
 	x & (!0 << log2)
@@ -26,9 +26,9 @@ pub fn align_up(x: usize, log2: usize) -> usize {
 }
 
 pub fn addr_to_page(addr: usize) -> usize {
-	addr >> (PAGE_SIZE_KB_LOG2 + 10)
+	addr >> (PAGE_KB_LOG2 + 10)
 }
 
 pub fn kb_to_page(kb: usize) -> usize {
-	kb >> PAGE_SIZE_KB_LOG2
+	kb >> PAGE_KB_LOG2
 }

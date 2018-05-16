@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : bootcfg.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,21 +15,36 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[macro_use]
-pub mod mem;
-pub mod elf;
-pub mod math;
-pub mod irqlock;
-pub mod irqqueue;
-pub mod io;
-pub mod uid;
-pub mod tar;
-pub mod path;
-pub mod contract;
-pub mod bootcfg;
+use arrayvec::ArrayVec;
+use core::default::Default;
 
-// Re-exports
-pub use self::irqlock::IrqLock as IrqLock;
-pub use self::irqqueue::IrqQueue as IrqQueue;
-pub use self::tar::Tar as Tar;
-pub use self::path::Path as Path;
+pub type Args = ArrayVec<[&'static str; 64]>; // Max 64 args
+
+pub struct Module {
+	pub start: usize,
+	pub end: usize,
+	pub args: Args,
+}
+
+#[derive(Default)]
+pub struct BootCfg {
+	pub args: Args,
+	pub mem_ram: usize,
+	pub modules: ArrayVec<[Module; 4]>, // Max 4 modules
+}
+
+impl Module {
+	pub fn new(start: usize, end: usize, args: Args) -> Module {
+		Module {
+			start: start,
+			end: end,
+			args: args,
+		}
+	}
+}
+
+impl BootCfg {
+	pub fn empty() -> BootCfg {
+		return Default::default();
+	}
+}

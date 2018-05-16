@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use llapi::mem::PAGE_SIZE_KB_LOG2;
+use llapi::cpu::paging::{PAGE_B_LOG2, PAGE_KB_LOG2};
 use process::ProcessHandle;
 
 bitflags! {
@@ -32,7 +32,7 @@ bitflags! {
 }
 
 const PROC_MAX: usize = (1 << 16);
-const PAGE_NUM: usize = (4 * 1024 * 1024) >> PAGE_SIZE_KB_LOG2; // 4G of pages
+const PAGE_NUM: usize = (4 * 1024 * 1024) >> PAGE_KB_LOG2; // 4G of pages
 
 pub const ENTRY_INVALID: PageEntry = PageEntry::new(ProcessHandle::invalid(), Flags::NONE);
 pub const ENTRY_FREE_RAM: PageEntry = PageEntry::new(ProcessHandle::free(), Flags::RAM);
@@ -91,14 +91,14 @@ impl PageMap {
 				let proc_name = centry.proc.name().unwrap_or("<none>".to_string());
 
 				logln!("[0x{:0>18X}] => {:<8} owner = {} flags = 0b{:0>8b}",
-					i << (PAGE_SIZE_KB_LOG2 + 10),
+					i << PAGE_B_LOG2,
 					proc_name,
 					centry.proc.uid(),
 					centry.flags
 				);
 			}
 		}
-		logln!("[0x{:0>18X}] <unmapped>", self.entries.len() << (PAGE_SIZE_KB_LOG2 + 10));
+		logln!("[0x{:0>18X}] <unmapped>", self.entries.len() << PAGE_B_LOG2);
 	}
 }
 

@@ -1,4 +1,4 @@
-// file : mod.rs
+// file : irq.rs
 //
 // Copyright (C) 2018  Joshua Barretto <joshua.s.barretto@gmail.com>
 //
@@ -15,21 +15,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[macro_use]
-pub mod mem;
-pub mod elf;
-pub mod math;
-pub mod irqlock;
-pub mod irqqueue;
-pub mod io;
-pub mod uid;
-pub mod tar;
-pub mod path;
-pub mod contract;
-pub mod bootcfg;
+use super::isr;
 
-// Re-exports
-pub use self::irqlock::IrqLock as IrqLock;
-pub use self::irqqueue::IrqQueue as IrqQueue;
-pub use self::tar::Tar as Tar;
-pub use self::path::Path as Path;
+pub use self::isr::StackFrame;
+
+pub fn enable() {
+	unsafe { asm!("sti"); }
+}
+
+pub fn disable() {
+	unsafe { asm!("cli"); }
+}
+
+pub fn is_enabled() -> bool {
+	let val: u64;
+	unsafe {
+		asm!(
+			"pushfq
+			pop %rax"
+			:"={rax}"(val)
+			::: "volatile"
+		);
+	}
+	return (val & (1 << 9)) != 0;
+}
+
+pub fn await() {
+	unsafe { asm!("hlt"); }
+}

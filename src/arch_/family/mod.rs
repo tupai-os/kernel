@@ -15,8 +15,4 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#[cfg(feature = "driver_tags_multiboot")]
-pub mod multiboot;
-
-#[cfg(feature = "driver_tags_atags")]
-pub mod atags;
+pub mod x86;

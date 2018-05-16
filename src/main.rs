@@ -48,7 +48,7 @@ extern crate alloc;
 mod shell;
 
 mod llapi;
-mod arch;
+#[path = "arch_/mod.rs"] mod arch;
 mod mem;
 mod util;
 mod thread;
@@ -65,14 +65,23 @@ pub static HEAP: Heap = Heap::empty();
 #[allow(dead_code)]
 #[linkage = "external"]
 #[no_mangle]
-pub extern fn kmain(boot_data: &arch::tags::BootData) {
-	loginfo!("Kernel booted with arguments: {:?}", boot_data.args);
+pub extern fn kentry(bootcfg: *const ()) {
+	log::init();
+
+	let bootcfg = llapi::bootcfg::parse(bootcfg);
+
+	llapi::cpu::init(&bootcfg);
+	llapi::family::init(&bootcfg);
+	llapi::chipset::init(&bootcfg);
+
+
+	loginfo!("Kernel booted with arguments: {:?}", bootcfg.args);
 
 	log::init();
-	mem::init(boot_data);
+	mem::init(&bootcfg);
 	process::init();
 	fs::init();
-	vfs::init(boot_data);
+	vfs::init(&bootcfg);
 	driver::init();
 	vdev::init();
 
@@ -93,8 +102,8 @@ pub extern fn kmain(boot_data: &arch::tags::BootData) {
 
 	// Wait for something to happen
 	loop {
-		llapi::irq::enable();
-		llapi::cpu::halt();
+		llapi::cpu::irq::enable();
+		llapi::cpu::irq::await();
 	}
 }
 
@@ -112,8 +121,8 @@ pub extern fn panic_fmt(msg: core::fmt::Arguments, file: &'static str, line: u32
 	unsafe { log::force_unlock(); }
 	logln!("\nPANIC: {} in {} on line {} at column {}", msg, file, line, column);
 	loop {
-		llapi::irq::disable();
-		llapi::cpu::halt();
+		llapi::cpu::irq::disable();
+		llapi::cpu::irq::await();
 	}
 }
 
