@@ -19,7 +19,7 @@ use llapi;
 use vdev::tty;
 use mem::pfa;
 use process;
-use vfs;
+use fs;
 use alloc::{
 	string::ToString,
 	String,
@@ -81,7 +81,7 @@ fn show_proc(_args: &[&str]) {
 fn show_tree(_args: &[&str]) {
 	logln!("Filesystem Tree");
 	logln!("---------------");
-	vfs::display();
+	fs::display();
 }
 
 pub fn main() {

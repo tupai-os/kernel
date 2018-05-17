@@ -55,9 +55,7 @@ mod util;
 mod thread;
 mod process;
 mod driver;
-mod vfs;
 mod fs;
-mod fs_;
 mod vdev;
 
 use mem::heap::Heap;
@@ -81,12 +79,9 @@ pub extern fn kentry(bootcfg: *const ()) {
 	log::init();
 	mem::init(&bootcfg);
 	process::init();
-	fs::init();
-	vfs::init(&bootcfg);
+	fs::init(&bootcfg);
 	driver::init();
 	vdev::init();
-
-	fs_::init(&bootcfg);
 
 	// Create init process
 	// TODO: Make this spawn a process from initramfs

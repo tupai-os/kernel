@@ -15,64 +15,158 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use super::{Fs, FsHandle, FS};
-use util::{Tar, Path};
-use vfs::{Node, NodeRef};
-use spin::Mutex;
+use super::{InodeId, Fs, FsErr};
 use alloc::{
 	String,
-	boxed::Box
+	BTreeMap,
+	Vec,
+	arc::Arc,
+	boxed::Box,
 };
+use bimap::BiMap;
+use spin::Mutex;
+
+struct Inode {
+	mount: Option<Arc<Box<Fs>>>,
+	children: BiMap<String, InodeId>,
+	data: Vec<u8>,
+}
+
+struct RamFsData {
+	name: String,
+	inode_counter: InodeId,
+	inodes: BTreeMap<InodeId, Inode>,
+	root: InodeId,
+}
+
+impl RamFsData {
+	fn create_inode(&mut self) -> InodeId {
+		self.inode_counter += 1;
+		let new_id = self.inode_counter;
+		self.inodes.insert(new_id, Inode {
+			mount: None,
+			children: BiMap::new(),
+			data: Vec::new(),
+		});
+		return new_id;
+	}
+}
 
 pub struct RamFs {
-	name: String,
-	root: NodeRef,
+	data: Mutex<RamFsData>,
 }
 
 impl RamFs {
-	pub fn new(name: &str) -> FsHandle {
-		return FsHandle::from_uid(FS.emplace(Mutex::new(Box::new(RamFs {
-			name: String::from(name),
-			root: Node::new(),
-		}))).0);
-	}
+	pub fn new(name: &str) -> RamFs {
+		let ramfs = RamFs {
+			data: Mutex::new(RamFsData {
+				name: String::from(name),
+				inode_counter: 0,
+				inodes: BTreeMap::new(),
+				root: 0,
+			}),
+		};
 
-	pub fn from_tar(name: &str, tar: Tar) -> FsHandle {
-		let fs = RamFs::new(name);
-
-		for file in tar {
-			if file.size() < 100 {
-				logln!("Data in file {} ({} bytes):\n {}", file.name(), file.size(), String::from_utf8_lossy(file.data()));
-			}
-
-			let mut node = fs.root().unwrap();
-			for part in Path::from(&file.name()) {
-				// This syntax is pretty shitty. We do it to avoid deadlocks.
-				let nnode;
-				let val = match node.lock().get(&part) {
-					Some(n) => Some(n.clone()),
-					None => None,
-				};
-				if let Some(n) = val {
-					nnode = n.clone();
-				} else {
-					nnode = node.lock().add(&part, &Node::new());
-				}
-
-				node = nnode;
-			}
-		}
-
-		return fs;
+		let root_id = ramfs.data.lock().create_inode();
+		ramfs.data.lock().root = root_id;
+		return ramfs;
 	}
 }
 
 impl Fs for RamFs {
 	fn name(&self) -> String {
-		self.name.clone()
+		self.data.lock().name.clone()
 	}
 
-	fn root(&self) -> NodeRef {
-		self.root.clone()
+	fn root_id(&self) -> InodeId {
+		self.data.lock().root
+	}
+
+	fn children(&self, inode: InodeId) -> Result<Vec<(String, InodeId)>, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
+			Some(i) => Ok(
+				i.children
+				.iter()
+				.map(|d| (d.0.clone(), *d.1))
+				.collect()),
+			None => Err(FsErr::NoSuchFile),
+		}
+	}
+
+	fn child_ids(&self, inode: InodeId) -> Result<Vec<InodeId>, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
+			Some(i) => Ok(
+				i.children
+				.right_values()
+				.map(|i| *i)
+				.collect()),
+			None => Err(FsErr::NoSuchFile),
+		}
+	}
+
+	fn child_names(&self, inode: InodeId) -> Result<Vec<String>, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
+			Some(i) => Ok(
+				i.children
+				.left_values()
+				.map(|s| s.clone())
+				.collect()),
+			None => Err(FsErr::NoSuchFile),
+		}
+	}
+
+	fn get_child_id(&self, inode: InodeId, name: &str) -> Result<InodeId, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
+			Some(i) => match i.children.get_by_left(&String::from(name)) {
+				Some(i) => Ok(*i),
+				None => Err(FsErr::NoSuchChild),
+			},
+			None => Err(FsErr::NoSuchFile),
+		}
+	}
+
+	fn get_child_name(&self, inode: InodeId, id: InodeId) -> Result<String, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
+			Some(i) => match i.children.get_by_right(&id) {
+				Some(n) => Ok(n.clone()),
+				None => Err(FsErr::NoSuchChild),
+			},
+			None => Err(FsErr::NoSuchFile),
+		}
+	}
+
+	fn add_child(&self, inode: InodeId, name: &str) -> Result<InodeId, FsErr> {
+		// TODO: Clean this up. We check twice to make the borrow checker happy
+		let mut data = self.data.lock();
+		if !data.inodes.contains_key(&inode) {
+			return Err(FsErr::NoSuchFile);
+		}
+
+		let new_id = data.create_inode();
+		if let Some(i) = data.inodes.get_mut(&inode) {
+			i.children.insert(String::from(name), new_id);
+		}
+
+		Ok(new_id)
+	}
+
+	fn get_mount(&self, inode: InodeId) -> Result<Arc<Box<Fs>>, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
+			Some(i) => match i.mount {
+				Some(ref m) => Ok(m.clone()),
+				None => Err(FsErr::NoSuchMount),
+			},
+			None => Err(FsErr::NoSuchFile),
+		}
+	}
+
+	fn mount(&self, inode: InodeId, fs: &Arc<Box<Fs>>) -> Result<(), FsErr> {
+		match self.data.lock().inodes.get_mut(&inode) {
+			Some(ref mut i) => match i.mount.is_some() {
+				true => Err(FsErr::MountPointInUse),
+				false => { i.mount = Some(fs.clone()); Ok(()) },
+			},
+			None => Err(FsErr::NoSuchFile),
+		}
 	}
 }
