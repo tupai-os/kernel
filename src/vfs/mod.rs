@@ -46,7 +46,7 @@ pub fn init(bootcfg: &BootCfg) {
 		}
 	}
 
-logok!("VFS initiated");
+	logok!("VFS initiated");
 }
 
 fn display_node(node: &NodeRef, name: &str, depth: usize) {

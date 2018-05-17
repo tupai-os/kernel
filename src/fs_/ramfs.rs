@@ -20,16 +20,20 @@ use alloc::{
 	String,
 	BTreeMap,
 	Vec,
+	arc::Arc,
+	boxed::Box,
 };
 use bimap::BiMap;
 use spin::Mutex;
 
 struct Inode {
+	mount: Option<Arc<Box<Fs>>>,
 	children: BiMap<String, InodeId>,
 	data: Vec<u8>,
 }
 
 struct RamFsData {
+	name: String,
 	inode_counter: InodeId,
 	inodes: BTreeMap<InodeId, Inode>,
 	root: InodeId,
@@ -40,6 +44,7 @@ impl RamFsData {
 		self.inode_counter += 1;
 		let new_id = self.inode_counter;
 		self.inodes.insert(new_id, Inode {
+			mount: None,
 			children: BiMap::new(),
 			data: Vec::new(),
 		});
@@ -52,9 +57,10 @@ pub struct RamFs {
 }
 
 impl RamFs {
-	pub fn new() -> RamFs {
+	pub fn new(name: &str) -> RamFs {
 		let ramfs = RamFs {
 			data: Mutex::new(RamFsData {
+				name: String::from(name),
 				inode_counter: 0,
 				inodes: BTreeMap::new(),
 				root: 0,
@@ -68,12 +74,16 @@ impl RamFs {
 }
 
 impl Fs for RamFs {
+	fn name(&self) -> String {
+		self.data.lock().name.clone()
+	}
+
 	fn root_id(&self) -> InodeId {
 		self.data.lock().root
 	}
 
-	fn children(&self, parent: InodeId) -> Result<Vec<(String, InodeId)>, FsErr> {
-		match self.data.lock().inodes.get(&parent) {
+	fn children(&self, inode: InodeId) -> Result<Vec<(String, InodeId)>, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
 			Some(i) => Ok(
 				i.children
 				.iter()
@@ -83,8 +93,8 @@ impl Fs for RamFs {
 		}
 	}
 
-	fn child_ids(&self, parent: InodeId) -> Result<Vec<InodeId>, FsErr> {
-		match self.data.lock().inodes.get(&parent) {
+	fn child_ids(&self, inode: InodeId) -> Result<Vec<InodeId>, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
 			Some(i) => Ok(
 				i.children
 				.right_values()
@@ -94,8 +104,8 @@ impl Fs for RamFs {
 		}
 	}
 
-	fn child_names(&self, parent: InodeId) -> Result<Vec<String>, FsErr> {
-		match self.data.lock().inodes.get(&parent) {
+	fn child_names(&self, inode: InodeId) -> Result<Vec<String>, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
 			Some(i) => Ok(
 				i.children
 				.left_values()
@@ -105,8 +115,8 @@ impl Fs for RamFs {
 		}
 	}
 
-	fn get_child_id(&self, parent: InodeId, name: &str) -> Result<InodeId, FsErr> {
-		match self.data.lock().inodes.get(&parent) {
+	fn get_child_id(&self, inode: InodeId, name: &str) -> Result<InodeId, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
 			Some(i) => match i.children.get_by_left(&String::from(name)) {
 				Some(i) => Ok(*i),
 				None => Err(FsErr::NoSuchChild),
@@ -115,8 +125,8 @@ impl Fs for RamFs {
 		}
 	}
 
-	fn get_child_name(&self, parent: InodeId, id: InodeId) -> Result<String, FsErr> {
-		match self.data.lock().inodes.get(&parent) {
+	fn get_child_name(&self, inode: InodeId, id: InodeId) -> Result<String, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
 			Some(i) => match i.children.get_by_right(&id) {
 				Some(n) => Ok(n.clone()),
 				None => Err(FsErr::NoSuchChild),
@@ -125,18 +135,38 @@ impl Fs for RamFs {
 		}
 	}
 
-	fn add_child(&self, parent: InodeId, name: &str) -> Result<InodeId, FsErr> {
+	fn add_child(&self, inode: InodeId, name: &str) -> Result<InodeId, FsErr> {
 		// TODO: Clean this up. We check twice to make the borrow checker happy
 		let mut data = self.data.lock();
-		if !data.inodes.contains_key(&parent) {
+		if !data.inodes.contains_key(&inode) {
 			return Err(FsErr::NoSuchFile);
 		}
 
 		let new_id = data.create_inode();
-		if let Some(i) = data.inodes.get_mut(&parent) {
+		if let Some(i) = data.inodes.get_mut(&inode) {
 			i.children.insert(String::from(name), new_id);
 		}
 
 		Ok(new_id)
+	}
+
+	fn get_mount(&self, inode: InodeId) -> Result<Arc<Box<Fs>>, FsErr> {
+		match self.data.lock().inodes.get(&inode) {
+			Some(i) => match i.mount {
+				Some(ref m) => Ok(m.clone()),
+				None => Err(FsErr::NoSuchMount),
+			},
+			None => Err(FsErr::NoSuchFile),
+		}
+	}
+
+	fn mount(&self, inode: InodeId, fs: &Arc<Box<Fs>>) -> Result<(), FsErr> {
+		match self.data.lock().inodes.get_mut(&inode) {
+			Some(ref mut i) => match i.mount.is_some() {
+				true => Err(FsErr::MountPointInUse),
+				false => { i.mount = Some(fs.clone()); Ok(()) },
+			},
+			None => Err(FsErr::NoSuchFile),
+		}
 	}
 }

@@ -20,6 +20,11 @@ mod ramfs;
 // Reexports
 pub use self::ramfs::RamFs as RamFs;
 
+use util::{
+	bootcfg::BootCfg,
+	Tar,
+	Path,
+};
 use alloc::{
 	String,
 	Vec,
@@ -35,21 +40,45 @@ pub enum FsErr {
 	NoSuchFs,
 	NoSuchFile,
 	NoSuchChild,
+	NoSuchMount,
+	MountPointInUse,
 }
 
 pub trait Fs: Send + Sync {
+	fn name(&self) -> String;
 	fn root_id(&self) -> InodeId;
-	fn children(&self, parent: InodeId) -> Result<Vec<(String, InodeId)>, FsErr>;
-	fn child_ids(&self, parent: InodeId) -> Result<Vec<InodeId>, FsErr>;
-	fn child_names(&self, parent: InodeId) -> Result<Vec<String>, FsErr>;
-	fn get_child_id(&self, parent: InodeId, name: &str) -> Result<InodeId, FsErr>;
-	fn get_child_name(&self, parent: InodeId, id: InodeId) -> Result<String, FsErr>;
-	fn add_child(&self, parent: InodeId, name: &str) -> Result<InodeId, FsErr>;
-	fn mount(&self, parent: InodeId, name: Arc<Box>) -> Result<InodeId, FsErr>;
+
+	fn children(&self, inode: InodeId) -> Result<Vec<(String, InodeId)>, FsErr>;
+	fn child_ids(&self, inode: InodeId) -> Result<Vec<InodeId>, FsErr>;
+	fn child_names(&self, inode: InodeId) -> Result<Vec<String>, FsErr>;
+
+	fn get_child_id(&self, inode: InodeId, name: &str) -> Result<InodeId, FsErr>;
+	fn get_child_name(&self, inode: InodeId, id: InodeId) -> Result<String, FsErr>;
+	fn add_child(&self, inode: InodeId, name: &str) -> Result<InodeId, FsErr>;
+
+	fn get_mount(&self, inode: InodeId) -> Result<Arc<Box<Fs>>, FsErr>;
+	fn mount(&self, inode: InodeId, fs: &Arc<Box<Fs>>) -> Result<(), FsErr>;
+
+	fn load_tar(&self, tar: Tar) -> Result<(), FsErr> {
+		for file in tar {
+			let mut inode = self.root_id();
+			for part in Path::from(&file.name()) {
+				match self.get_child_id(inode, &part) {
+					Ok(i) => inode = i,
+					Err(FsErr::NoSuchChild) => match self.add_child(inode, &part) {
+						Ok(_) => {},
+						Err(e) => { return Err(e); },
+					},
+					Err(e) => { return Err(e); },
+				}
+			}
+		}
+		Ok(())
+	}
 }
 
 lazy_static! {
-	static ref ROOT_FS: Mutex<Arc<Box<Fs>>> = Mutex::new(Arc::new(Box::new(RamFs::new())));
+	static ref ROOT_FS: Mutex<Arc<Box<Fs>>> = Mutex::new(Arc::new(Box::new(RamFs::new(&"rootfs"))));
 }
 
 #[derive(Clone)]
@@ -62,6 +91,10 @@ impl File {
 	pub fn from(path: &str) -> Result<File, FsErr> {
 		let root_id = ROOT_FS.lock().root_id();
 		File::from_parts(&Arc::downgrade(&ROOT_FS.lock()), root_id).trace(path)
+	}
+
+	pub fn root(fs: &Arc<Box<Fs>>) -> File {
+		File::from_parts(&Arc::downgrade(fs), fs.root_id())
 	}
 
 	fn from_parts(fs: &Weak<Box<Fs>>, id: InodeId) -> File {
@@ -114,12 +147,49 @@ impl File {
 			None => Err(FsErr::NoSuchFs),
 		}
 	}
+
+	pub fn get_mount(&self) -> Result<Arc<Box<Fs>>, FsErr> {
+		match self.fs.upgrade() {
+			Some(fs) => fs.get_mount(self.id),
+			None => Err(FsErr::NoSuchFs),
+		}
+	}
+
+	pub fn mount(&self, mfs: &Arc<Box<Fs>>) -> Result<(), FsErr> {
+		match self.fs.upgrade() {
+			Some(fs) => fs.mount(self.id, mfs),
+			None => Err(FsErr::NoSuchFs),
+		}
+	}
+}
+
+pub fn init(bootcfg: &BootCfg) {
+	for module in &bootcfg.modules {
+		loginfo!("Handling module: (args = {:?})", module.args);
+
+		// We found the rootfs
+		if module.args.contains(&"rootfs") {
+			let tar = unsafe { Tar::from(module.start) };
+			*ROOT_FS.lock() = Arc::new(Box::new(RamFs::new("rootfs")));
+			ROOT_FS.lock().load_tar(tar);
+		}
+	}
+
+	let root = File::from("/").unwrap();
+	let bin = root.add_child("bin").unwrap();
+	let dev = root.add_child("dev").unwrap();
+	let home = root.add_child("home").unwrap();
+	let sys = root.add_child("sys").unwrap();
+
+	let test = home.add_child("test").unwrap();
+
+	display();
 }
 
 fn display_tree(file: &File, name: &str, depth: usize) {
 	logln!("{}", name);
 
-	if depth > 32 {
+	if depth > 12 {
 		logln!("Maximum recursion depth reached");
 		return;
 	}
@@ -131,19 +201,20 @@ fn display_tree(file: &File, name: &str, depth: usize) {
 		if depth > 0 {
 			log!("-");
 		}
-		log!("|- ");
-		display_tree(file, name.as_str(), depth + 1);
+
+		match file.get_mount() {
+			Ok(fs) => {
+				log!("|- [m] ");
+				display_tree(&File::root(&fs), name.as_str(), depth + 1);
+			},
+			Err(_) => {
+				log!("|- ");
+				display_tree(file, name.as_str(), depth + 1);
+			}
+		}
 	}
 }
 
-pub fn init() {
-	let root = File::from("/").unwrap();
-	let bin = root.add_child("bin").unwrap();
-	let dev = root.add_child("dev").unwrap();
-	let home = root.add_child("home").unwrap();
-	let sys = root.add_child("sys").unwrap();
-
-	let test = home.add_child("test");
-
-	display_tree(&root, "/", 0);
+pub fn display() {
+	display_tree(&File::from("/").expect("Could not find root file"), "/", 0);
 }

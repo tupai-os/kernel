@@ -86,7 +86,7 @@ pub extern fn kentry(bootcfg: *const ()) {
 	driver::init();
 	vdev::init();
 
-	fs_::init();
+	fs_::init(&bootcfg);
 
 	// Create init process
 	// TODO: Make this spawn a process from initramfs
