@@ -35,6 +35,7 @@
 #![allow(dead_code)]
 #![feature(core_float)]
 
+extern crate alloc;
 extern crate rlibc;
 extern crate volatile;
 extern crate spin;
@@ -42,7 +43,7 @@ extern crate cstr_core;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate bitflags;
 extern crate arrayvec;
-extern crate alloc;
+extern crate bimap;
 
 #[macro_use] mod log;
 mod shell;
@@ -56,6 +57,7 @@ mod process;
 mod driver;
 mod vfs;
 mod fs;
+mod fs_;
 mod vdev;
 
 use mem::heap::Heap;
@@ -74,7 +76,6 @@ pub extern fn kentry(bootcfg: *const ()) {
 	llapi::family::init(&bootcfg);
 	llapi::chipset::init(&bootcfg);
 
-
 	loginfo!("Kernel booted with arguments: {:?}", bootcfg.args);
 
 	log::init();
@@ -84,6 +85,8 @@ pub extern fn kentry(bootcfg: *const ()) {
 	vfs::init(&bootcfg);
 	driver::init();
 	vdev::init();
+
+	fs_::init();
 
 	// Create init process
 	// TODO: Make this spawn a process from initramfs

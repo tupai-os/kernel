@@ -58,11 +58,10 @@ fn display_node(node: &NodeRef, name: &str, depth: usize) {
 	}
 
 	for (name, node) in node.lock().children().iter() {
-		log!("|-");
 		for _i in 0..depth {
 			log!("--");
 		}
-		log!(" ");
+		log!("|- ");
 		display_node(&node, name.as_str(), depth + 1);
 	}
 }

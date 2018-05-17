@@ -35,6 +35,7 @@ volatile = "0.1.0"
 spin = "0.4.5"
 cstr_core = "0.1.0"
 bitflags = "1.0.1"
+bimap = { git = "https://github.com/zesterer/bimap-rs" }
 
 [dependencies.lazy_static]
 version = "1.0.0"

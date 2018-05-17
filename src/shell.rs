@@ -69,7 +69,7 @@ fn show_proc(_args: &[&str]) {
 			proc.uid(),
 			proc.name().unwrap_or("<none>".to_string())
 		);
-		for thread in proc.threads().unwrap() {
+		for thread in (*proc.threads().unwrap()).iter() {
 			logln!("|-> Thread (uid = {}, name = {})",
 				thread.uid(),
 				thread.name().unwrap_or("<none>".to_string())

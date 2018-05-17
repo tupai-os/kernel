@@ -33,3 +33,4 @@ pub use self::irqlock::IrqLock as IrqLock;
 pub use self::irqqueue::IrqQueue as IrqQueue;
 pub use self::tar::Tar as Tar;
 pub use self::path::Path as Path;
+pub use self::uid::Uid as Uid;
