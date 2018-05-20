@@ -40,6 +40,7 @@ pub enum FsErr {
 	NoSuchFs,
 	NoSuchFile,
 	NoSuchChild,
+	InvalidFileType,
 	NoSuchMount,
 	MountPointInUse,
 }
@@ -48,16 +49,28 @@ pub trait Fs: Send + Sync {
 	fn name(&self) -> String;
 	fn root_id(&self) -> InodeId;
 
+	// Regular
+
+	// (temporary)
+	fn get_data(&self, inode: InodeId) -> Result<Vec<u8>, FsErr>;
+	fn set_data(&self, inode: InodeId, new_data: Vec<u8>) -> Result<(), FsErr>;
+
+	// Directory
+
 	fn children(&self, inode: InodeId) -> Result<Vec<(String, InodeId)>, FsErr>;
 	fn child_ids(&self, inode: InodeId) -> Result<Vec<InodeId>, FsErr>;
 	fn child_names(&self, inode: InodeId) -> Result<Vec<String>, FsErr>;
 
 	fn get_child_id(&self, inode: InodeId, name: &str) -> Result<InodeId, FsErr>;
 	fn get_child_name(&self, inode: InodeId, id: InodeId) -> Result<String, FsErr>;
-	fn add_child(&self, inode: InodeId, name: &str) -> Result<InodeId, FsErr>;
+	fn add_child(&self, inode: InodeId, name: &str, filetype: FileType) -> Result<InodeId, FsErr>;
+
+	// Mount
 
 	fn get_mount(&self, inode: InodeId) -> Result<Arc<Box<Fs>>, FsErr>;
 	fn mount(&self, inode: InodeId, fs: &Arc<Box<Fs>>) -> Result<(), FsErr>;
+
+	// Default impl
 
 	fn load_tar(&self, tar: Tar) -> Result<(), FsErr> {
 		for file in tar {
@@ -65,13 +78,15 @@ pub trait Fs: Send + Sync {
 			for part in Path::from(&file.name()) {
 				match self.get_child_id(inode, &part) {
 					Ok(i) => inode = i,
-					Err(FsErr::NoSuchChild) => match self.add_child(inode, &part) {
+					Err(FsErr::NoSuchChild) => match self.add_child(inode, &part, FileType::Regular) {
 						Ok(_) => {},
 						Err(e) => { return Err(e); },
 					},
 					Err(e) => { return Err(e); },
 				}
 			}
+
+			self.set_data(inode, file.data().to_vec()).ok();
 		}
 		Ok(())
 	}
@@ -79,6 +94,15 @@ pub trait Fs: Send + Sync {
 
 lazy_static! {
 	static ref ROOT_FS: Mutex<Arc<Box<Fs>>> = Mutex::new(Arc::new(Box::new(RamFs::new(&"rootfs"))));
+}
+
+pub enum FileType {
+	Regular,
+	Directory,
+	Mount,
+	Block,
+	Character,
+	Pipe,
 }
 
 #[derive(Clone)]
@@ -138,9 +162,9 @@ impl File {
 		}
 	}
 
-	pub fn add_child(&self, name: &str) -> Result<File, FsErr> {
+	pub fn add_child(&self, name: &str, ft: FileType) -> Result<File, FsErr> {
 		match self.fs.upgrade() {
-			Some(fs) => match fs.add_child(self.id, name) {
+			Some(fs) => match fs.add_child(self.id, name, ft) {
 				Ok(id) => Ok(File::from_parts(&self.fs, id)),
 				Err(e) => Err(e),
 			},
